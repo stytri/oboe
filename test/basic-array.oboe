@@ -1,0 +1,7 @@
+a:[three:3,two:2,one:1];
+a(one)@print_line;
+a(two)@print_line;
+a["three"]@print_line;
+(i:0; i < 3; i=(i+1)) ?* (
+	@print(a[i], " ")
+)

@@ -1,0 +1,171 @@
+/*
+MIT License
+
+Copyright (c) 2019 Tristan Styles
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+#ifndef ENUM
+#	define ENUM(...)
+#endif
+#ifndef STR
+#	define STR(...)
+#endif
+#ifndef NEW
+#	define NEW(...)
+#endif
+#ifndef EVAL
+#	define EVAL(...)
+#endif
+#ifndef ASSIGN
+#	define ASSIGN(...)
+#endif
+#ifndef DEL
+#	define DEL(...)
+#endif
+#ifndef GC
+#	define GC(...)
+#endif
+
+//------------------------------------------------------------------------------
+
+ENUM(Zen)
+	STR(EXPRESSION("(", NULL, ")"))
+	NEW()
+	EVAL(RETURN())
+
+ENUM(Integer)
+	STR(INTEGER("", ast->m.ival, ""))
+	NEW(ast->m.ival = INTEGER(leme, n))
+	EVAL(RETURN())
+
+ENUM(Float)
+	STR(FLOAT("", ast->m.fval, ""))
+	NEW(ast->m.fval = FLOAT(leme, n))
+	EVAL(RETURN())
+
+ENUM(Character)
+	STR(CHARACTER("", ast->m.ival, ""))
+	NEW(ast->m.ival = CHARACTER(leme, n))
+	EVAL(RETURN())
+
+ENUM(String)
+	STR(STRING("", ast->m.sval, ""))
+	NEW(ast->m.sval = STRING(leme, n); ast->m.hash = HashString(ast->m.sval))
+	EVAL(RETURN())
+	GC(MARK(ast->m.sval))
+
+ENUM(Identifier)
+	STR(IDENTIFIER("", ast->m.sval, ""))
+	NEW(ast->m.sval = IDENTIFIER(leme, n); ast->m.hash = HashString(ast->m.sval))
+	EVAL(ast = REFERENCE(ast->m.sval, ast->m.hash))
+	GC(MARK(ast->m.sval))
+
+ENUM(Operator)
+	STR(OPERATOR("", ast->m.lexpr, OPERATOROF(ast->qual), ast->m.rexpr, ""))
+	NEW(ast->m.lexpr = va_arg(va, Ast); ast->m.rexpr = va_arg(va, Ast); ast->qual = OPERATOROF(leme, n))
+	EVAL(ast = OPERATOR(ast->qual, ast->m.lexpr, ast->m.rexpr))
+	GC(MARK(ast->m.lexpr); MARK(ast->m.rexpr))
+
+ENUM(Sequence)
+	STR(SEQUENCE("", ast->m.lexpr, ",", ast->m.rexpr, ""))
+	NEW(ast->m.lexpr = va_arg(va, Ast); ast->m.rexpr = va_arg(va, Ast))
+	EVAL(eval(env, ast->m.lexpr); ast = eval(env, ast->m.rexpr))
+	GC(MARK(ast->m.lexpr); MARK(ast->m.rexpr))
+
+ENUM(Assemblage)
+	STR(SEQUENCE("", ast->m.lexpr, ";", ast->m.rexpr, ""))
+	NEW(ast->m.lexpr = va_arg(va, Ast); ast->m.rexpr = va_arg(va, Ast))
+	EVAL(eval(env, ast->m.lexpr); ast = eval(env, ast->m.rexpr))
+	GC(MARK(ast->m.lexpr); MARK(ast->m.rexpr))
+
+// Internal Types
+
+ENUM(Void)
+	NEW()
+	EVAL(RETURN())
+
+ENUM(Quoted)
+	STR(OPERATOR("", ast->m.lexpr, OPERATOROF(ast->qual), ast->m.rexpr, ""))
+	NEW(ast->m.lexpr = ZEN; ast->m.rexpr = va_arg(va, Ast))
+	EVAL(RETURN())
+	GC(MARK(ast->m.sval); MARK(ast->m.rexpr))
+
+ENUM(Reference)
+	STR(IDENTIFIER("", ast->m.sval, ""))
+	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.rexpr = va_arg(va, Ast))
+	EVAL(RETURN())
+	GC(MARK(ast->m.sval); MARK(ast->m.rexpr))
+
+ENUM(OpaqueDataReference)
+	NEW(ast->m.lexpr = va_arg(va, Ast); ast->qual = ast->m.lexpr->qual)
+	EVAL(RETURN())
+	GC(MARK(ast->m.lexpr))
+
+ENUM(OpaqueDataType)
+	NEW(odt_new(ast, va))
+	EVAL(RETURN(ast = odt_eval(ast)))
+	ASSIGN(ast = CLONE(ast))
+	DEL(odt_sweep(ast))
+	GC(odt_mark(ast))
+
+ENUM(Function)
+	NEW(ast->m.lexpr = va_arg(va, Ast); ast->m.rexpr = va_arg(va, Ast))
+	EVAL(RETURN())
+	GC(MARK(ast->m.lexpr); MARK(ast->m.rexpr))
+
+ENUM(BuiltinFunction)
+	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.bfn = va_arg(va, BuiltinFn))
+	EVAL(RETURN())
+	GC(MARK(ast->m.sval))
+
+ENUM(BuiltinOperator)
+	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.bop = va_arg(va, BuiltinOp))
+	EVAL(RETURN())
+	GC(MARK(ast->m.sval))
+
+ENUM(OperatorFunction)
+	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.rexpr = va_arg(va, Ast))
+	EVAL(RETURN())
+	GC(MARK(ast->m.sval); MARK(ast->m.rexpr))
+
+ENUM(Environment)
+	STR(ENVIRONMENT("[", ast, "]"))
+	NEW(ast->m.env = va_arg(va, Array); ast->m.rexpr = va_arg(va, Ast))
+	EVAL(RETURN())
+	ASSIGN(ast = CLONE(ast))
+	DEL(ENVIRONMENT(ast))
+	GC(ENVIRONMENT(ast); MARK(ast->m.rexpr))
+
+ENUM(Error)
+	STR(ERRORMESSAGE("#(ERROR: ", ast, ")"))
+	NEW(ast->qual = va_arg(va, Error))
+	EVAL(RETURN())
+
+//------------------------------------------------------------------------------
+
+#undef ENUM
+#undef STR
+#undef NEW
+#undef EVAL
+#undef ASSIGN
+#undef DEL
+#undef GC
+

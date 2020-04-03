@@ -1,0 +1,2 @@
+i:2, j:(i+1),       @print_line (i, j);
+k:0, k=i, i=j, j=k, @print_line (i, j)

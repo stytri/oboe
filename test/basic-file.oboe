@@ -1,0 +1,13 @@
+i:1234567890;
+f:0.123456789;
+s:'hello world!\n';
+w:(@open("./out/test.txt", "w+"));
+@write(w, i, f, s);
+w@close;
+
+r:(@open("./out/test.txt"));
+@read(r, s, i, f);
+s@print_line;
+i@print_line;
+f@print_line;
+r@close;

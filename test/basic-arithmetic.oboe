@@ -1,0 +1,5 @@
+@print_line (10  + 2);
+@print_line (20  - 3);
+@print_line (30  * 4);
+@print_line (40  / 5);
+@print_line (50 // 6)

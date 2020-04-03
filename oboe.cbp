@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="oboe" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="oboed" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-save-temps=obj" />
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="oboe" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-DNDEBUG=1" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="Debug;Release;" />
+		</VirtualTargets>
+		<Unit filename="src/array.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/array.h" />
+		<Unit filename="src/assert.h" />
+		<Unit filename="src/ast.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/ast.h" />
+		<Unit filename="src/bitmac.h" />
+		<Unit filename="src/bits.h" />
+		<Unit filename="src/builtins.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/builtins.h" />
+		<Unit filename="src/env.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/env.h" />
+		<Unit filename="src/errorf.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/errorf.h" />
+		<Unit filename="src/eval.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/eval.h" />
+		<Unit filename="src/gc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/gc.h" />
+		<Unit filename="src/graph.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/graph.h" />
+		<Unit filename="src/hash.h" />
+		<Unit filename="src/lex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/lex.h" />
+		<Unit filename="src/mapfile.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/mapfile.h" />
+		<Unit filename="src/marray.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/marray.h" />
+		<Unit filename="src/nobreak.h" />
+		<Unit filename="src/oboe.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/oboe.enum" />
+		<Unit filename="src/oboerr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/oboerr.enum" />
+		<Unit filename="src/odt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/odt.h" />
+		<Unit filename="src/optget.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/optget.h" />
+		<Unit filename="src/parse.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/parse.h" />
+		<Unit filename="src/sloc.h" />
+		<Unit filename="src/sources.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/sources.h" />
+		<Unit filename="src/stdtypes.h" />
+		<Unit filename="src/string.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/string.h" />
+		<Unit filename="src/strlib.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/strlib.h" />
+		<Unit filename="src/system.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/system.h" />
+		<Unit filename="src/tostr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/tostr.h" />
+		<Unit filename="src/trace.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/trace.h" />
+		<Unit filename="src/ucs_ctype.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/ucs_ctype.h" />
+		<Unit filename="src/utf8.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/utf8.h" />
+		<Unit filename="src/xmem.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/xmem.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
