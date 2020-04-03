@@ -101,38 +101,12 @@ main(
 		"--graph", "debug.dot",
 #	endif
 #	if 0
-		"--import", "lib.oboe",
-#	elif 0
-		"--import", "s.oboe",
-#	elif 0
-		"--import", "u.oboe",
-#	elif 0
-		"--import", "io.oboe",
-#	elif 0
-		"--import", "f.oboe",
-#	elif 0
-		"--import", "q.oboe",
-#	elif 0
-		"--import", "c.oboe",
-#	elif 0
-		"--import", "a.oboe",
-#	elif 0
-		"v.oboe", "one", "two", "three",
-#	elif 0
-		"-x", "t:(.time())", "tm:(.utctime(t))", "tm.time",
-#	elif 0
 		"-x",
 		"i:1234567890;\n"
 		"f:0.123456789;\n"
 		"s:'hello world!\\n';\n"
 		,
 #	elif 0
-		"-x",
-		"'\\x2b2e2a2f'\n"
-		"'\\w2b2e2a2f'\n"
-		"'\\u2b2e2a2f'\n"
-		,
-#	elif 1
 		"test/hello-world.oboe",
 #	endif
 		NULL
