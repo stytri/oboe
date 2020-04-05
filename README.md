@@ -21,7 +21,7 @@ Further to this I arrived at the following guides for implementation:
 
 Implemented as an executable syntax tree.
 
-### Lexicon
+#### Lexicon
 
 UTF-8 encoding.
 
@@ -84,7 +84,7 @@ Initiated by `\`, followed by:
 - `U` or `u` followed by up to 8 hexadecimal digits specifying  a Unicode code-point.
 - `W` or `w` followed by up to 4 hexadecimal digits specifying  a Unicode code-point.
 - `X` or `x` followed by up to 2 hexadecimal digits specifying  a Unicode code-point.
-- for other characters, acts a a quoting mechanism.
+- for other characters, acts as a quoting mechanism.
 
 #### Sub-expressions
 
@@ -99,7 +99,7 @@ Initiated by one of `(`, `[`,  `{`, terminated by the corresponding `)`, `]`, `}
 ##### Predefined operators
 
 - _applicate_, has no lexical representation, but is invoked by adjacency.
-- `,` _sequence_, creates a list of expressions.
+- `,` _sequence_, creates a list of operations.
 - `;` _assemblage_, creates a list of sequences.
 
 ##### User-defined operators
@@ -110,4 +110,19 @@ See `lex.h` for definition.
 
 See `lex.h` for definition.
 
-#### 
+### Grammar
+
+#### Basic Grammar
+
+The current grammar is fairly flat, consisting of five precedence levels with left to right evaluation. The precedence levels, in decreasing order, are:
+
+- Primary (Values, Identifiers, Sub-expressions)
+- Applicate
+- Operators
+- Sequence
+- Assemblage
+
+Although the goal is for only binary operators, the simplicity of the implementation of parsing gives us unary operators for free - it would require more code to enforce binary only. However, in the syntax tree all operators are binary, unary operations being represented by having a non-value operand (internally this is the **Zen** type - Zero/Empty/Null). The empty parenthesis `()` operator can be used to specify **Zen** explicitly.
+
+The more detailed grammar (e.g. declaration, selection, iteration) is handled at runtime; but is built from binary operators.
+
