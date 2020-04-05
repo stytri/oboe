@@ -126,3 +126,100 @@ Although the goal is for only binary operators, the simplicity of the implementa
 
 The more detailed grammar (e.g. declaration, selection, iteration) is handled at runtime; but is built from binary operators.
 
+#### Operator Grammar and Operation
+
+##### assemblage
+
+_left-operand_ ; _right-operand_
+
+An _assemblage_ may be evaluated differently when used as an operand, but is otherwise evaluated thus:
+
+_left-operand_ is evaluated, then _right-operand_ is evaluated.
+
+##### sequence
+
+_left-operand_ `,` _right-operand_
+
+A _sequence_ may be evaluated differently when used as an operand, but is otherwise evaluated thus:
+
+_left-operand_ is evaluated, then _right-operand_ is evaluated.
+
+##### conditional
+
+either:
+
+_condition_ `?` _true-operand_
+
+_condition_ is evaluated, and if the result, when cast to a boolean value, evaluates to **true**, then _true-operand_ is evaluated.
+
+or:
+
+_condition_ `?` _true-operand_ `;` _false-operand_
+
+_condition_ is evaluated, and if the result, when cast to a boolean value, evaluates to **true**, then _true-operand_ is evaluated, otherwise _false-operand_ id evaluated.
+
+##### selection
+
+_expression_ `?:` `(` (_case-expression_ `:` _case-operand_ `;`)+ _default-operand_?`)`
+
+##### iteration
+
+either:
+
+_iteration-control_ `?*` _iteration-operand_
+
+or:
+
+_iteration-control_ `?*` `(` _iteration-operand_ `;` _no-iteration-operand_ `)`
+
+_no-iteration-operand_ is evaluated if the controlling _condition_ never evaluates **true**
+
+where _iteration-control_ is either:
+
+_condition_
+
+or:
+
+`(` _initialization_ `;` _condition_ `)`
+
+or:
+
+`(` _initialization_ `;` _condition_ `;` _recalculation_ `)`
+
+##### assignment
+
+_reference_ `=` _operand_
+
+##### declaration
+
+either:
+
+_referent_ `:` _operand_
+
+or:
+
+_referent_ `[` `] ` `:` _operand_
+
+or:
+
+_referent_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
+
+or:
+
+_operator-string_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
+
+##### evaluation
+
+_left-operand_ _operator_ _right-operand_
+
+##### applicate
+
+either:
+
+_left-operand_ _right-operand_
+
+or:
+
+_operator_ _right-operand_
+
+##### 
