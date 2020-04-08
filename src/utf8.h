@@ -52,6 +52,18 @@ utf8chr(
 	char const **endp
 );
 
+extern size_t
+utf8enlen(
+	char32_t cc
+);
+
+extern size_t
+utf8encode(
+	char    *s,
+	char   **endp,
+	char32_t cc
+);
+
 //------------------------------------------------------------------------------
 
 #ifdef __cplusplus

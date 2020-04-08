@@ -160,3 +160,44 @@ utf8chr(
 	}
 }
 
+size_t
+utf8enlen(
+	char32_t cc
+) {
+	return (cc < 0x110000) + (cc > 0x000080) + (cc > 0x000800) + (cc > 0x0001000);
+}
+
+size_t
+utf8encode(
+	char    *s,
+	char   **endp,
+	char32_t cc
+) {
+	size_t const n = utf8enlen(cc);
+	switch(n) {
+	case 1:
+		*s++ = cc;
+		break;
+	case 2:
+		*s++ = 0xC0 | ((cc >>  6) & 0x1F);
+		*s++ = 0x80 | ( cc        & 0x3F);
+		break;
+	case 3:
+		*s++ = 0xE0 | ((cc >> 12) & 0x0F);
+		*s++ = 0x80 | ((cc >>  6) & 0x3F);
+		*s++ = 0x80 | ( cc        & 0x3F);
+		break;
+	case 4:
+		*s++ = 0xF0 | ((cc >> 18) & 0x07);
+		*s++ = 0x80 | ((cc >> 12) & 0x3F);
+		*s++ = 0x80 | ((cc >>  6) & 0x3F);
+		*s++ = 0x80 | ( cc        & 0x3F);
+		break;
+	case 0:
+	default:
+		break;
+	}
+
+	*endp = s;
+	return n;
+}
