@@ -25,6 +25,7 @@ SOFTWARE.
 #include "nobreak.h"
 #include "xmem.h"
 #include "hash.h"
+#include "utf8.h"
 
 //------------------------------------------------------------------------------
 
@@ -154,8 +155,10 @@ UnEscapeString(
 
 		for(int c = *cs; c && (c != q); c = *cs) {
 			if(c == '\\') {
-				char l[] = { esctoc(cs + 1, &cs) };
-				s = StringAppendCharLiteral(t, l, 1);
+				char  sc[4], *sp;
+				int   cc = esctoc(cs + 1, &cs);
+				size_t n = utf8encode(sc, &sp, cc);
+				s = StringAppendCharLiteral(t, sc, n);
 				if(!s) break;
 				t = s;
 				continue;
