@@ -62,7 +62,6 @@ enum {
 	UCS_Symbol_math = UINT32_C(0x40000),
 	UCS_Symbol_currency = UINT32_C(0x80000),
 	UCS_Symbol_modifier = UINT32_C(0x100000),
-	UCS_Symbol_other = UINT32_C(0x200000),
 	UCS_Symbol = UINT32_C(0x3c0000),
 	UCS_Separator_space = UINT32_C(0x400000),
 	UCS_Separator_line = UINT32_C(0x800000),
@@ -95,7 +94,6 @@ enum {
 	UCS_Sm = UCS_Symbol_math,
 	UCS_Sc = UCS_Symbol_currency,
 	UCS_Sk = UCS_Symbol_modifier,
-	UCS_So = UCS_Symbol_other,
 	UCS_S = UCS_Symbol,
 	UCS_Zs = UCS_Separator_space,
 	UCS_Zl = UCS_Separator_line,
@@ -265,12 +263,6 @@ is_UCS_Symbol_modifier(
 	char32_t c
 ) {
 	return is_UCS(UCS_Symbol_modifier, c);
-}
-static inline int
-is_UCS_Symbol_other(
-	char32_t c
-) {
-	return is_UCS(UCS_Symbol_other, c);
 }
 static inline int
 is_UCS_Symbol(

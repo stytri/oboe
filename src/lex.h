@@ -36,7 +36,7 @@ extern "C" {
 enum {
 	UCS_Operator    = UCS_Sm|UCS_Sk|(UCS_P&~UCS_Pc),
 
-	UCS_ID_Start    = UCS_L |UCS_Nl|UCS_Sc|UCS_So|UCS_Pc,
+	UCS_ID_Start    = UCS_L |UCS_Nl|UCS_Sc|UCS_Pc,
 	UCS_ID_Continue = UCS_ID_Start |UCS_Mn|UCS_Mc|UCS_Nd,
 };
 
