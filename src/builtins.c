@@ -342,7 +342,9 @@ builtin_if_1(
 		eval(env, lexpr->m.lexpr);
 	}
 
-	bool cond = ast_toBool(eval(env, lexpr)) ^ inverted;
+	lexpr = eval(env, lexpr);
+
+	bool cond = ast_toBool(lexpr) ^ inverted;
 
 	rexpr = undefer(env, rexpr);
 	if(ast_isAssemblage(rexpr)) {
@@ -350,14 +352,14 @@ builtin_if_1(
 			return refeval(env, rexpr->m.rexpr);
 		}
 
-		rexpr = rexpr->m.lexpr;
+		return refeval(env, rexpr->m.lexpr);
 	}
 
 	if(cond) {
 		return refeval(env, rexpr);
 	}
 
-	return ZEN;
+	return lexpr;
 }
 
 static Ast
