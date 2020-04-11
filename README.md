@@ -158,6 +158,12 @@ _condition_ `?` _true-operand_ `;` _false-operand_
 
 _condition_ is evaluated, and if the result, when cast to a boolean value, evaluates to **true**, then _true-operand_ is evaluated, otherwise _false-operand_ id evaluated.
 
+_operand_ `?` **Zen** 
+
+**Zen** `?` _operand_
+
+evaluates _operand_ and returns  its boolean value.
+
 ##### selection
 
 _expression_ `?:` `(` (_case-expression_ `:` _case-operand_ `;`)+ _default-operand_?`)`
@@ -212,6 +218,52 @@ _operator-string_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
 
 _left-operand_ _operator_ _right-operand_
 
+`=`	assignment
+
+`&&`	logical AND
+
+`||`	logical OR
+
+`<`	less than
+
+`<=`	less than or equal
+
+`==`	equal
+
+`<>`	not equal
+
+`>=`	greater than or equal
+
+`>`	greater than
+
+`&`	bitwise AND
+
+`|`	bitwise OR
+
+`^`	bitwise XOR
+
+`+`	add
+
+`-`	subtract
+
+`*`	multiply
+
+`/`	divide
+
+`//`	modulo
+
+`<<`	shift left
+
+`>>`	shift right
+
+`<<<`	extract left
+
+`>>>`	extract right
+
+`<<>`	rotate left
+
+`<>>`	rotate right
+
 ##### applicate
 
 either:
@@ -222,4 +274,11 @@ or:
 
 _operator_ _right-operand_
 
-##### 
+##### sigil
+
+_operand_ `@` _identifier_
+
+Used to access the attributes and functions of _operand_ (e.g. type query, type conversion).
+
+When **Zen** is the _operand_, it provides access to the system library.
+
