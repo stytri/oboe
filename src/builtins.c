@@ -73,8 +73,10 @@ SOFTWARE.
 
 static unsigned builtin_applicate_enum = -1;
 static unsigned builtin_if_enum        = -1;
+static unsigned builtin_ifnot_enum     = -1;
 static unsigned builtin_case_enum      = -1;
-static unsigned builtin_loop_enum      = -1;
+static unsigned builtin_while_enum     = -1;
+static unsigned builtin_until_enum     = -1;
 static unsigned builtin_land_enum      = -1;
 static unsigned builtin_lor_enum       = -1;
 static unsigned builtin_lt_enum        = -1;
@@ -319,14 +321,15 @@ undefer(
 //------------------------------------------------------------------------------
 
 static Ast
-builtin_if(
+builtin_if_1(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
-	Ast    rexpr
+	Ast    rexpr,
+	bool   inverted
 ) {
 	if(ast_isZen(lexpr) || ast_isZen(rexpr)) {
-		uint64_t cond = ast_toBool(eval(env, ast_isnotZen(lexpr) ? lexpr : rexpr));
+		uint64_t cond = ast_toBool(eval(env, ast_isnotZen(lexpr) ? lexpr : rexpr)) ^ inverted;
 		return new_ast(sloc, NULL, AST_Integer, cond);
 	}
 
@@ -339,7 +342,7 @@ builtin_if(
 		eval(env, lexpr->m.lexpr);
 	}
 
-	bool cond = ast_toBool(eval(env, lexpr));
+	bool cond = ast_toBool(eval(env, lexpr)) ^ inverted;
 
 	rexpr = undefer(env, rexpr);
 	if(ast_isAssemblage(rexpr)) {
@@ -355,6 +358,26 @@ builtin_if(
 	}
 
 	return ZEN;
+}
+
+static Ast
+builtin_if(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_if_1(env, sloc, lexpr, rexpr, false);
+}
+
+static Ast
+builtin_ifnot(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_if_1(env, sloc, lexpr, rexpr, true);
 }
 
 static Ast
@@ -404,11 +427,12 @@ builtin_case(
 }
 
 static Ast
-builtin_loop(
+builtin_loop_1(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
-	Ast    rexpr
+	Ast    rexpr,
+	bool   inverted
 ) {
 	Ast iexpr = ZEN;
 
@@ -431,7 +455,7 @@ builtin_loop(
 		}
 	}
 
-	bool cond = ast_toBool(eval(env, lexpr));
+	bool cond = ast_toBool(eval(env, lexpr)) ^ inverted;
 
 	rexpr = undefer(env, rexpr);
 	if(ast_isAssemblage(rexpr)) {
@@ -451,7 +475,7 @@ builtin_loop(
 
 			eval(env, iexpr);
 
-			cond = ast_toBool(eval(env, lexpr));
+			cond = ast_toBool(eval(env, lexpr)) ^ inverted;
 
 			gc_return(ts, result);
 		}
@@ -459,13 +483,33 @@ builtin_loop(
 		while(cond) {
 			result = refeval(env, rexpr);
 
-			cond = ast_toBool(eval(env, lexpr));
+			cond = ast_toBool(eval(env, lexpr)) ^ inverted;
 
 			gc_return(ts, result);
 		}
 	}
 
 	return result;
+}
+
+static Ast
+builtin_while(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_loop_1(env, sloc, lexpr, rexpr, false);
+}
+
+static Ast
+builtin_until(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_loop_1(env, sloc, lexpr, rexpr, true);
 }
 
 #define BUILTIN_CONDITION
@@ -1381,8 +1425,10 @@ initialise_builtin_operators(
 		BUILTIN(   "", applicate)
 		BUILTIN(  ":", tag      )
 		BUILTIN(  "?", if       )
+		BUILTIN(  "!", ifnot    )
 		BUILTIN( "?:", case     )
-		BUILTIN( "?*", loop     )
+		BUILTIN( "?*", while    )
+		BUILTIN( "!*", until    )
 		BUILTIN( "&&", land     )
 		BUILTIN( "||", lor      )
 		BUILTIN(  "<", lt       )

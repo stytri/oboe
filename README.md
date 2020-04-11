@@ -164,6 +164,8 @@ _operand_ `?` **Zen**
 
 evaluates _operand_ and returns  its boolean value.
 
+The `!` operator is as above, except the condition is inverted.
+
 ##### selection
 
 _expression_ `?:` `(` (_case-expression_ `:` _case-operand_ `;`)+ _default-operand_?`)`
@@ -191,6 +193,8 @@ or:
 or:
 
 `(` _initialization_ `;` _condition_ `;` _recalculation_ `)`
+
+The `!*` operator is as above, except the condition is inverted.
 
 ##### assignment
 
