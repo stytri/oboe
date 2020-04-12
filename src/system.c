@@ -46,9 +46,9 @@ Ast system_environment = NULL;
 //------------------------------------------------------------------------------
 
 static unsigned builtin_file_type          = -1;
-static unsigned builtin_fpos_type      = -1;
+static unsigned builtin_fpos_type          = -1;
 
-static unsigned builtin_dot_enum           = -1;
+static unsigned builtin_sigil_enum         = -1;
 static unsigned builtin_system_enum        = -1;
 #define ENUM(Name,...) \
 static unsigned builtin_is_##Name##_enum   = -1;
@@ -363,7 +363,7 @@ sequential_evaluation(
 }
 
 static Ast
-builtin_dot(
+builtin_sigil(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
@@ -1673,7 +1673,7 @@ initialise_system_environment(
 	void
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN("@", dot)
+		BUILTIN("@", sigil)
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 
