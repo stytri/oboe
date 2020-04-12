@@ -306,7 +306,7 @@ parse_operation(
 		...
 	)
 ) {
-	return parse_operation_1(ps, ast, P_Assigning);
+	return parse_operation_1(ps, ast, P_Declarative);
 }
 
 static Ast

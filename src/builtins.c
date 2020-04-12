@@ -1425,8 +1425,8 @@ initialise_builtin_operators(
 ) {
 	static struct builtinop const builtinop[] = {
 		BUILTIN(   "", applicate, P_Binding)
-		BUILTIN(  "=", assign   , P_Assigning)
 		BUILTIN(  ":", tag      , P_Declarative)
+		BUILTIN(  "=", assign   , P_Assigning)
 		BUILTIN(  "?", if       , P_Conditional)
 		BUILTIN(  "!", ifnot    , P_Conditional)
 		BUILTIN( "?:", case     , P_Conditional)

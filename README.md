@@ -114,7 +114,7 @@ See `lex.h` for definition.
 
 #### Basic Grammar
 
-The grammar is evaluated left to right.
+Expressions are evaluated left to right.
 
 Precedence levels, in decreasing order, are:
 
@@ -128,8 +128,8 @@ Precedence levels, in decreasing order, are:
 - Relational
 - Logical
 - Conditional
-- Declarative
 - Assigning
+- Declarative
 - Sequence
 - Assemblage
 
