@@ -33,6 +33,28 @@ extern "C" {
 
 //------------------------------------------------------------------------------
 
+typedef enum {
+	P_None,
+	P_Assigning,
+	P_Declarative,
+	P_Conditional,
+	P_Logical,
+	P_Relational,
+	P_Bitwise,
+	P_Additive,
+	P_Multiplicative,
+	P_Exponential,
+	P_Binding
+
+} Precedence;
+
+
+extern Precedence
+precedence(
+	char const *cs,
+	size_t      n
+);
+
 extern Ast
 parse(
 	char const   *cs,

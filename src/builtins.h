@@ -25,6 +25,7 @@ SOFTWARE.
 */
 
 #include "ast.h"
+#include "parse.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,6 +37,7 @@ struct builtinop {
 	char const *leme;
 	BuiltinOp   func;
 	unsigned   *enup;
+	Precedence  prec;
 };
 extern int
 initialise_builtinop(
@@ -56,7 +58,7 @@ initialise_builtinfn(
 	size_t                 n_builtinfn
 );
 
-#define BUILTIN(Lexeme, Name)  { Lexeme, builtin_##Name, &builtin_##Name##_enum },
+#define BUILTIN(Lexeme, Name, ...)  { Lexeme, builtin_##Name, &builtin_##Name##_enum, __VA_ARGS__ },
 
 //------------------------------------------------------------------------------
 

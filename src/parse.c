@@ -23,8 +23,25 @@ SOFTWARE.
 */
 #include "parse.h"
 #include "lex.h"
+#include "env.h"
+#include "hash.h"
 #include "utf8.h"
 #include <stdbool.h>
+
+//------------------------------------------------------------------------------
+
+Precedence
+precedence(
+	char const *cs,
+	size_t      n
+) {
+	uint64_t hash  = memhash(cs, n, 0);
+	size_t   index = locate(operators, hash, cs, n);
+
+	Ast opr = getopr(index);
+
+	return (opr != ZEN) ? opr->qual : P_None;
+}
 
 //------------------------------------------------------------------------------
 /*
@@ -247,6 +264,39 @@ parse_applicate(
 }
 
 static Ast
+parse_operation_1(
+	ParseState ps,
+	Ast      (*ast)(
+		sloc_t      sloc,
+		char const *leme,
+		size_t      len,
+		...
+	),
+	Precedence prec
+) {
+	Ast expr = (prec < P_Binding) ? (
+		parse_operation_1(ps, ast, prec+1)
+	) : (
+		parse_applicate(ps, ast)
+	);
+
+	while(parse_peek_operate(ps) && (precedence(ps->leme, ps->len) == prec)) {
+		size_t      len;
+		sloc_t      sloc  = parse_sloc(ps);
+ 		char const *op    = parse_get(ps, &len);
+		Ast         rexpr = (prec < P_Binding) ? (
+			parse_operation_1(ps, ast, prec+1)
+		) : (
+			parse_applicate(ps, ast)
+		);
+
+		expr = ast(sloc, op, len, expr, rexpr);
+	}
+
+	return expr;
+}
+
+static Ast
 parse_operation(
 	ParseState ps,
 	Ast      (*ast)(
@@ -256,17 +306,7 @@ parse_operation(
 		...
 	)
 ) {
-	Ast expr = parse_applicate(ps, ast);
-
-	while(parse_peek_operate(ps)) {
-		size_t      len;
-		sloc_t      sloc = parse_sloc(ps);
- 		char const *op   = parse_get(ps, &len);
-
-		expr = ast(sloc, op, len, expr, parse_applicate(ps, ast));
-	}
-
-	return expr;
+	return parse_operation_1(ps, ast, P_Assigning);
 }
 
 static Ast

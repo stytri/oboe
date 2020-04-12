@@ -1382,7 +1382,7 @@ initialise_builtinop(
 		size_t      n     = strlen(cs);
 		uint64_t    hash  = memhash(cs, n, 0);
 		String      s     = CharLiteralToString(cs, n);
-		Ast         oper  = new_ast(0, NULL, AST_BuiltinOperator, s, builtinop[i].func);
+		Ast         oper  = new_ast(0, NULL, AST_BuiltinOperator, s, builtinop[i].func, builtinop[i].prec);
 		size_t      index = define(env, hash, oper);
 		assert(~index != 0);
 		*builtinop[i].enup = index;
@@ -1424,37 +1424,37 @@ initialise_builtin_operators(
 	void
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN(   "", applicate)
-		BUILTIN(  ":", tag      )
-		BUILTIN(  "?", if       )
-		BUILTIN(  "!", ifnot    )
-		BUILTIN( "?:", case     )
-		BUILTIN( "?*", while    )
-		BUILTIN( "!*", until    )
-		BUILTIN( "&&", land     )
-		BUILTIN( "||", lor      )
-		BUILTIN(  "<", lt       )
-		BUILTIN( "<=", lte      )
-		BUILTIN( "==", eq       )
-		BUILTIN( "<>", neq      )
-		BUILTIN( ">=", gte      )
-		BUILTIN(  ">", gt       )
-		BUILTIN(  "&", and      )
-		BUILTIN(  "|", or       )
-		BUILTIN(  "^", xor      )
-		BUILTIN(  "+", add      )
-		BUILTIN(  "-", sub      )
-		BUILTIN(  "*", mul      )
-		BUILTIN(  "/", div      )
-		BUILTIN( "//", mod      )
-		BUILTIN( "<<", shl      )
-		BUILTIN( ">>", shr      )
-		BUILTIN("<<<", exl      )
-		BUILTIN(">>>", exr      )
-		BUILTIN("<<>", rol      )
-		BUILTIN("<>>", ror      )
-		BUILTIN(  "=", assign   )
-		BUILTIN( "[]", array    )
+		BUILTIN(   "", applicate, P_Binding)
+		BUILTIN(  "=", assign   , P_Assigning)
+		BUILTIN(  ":", tag      , P_Declarative)
+		BUILTIN(  "?", if       , P_Conditional)
+		BUILTIN(  "!", ifnot    , P_Conditional)
+		BUILTIN( "?:", case     , P_Conditional)
+		BUILTIN( "?*", while    , P_Conditional)
+		BUILTIN( "!*", until    , P_Conditional)
+		BUILTIN( "&&", land     , P_Logical)
+		BUILTIN( "||", lor      , P_Logical)
+		BUILTIN(  "<", lt       , P_Relational)
+		BUILTIN( "<=", lte      , P_Relational)
+		BUILTIN( "==", eq       , P_Relational)
+		BUILTIN( "<>", neq      , P_Relational)
+		BUILTIN( ">=", gte      , P_Relational)
+		BUILTIN(  ">", gt       , P_Relational)
+		BUILTIN(  "&", and      , P_Bitwise)
+		BUILTIN(  "|", or       , P_Bitwise)
+		BUILTIN(  "^", xor      , P_Bitwise)
+		BUILTIN(  "+", add      , P_Additive)
+		BUILTIN(  "-", sub      , P_Additive)
+		BUILTIN(  "*", mul      , P_Multiplicative)
+		BUILTIN(  "/", div      , P_Multiplicative)
+		BUILTIN( "//", mod      , P_Multiplicative)
+		BUILTIN( "<<", shl      , P_Exponential)
+		BUILTIN( ">>", shr      , P_Exponential)
+		BUILTIN("<<<", exl      , P_Exponential)
+		BUILTIN(">>>", exr      , P_Exponential)
+		BUILTIN("<<>", rol      , P_Exponential)
+		BUILTIN("<>>", ror      , P_Exponential)
+		BUILTIN( "[]", array    , P_Binding)
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 

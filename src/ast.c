@@ -29,6 +29,7 @@ SOFTWARE.
 #include "marray.h"
 #include "assert.h"
 #include "utf8.h"
+#include "parse.h"
 #include "lex.h"
 #include "gc.h"
 #include <stdlib.h>

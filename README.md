@@ -114,11 +114,22 @@ See `lex.h` for definition.
 
 #### Basic Grammar
 
-The current grammar is fairly flat, consisting of five precedence levels with left to right evaluation. The precedence levels, in decreasing order, are:
+The grammar is evaluated left to right.
+
+Precedence levels, in decreasing order, are:
 
 - Primary (Values, Identifiers, Sub-expressions)
 - Applicate
-- Operators
+- Binding
+- Exponential
+- Multiplicative
+- Additive
+- Bitwise
+- Relational
+- Logical
+- Conditional
+- Declarative
+- Assigning
 - Sequence
 - Assemblage
 

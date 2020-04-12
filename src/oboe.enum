@@ -137,12 +137,12 @@ ENUM(BuiltinFunction)
 	GC(MARK(ast->m.sval))
 
 ENUM(BuiltinOperator)
-	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.bop = va_arg(va, BuiltinOp))
+	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.bop = va_arg(va, BuiltinOp), ast->qual = va_arg(va, Precedence))
 	EVAL(RETURN())
 	GC(MARK(ast->m.sval))
 
 ENUM(OperatorFunction)
-	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.rexpr = va_arg(va, Ast))
+	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.rexpr = va_arg(va, Ast), ast->qual = P_Additive)
 	EVAL(RETURN())
 	GC(MARK(ast->m.sval); MARK(ast->m.rexpr))
 

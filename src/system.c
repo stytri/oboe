@@ -1673,7 +1673,7 @@ initialise_system_environment(
 	void
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN("@", sigil)
+		BUILTIN("@", sigil, P_Binding)
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 
