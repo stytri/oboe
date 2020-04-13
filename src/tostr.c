@@ -69,7 +69,7 @@ toString_float(
 	char const *postfix
 ) {
 	char        temp[(CHAR_BIT * sizeof(value)) + 1];
-	char const *fmt  = archival ? "%#a" : "%#g";
+	char const *fmt  = archival ? "%#.13a" : "%#g";
 	int         n    = snprintf(temp, sizeof(temp)-1, fmt, value);
 
 	s = StringAppendCharLiteral(s, prefix, strlen(prefix));
