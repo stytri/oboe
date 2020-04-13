@@ -78,6 +78,7 @@ initialise(
 		initialise_sources();
 		initialise_builtins(has_math);
 		initialise_system_environment();
+		initialise_system_stdio();
 	}
 }
 

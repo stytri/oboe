@@ -39,6 +39,38 @@ initialise_system_environment(
 	void
 );
 
+extern int
+initialise_system_stdio(
+	void
+);
+
+//------------------------------------------------------------------------------
+
+extern Ast
+error_or(
+	sloc_t sloc,
+	Ast    ast,
+	Error  err
+);
+
+extern Ast
+dereference(
+	Ast env,
+	Ast arg
+);
+
+extern Ast
+sequential_evaluation(
+	Ast  (*evaluator)(
+		Ast    env,
+		sloc_t sloc,
+		Ast    arg
+	),
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+);
+
 //------------------------------------------------------------------------------
 
 #ifdef __cplusplus
