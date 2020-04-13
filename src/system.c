@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+#include "version.h"
 #include "builtins.h"
 #include "sources.h"
 #include "system.h"
@@ -1734,7 +1735,7 @@ initialise_system_environment(
 
 	system_environment = new_env(0, NULL);
 
-	Ast version = new_ast(0, NULL, AST_Integer, UINT64_C(201901));
+	Ast version = new_ast(0, NULL, AST_Integer, (uint64_t)VERSION);
 	addenv_named(system_environment, 0, "VERSION", version);
 
 	initialise_datatypes();
