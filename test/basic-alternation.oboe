@@ -1,12 +1,12 @@
-@print_line (0 ?   2);
-@print_line (1 ?   2);
-@print_line (0 !   2);
-@print_line (1 !   2);
-@print_line (0 ?  ("then" ; "else"));
-@print_line (1 ?  ("then" ; "else"));
-@print_line (0 !  ("then" ; "else"));
-@print_line (1 !  ("then" ; "else"));
-@print_line (0 ?: (0: "zero"; 1: "one"; 2: "two"; "other"));
-@print_line (1 ?: (0: "zero"; 1: "one"; 2: "two"; "other"));
-@print_line (2 ?: (0: "zero"; 1: "one"; 2: "two"; "other"));
-@print_line (3 ?: (0: "zero"; 1: "one"; 2: "two"; "other"))
+@println (0 ?   2);
+@println (1 ?   2);
+@println (0 !   2);
+@println (1 !   2);
+@println (0 ?  ("then" ; "else"));
+@println (1 ?  ("then" ; "else"));
+@println (0 !  ("then" ; "else"));
+@println (1 !  ("then" ; "else"));
+@println (0 ?: (0: "zero"; 1: "one"; 2: "two"; "other"));
+@println (1 ?: (0: "zero"; 1: "one"; 2: "two"; "other"));
+@println (2 ?: (0: "zero"; 1: "one"; 2: "two"; "other"));
+@println (3 ?: (0: "zero"; 1: "one"; 2: "two"; "other"))

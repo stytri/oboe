@@ -23,5 +23,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ]
 
-@print_line "Hello World";
-"and Goodbye"@print_line
+@println "Hello World";
+"and Goodbye"@println

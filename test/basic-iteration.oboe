@@ -1,12 +1,12 @@
- i:10, (i >  0         ) ?* (@print_line i, i=(i-1));
-(j:10;  j >  0         ) ?* (@print_line j, j=(j-1));
-(k:10;  k >  0; k=(k-1)) ?*  @print_line k;
-(k:10;  k == 0; k=(k-1)) !*  @print_line k;
+ i:10, (i >  0         ) ?* (@println i, i=(i-1));
+(j:10;  j >  0         ) ?* (@println j, j=(j-1));
+(k:10;  k >  0; k=(k-1)) ?*  @println k;
+(k:10;  k == 0; k=(k-1)) !*  @println k;
 
 (j:0; j < 10; j=(j+1)) ?* (
 	(k:0; k < j; k=(k+1)) ?* ((
-		@print_line (j, k)
+		@println (j, k)
 	) ; (
-		@print_line "no iteration"
+		@println "no iteration"
 	))
 )

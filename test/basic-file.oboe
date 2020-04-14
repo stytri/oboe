@@ -7,7 +7,7 @@ w@close;
 
 r:(@open("./out/test.txt"));
 @read(r, s, i, f);
-s@print_line;
-i@print_line;
-f@print_line;
+s@println;
+i@println;
+f@println;
 r@close;

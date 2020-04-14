@@ -38,32 +38,32 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
-static unsigned builtin_file_type          = -1;
-static unsigned builtin_fpos_type          = -1;
+static unsigned builtin_file_type      = -1;
+static unsigned builtin_fpos_type      = -1;
 
-static unsigned builtin_temp_name_enum     = -1;
-static unsigned builtin_rename_enum        = -1;
-static unsigned builtin_remove_enum        = -1;
-static unsigned builtin_is_file_enum       = -1;
-static unsigned builtin_is_fpos_enum       = -1;
-static unsigned builtin_open_enum          = -1;
-static unsigned builtin_close_enum         = -1;
-static unsigned builtin_flush_enum         = -1;
-static unsigned builtin_rewind_enum        = -1;
-static unsigned builtin_get_fpos_enum      = -1;
-static unsigned builtin_set_fpos_enum      = -1;
-static unsigned builtin_ferror_enum        = -1;
-static unsigned builtin_fclear_enum        = -1;
-static unsigned builtin_eof_enum           = -1;
-static unsigned builtin_write_enum         = -1;
-static unsigned builtin_read_enum          = -1;
-static unsigned builtin_print_to_enum      = -1;
-static unsigned builtin_print_line_to_enum = -1;
-static unsigned builtin_get_line_from_enum = -1;
-static unsigned builtin_print_enum         = -1;
-static unsigned builtin_print_line_enum    = -1;
-static unsigned builtin_print_error_enum   = -1;
-static unsigned builtin_get_line_enum      = -1;
+static unsigned builtin_tmpname_enum   = -1;
+static unsigned builtin_rename_enum    = -1;
+static unsigned builtin_remove_enum    = -1;
+static unsigned builtin_is_File_enum   = -1;
+static unsigned builtin_is_Fpos_enum   = -1;
+static unsigned builtin_open_enum      = -1;
+static unsigned builtin_close_enum     = -1;
+static unsigned builtin_flush_enum     = -1;
+static unsigned builtin_rewind_enum    = -1;
+static unsigned builtin_getpos_enum    = -1;
+static unsigned builtin_setpos_enum    = -1;
+static unsigned builtin_ferror_enum    = -1;
+static unsigned builtin_fclear_enum    = -1;
+static unsigned builtin_eof_enum       = -1;
+static unsigned builtin_write_enum     = -1;
+static unsigned builtin_read_enum      = -1;
+static unsigned builtin_fprint_enum    = -1;
+static unsigned builtin_fprintln_enum  = -1;
+static unsigned builtin_fgetln_enum    = -1;
+static unsigned builtin_print_enum     = -1;
+static unsigned builtin_println_enum   = -1;
+static unsigned builtin_printerr_enum  = -1;
+static unsigned builtin_getln_enum     = -1;
 
 //------------------------------------------------------------------------------
 
@@ -241,7 +241,7 @@ initialise_datatypes(
 //------------------------------------------------------------------------------
 
 static Ast
-builtin_temp_name(
+builtin_tmpname(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -338,7 +338,7 @@ eval_file(
 }
 
 static Ast
-builtin_is_file(
+builtin_is_File(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -350,7 +350,7 @@ builtin_is_file(
 }
 
 static Ast
-builtin_is_fpos(
+builtin_is_Fpos(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -443,7 +443,7 @@ builtin_rewind(
 }
 
 static Ast
-builtin_get_fpos(
+builtin_getpos(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -462,7 +462,7 @@ builtin_get_fpos(
 }
 
 static Ast
-builtin_set_fpos(
+builtin_setpos(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -690,7 +690,7 @@ builtin_read(
 //------------------------------------------------------------------------------
 
 static Ast
-builtin_print_to(
+builtin_fprint(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -699,7 +699,7 @@ builtin_print_to(
 }
 
 static Ast
-builtin_print_line_to(
+builtin_fprintln(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -708,7 +708,7 @@ builtin_print_line_to(
 }
 
 static Ast
-builtin_get_line_from(
+builtin_fgetln(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -774,7 +774,7 @@ builtin_print(
 }
 
 static Ast
-builtin_print_line(
+builtin_println(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -785,7 +785,7 @@ builtin_print_line(
 }
 
 static Ast
-builtin_print_error(
+builtin_printerr(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -798,7 +798,7 @@ builtin_print_error(
 }
 
 static Ast
-builtin_get_line(
+builtin_getln(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -824,29 +824,29 @@ initialise_system_stdio(
 	void
 ) {
 	static struct builtinfn const builtinfn[] = {
-		BUILTIN("temp_name"    , temp_name)
-		BUILTIN("rename"       , rename)
-		BUILTIN("remove"       , remove)
-		BUILTIN("is_file"      , is_file)
-		BUILTIN("is_fpos"      , is_fpos)
-		BUILTIN("open"         , open)
-		BUILTIN("close"        , close)
-		BUILTIN("flush"        , flush)
-		BUILTIN("rewind"       , rewind)
-		BUILTIN("get_fpos"     , get_fpos)
-		BUILTIN("set_fpos"     , set_fpos)
-		BUILTIN("ferror"       , ferror)
-		BUILTIN("fclear"       , fclear)
-		BUILTIN("eof"          , eof)
-		BUILTIN("write"        , write)
-		BUILTIN("read"         , read)
-		BUILTIN("print_to"     , print_to)
-		BUILTIN("print_line_to", print_line_to)
-		BUILTIN("get_line_from", get_line_from)
-		BUILTIN("print"        , print)
-		BUILTIN("print_line"   , print_line)
-		BUILTIN("print_error"  , print_error)
-		BUILTIN("get_line"     , get_line)
+		BUILTIN("tmpname" , tmpname)
+		BUILTIN("rename"  , rename)
+		BUILTIN("remove"  , remove)
+		BUILTIN("is_File" , is_File)
+		BUILTIN("is_Fpos" , is_Fpos)
+		BUILTIN("open"    , open)
+		BUILTIN("close"   , close)
+		BUILTIN("flush"   , flush)
+		BUILTIN("rewind"  , rewind)
+		BUILTIN("getpos"  , getpos)
+		BUILTIN("setpos"  , setpos)
+		BUILTIN("ferror"  , ferror)
+		BUILTIN("fclear"  , fclear)
+		BUILTIN("eof"     , eof)
+		BUILTIN("write"   , write)
+		BUILTIN("read"    , read)
+		BUILTIN("fprint"  , fprint)
+		BUILTIN("fprintln", fprintln)
+		BUILTIN("fgetln"  , fgetln)
+		BUILTIN("print"   , print)
+		BUILTIN("println" , println)
+		BUILTIN("printerr", printerr)
+		BUILTIN("getln"   , getln)
 	};
 	static size_t const n_builtinfn = sizeof(builtinfn) / sizeof(builtinfn[0]);
 

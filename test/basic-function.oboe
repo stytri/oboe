@@ -7,5 +7,5 @@ f(x):(
 );
 
 (i:1; i<21; i=(i+1)) ?* (
-	@print_line(f(i))
+	@println(f(i))
 )

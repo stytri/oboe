@@ -53,20 +53,20 @@ ENUM(Applicate)
 ENUM(Array)
 #include "oboe.enum"
 static unsigned builtin_type_enum          = -1;
-static unsigned builtin_type_name_enum     = -1;
+static unsigned builtin_typename_enum      = -1;
 static unsigned builtin_length_enum        = -1;
 static unsigned builtin_to_String_enum     = -1;
 static unsigned builtin_to_Literal_enum    = -1;
 static unsigned builtin_to_Integer_enum    = -1;
 static unsigned builtin_to_Float_enum      = -1;
 static unsigned builtin_assert_enum        = -1;
-static unsigned builtin_get_env_enum       = -1;
-static unsigned builtin_set_locale_enum    = -1;
+static unsigned builtin_getenv_enum        = -1;
+static unsigned builtin_setlocale_enum     = -1;
 static unsigned builtin_clock_enum         = -1;
 static unsigned builtin_time_enum          = -1;
-static unsigned builtin_time_diff_enum     = -1;
-static unsigned builtin_local_time_enum    = -1;
-static unsigned builtin_utc_time_enum      = -1;
+static unsigned builtin_difftime_enum      = -1;
+static unsigned builtin_localtime_enum     = -1;
+static unsigned builtin_utctime_enum       = -1;
 static unsigned builtin_eval_enum          = -1;
 static unsigned builtin_parse_enum         = -1;
 static unsigned builtin_load_enum          = -1;
@@ -270,7 +270,7 @@ builtin_type(
 }
 
 static Ast
-builtin_type_name(
+builtin_typename(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -466,7 +466,7 @@ builtin_assert(
 //------------------------------------------------------------------------------
 
 static Ast
-builtin_get_env(
+builtin_getenv(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -490,7 +490,7 @@ builtin_get_env(
 //------------------------------------------------------------------------------
 
 static Ast
-builtin_set_locale(
+builtin_setlocale(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -644,7 +644,7 @@ builtin_time(
 }
 
 static Ast
-builtin_time_diff(
+builtin_difftime(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -718,7 +718,7 @@ convert_time_to_env(
 }
 
 static Ast
-builtin_local_time(
+builtin_localtime(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -740,7 +740,7 @@ builtin_local_time(
 }
 
 static Ast
-builtin_utc_time(
+builtin_utctime(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -906,33 +906,33 @@ initialise_system_environment(
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 
 	static struct builtinfn const builtinfn[] = {
-		BUILTIN("system"       , system)
+		BUILTIN("system"    , system)
 #		define ENUM(Name,...)  \
-		BUILTIN("is_"#Name     , is_##Name)
+		BUILTIN("is_"#Name   , is_##Name)
 		ENUM(Tag)
 		ENUM(Applicate)
 		ENUM(Array)
 #		include "oboe.enum"
-		BUILTIN("type"         , type)
-		BUILTIN("type_name"    , type_name)
-		BUILTIN("length"       , length)
-		BUILTIN("to_String"    , to_String)
-		BUILTIN("to_Literal"   , to_Literal)
-		BUILTIN("to_Integer"   , to_Integer)
-		BUILTIN("to_Float"     , to_Float)
-		BUILTIN("assert"       , assert)
-		BUILTIN("get_env"      , get_env)
-		BUILTIN("set_locale"   , set_locale)
-		BUILTIN("clock"        , clock)
-		BUILTIN("time"         , time)
-		BUILTIN("time_diff"    , time_diff)
-		BUILTIN("local_time"   , local_time)
-		BUILTIN("utc_time"     , utc_time)
-		BUILTIN("eval"         , eval)
-		BUILTIN("parse"        , parse)
-		BUILTIN("load"         , load)
-		BUILTIN("import"       , import)
-		BUILTIN("exit"         , exit)
+		BUILTIN("type"      , type)
+		BUILTIN("typename"  , typename)
+		BUILTIN("length"    , length)
+		BUILTIN("to_String" , to_String)
+		BUILTIN("to_Literal", to_Literal)
+		BUILTIN("to_Integer", to_Integer)
+		BUILTIN("to_Float"  , to_Float)
+		BUILTIN("assert"    , assert)
+		BUILTIN("getenv"    , getenv)
+		BUILTIN("setlocale" , setlocale)
+		BUILTIN("clock"     , clock)
+		BUILTIN("time"      , time)
+		BUILTIN("difftime"  , difftime)
+		BUILTIN("localtime" , localtime)
+		BUILTIN("utctime"   , utctime)
+		BUILTIN("eval"      , eval)
+		BUILTIN("parse"     , parse)
+		BUILTIN("load"      , load)
+		BUILTIN("import"    , import)
+		BUILTIN("exit"      , exit)
 	};
 	static size_t const n_builtinfn = sizeof(builtinfn) / sizeof(builtinfn[0]);
 
