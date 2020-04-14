@@ -37,7 +37,9 @@ lex(
 	char32_t    c;
 
 restart:
-	for(c = utf8chr(start = cs, &cs); c && ~c && is_Space(c); c = utf8chr(start = cs, &cs))
+	c = utf8chr(start = cs, &cs);
+restart_continue:
+	for(; c && ~c && is_Space(c); c = utf8chr(start = cs, &cs))
 		;
 	if(is_Digit(c)) {
 		int (*is__digit)(char32_t c) = is_Digit;
@@ -131,14 +133,17 @@ restart:
 		*linep = cs;
 		++*linop;
 		goto restart;
-	case '\x85': // NEL
-	case 0x2029: // LS
+	case '\f':
+	case '\v':
+	case 0x85:   // NEL
+	case 0x2028: // LS
+	case 0x2029: // PS
 		*linep = cs;
 		++*linop;
 		goto restart;
 
 	case '#':
-		c = *cs;
+		c = utf8chr(cs, &cs);
 		if((c == '(') || (c == '[') || (c == '{')) {
 			char32_t const ec    = (c == '(') ? ')' : (c == '[') ? ']' : '}';
 			char32_t const sc    = c;
@@ -155,11 +160,12 @@ restart:
 				}
 			} while(c && (depth > 0))
 				;
-		} else {
-			for(; c && (c != '\n') && (c != '\r'); c = *++cs)
-				;
+			goto restart;
 		}
-		goto restart;
+
+		for(; c && ~c && !is_EOL(c); c = utf8chr(start = cs, &cs))
+			;
+		goto restart_continue;
 
 	case '(': case ')':
 	case '[': case ']':
