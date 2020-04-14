@@ -118,7 +118,7 @@ main(
 #endif
 
 	static struct optget options[] = {
-		{ 0, "usage: main [options] [FILE...]", NULL },
+		{ 0, "usage: oboe [options] [FILE...]", NULL },
 		{ 0, "options:",                        NULL },
 		{ 1, "-h, --help",                      "display help" },
 		{ 2, "-o, --output FILE",               "output to FILE" },
