@@ -2,6 +2,6 @@ a:[three:3,two:2,one:1];
 a(one)@println;
 a(two)@println;
 a["three"]@println;
-(i:0; i < 3; i=(i+1)) ?* (
+(i:0; i < 3; i=i+1) ?* (
 	@print(a[i], " ")
 )

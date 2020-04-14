@@ -1,10 +1,10 @@
- i:10, (i >  0         ) ?* (@println i, i=(i-1));
-(j:10;  j >  0         ) ?* (@println j, j=(j-1));
-(k:10;  k >  0; k=(k-1)) ?*  @println k;
-(k:10;  k == 0; k=(k-1)) !*  @println k;
+ i:10, (i >  0       ) ?* (@println i, i=i-1);
+(j:10;  j >  0       ) ?* (@println j, j=j-1);
+(k:10;  k >  0; k=k-1) ?*  @println k;
+(k:10;  k == 0; k=k-1) !*  @println k;
 
-(j:0; j < 10; j=(j+1)) ?* (
-	(k:0; k < j; k=(k+1)) ?* ((
+(j:0; j < 10; j=j+1) ?* (
+	(k:0; k < j; k=k+1) ?* ((
 		@println (j, k)
 	) ; (
 		@println "no iteration"

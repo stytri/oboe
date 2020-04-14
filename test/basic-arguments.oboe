@@ -1,7 +1,7 @@
 argc:(@argc),
 argv:(@argv);
 
-(args:'', argi:0; argi<argc; argi=(argi+1)) ?* (
+(args:'', argi:0; argi<argc; argi=argi+1) ?* (
 	args=argv[argi],
 	@println('[', argi, '] ', args)
 );
