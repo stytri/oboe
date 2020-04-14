@@ -56,11 +56,10 @@ static unsigned builtin_ferror_enum        = -1;
 static unsigned builtin_fclear_enum        = -1;
 static unsigned builtin_eof_enum           = -1;
 static unsigned builtin_write_enum         = -1;
-static unsigned builtin_write_line_enum    = -1;
 static unsigned builtin_read_enum          = -1;
-static unsigned builtin_read_line_enum     = -1;
 static unsigned builtin_print_to_enum      = -1;
 static unsigned builtin_print_line_to_enum = -1;
+static unsigned builtin_get_line_from_enum = -1;
 static unsigned builtin_print_enum         = -1;
 static unsigned builtin_print_line_enum    = -1;
 static unsigned builtin_print_error_enum   = -1;
@@ -532,6 +531,8 @@ builtin_eof(
 	return error_or(sloc, arg, ERR_InvalidOperand);
 }
 
+//------------------------------------------------------------------------------
+
 static void
 builtin_write_1(
 	Ast    file,
@@ -553,7 +554,7 @@ builtin_write_all(
 	sloc_t sloc,
 	Ast    arg,
 	bool   archival,
-	bool   line_per
+	bool   end_line
 ) {
 	if(ast_isSequence(arg)) {
 		Ast file = eval_file(env, arg->m.lexpr);
@@ -564,13 +565,15 @@ builtin_write_all(
 				arg = arg->m.rexpr
 			) {
 				builtin_write_1(file, env, sloc, arg->m.lexpr, archival);
-				if(line_per) {
+				if(archival) {
 					fputc('\n', file->m.lptr);
 				}
 			}
 
 			builtin_write_1(file, env, sloc, arg, archival);
-			fputc('\n', file->m.lptr);
+			if(archival || end_line) {
+				fputc('\n', file->m.lptr);
+			}
 
 			return ZEN;
 		}
@@ -588,14 +591,7 @@ builtin_write(
 	return builtin_write_all(env, sloc, arg, true, true);
 }
 
-static Ast
-builtin_write_line(
-	Ast    env,
-	sloc_t sloc,
-	Ast    arg
-) {
-	return builtin_write_all(env, sloc, arg, true, false);
-}
+//------------------------------------------------------------------------------
 
 static int
 builtin_read_1_char(
@@ -691,8 +687,28 @@ builtin_read(
 	return error_or(sloc, arg, ERR_InvalidOperand);
 }
 
+//------------------------------------------------------------------------------
+
 static Ast
-builtin_read_line(
+builtin_print_to(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_write_all(env, sloc, arg, false, false);
+}
+
+static Ast
+builtin_print_line_to(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_write_all(env, sloc, arg, false, true);
+}
+
+static Ast
+builtin_get_line_from(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
@@ -709,24 +725,6 @@ builtin_read_line(
 	}
 
 	return error_or(sloc, arg, ERR_InvalidOperand);
-}
-
-static Ast
-builtin_print_to(
-	Ast    env,
-	sloc_t sloc,
-	Ast    arg
-) {
-	return builtin_write_all(env, sloc, arg, false, true);
-}
-
-static Ast
-builtin_print_line_to(
-	Ast    env,
-	sloc_t sloc,
-	Ast    arg
-) {
-	return builtin_write_all(env, sloc, arg, false, false);
 }
 
 //------------------------------------------------------------------------------
@@ -841,11 +839,10 @@ initialise_system_stdio(
 		BUILTIN("fclear"       , fclear)
 		BUILTIN("eof"          , eof)
 		BUILTIN("write"        , write)
-		BUILTIN("write_line"   , write_line)
 		BUILTIN("read"         , read)
-		BUILTIN("read_line"    , read_line)
 		BUILTIN("print_to"     , print_to)
 		BUILTIN("print_line_to", print_line_to)
+		BUILTIN("get_line_from", get_line_from)
 		BUILTIN("print"        , print)
 		BUILTIN("print_line"   , print_line)
 		BUILTIN("print_error"  , print_error)
