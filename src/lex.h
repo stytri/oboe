@@ -46,7 +46,7 @@ static inline int
 is_Space(
 	char32_t c
 ) {
-	return ('\t' == c) || is_UCS_Separator(c);
+	return ('\t' == c) || is_UCS_Separator_space(c);
 }
 
 static inline int
