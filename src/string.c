@@ -52,7 +52,7 @@ char_length(
 	char const *cs,
 	size_t      n
 ) {
-	return !n ? (cs ? strlen(cs) : 0) : n;
+	return cs ? n : 0;
 }
 
 static inline String
