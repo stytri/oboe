@@ -252,3 +252,25 @@ HashString(
 	return memhash(cs, n, 0);
 }
 
+//------------------------------------------------------------------------------
+
+size_t
+codepointoffset(
+	char   const *cs,
+	size_t const  n,
+	size_t        r
+) {
+	size_t const m = utf8len(cs, NULL, n);
+	return utf8off(cs, NULL, (r < m) ? r : m);
+}
+
+size_t
+reversecodepointoffset(
+	char   const *cs,
+	size_t const  n,
+	size_t        r
+) {
+	size_t const m = utf8len(cs, NULL, n);
+	return utf8off(cs, NULL, (r < m) ? (m - r) : 0);
+}
+

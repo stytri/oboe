@@ -104,6 +104,22 @@ HashString(
 
 //------------------------------------------------------------------------------
 
+extern size_t
+codepointoffset(
+	char   const *cs,
+	size_t const  n,
+	size_t        r
+);
+
+extern size_t
+reversecodepointoffset(
+	char   const *cs,
+	size_t const  n,
+	size_t        r
+);
+
+//------------------------------------------------------------------------------
+
 #ifdef __cplusplus
 }
 #endif
