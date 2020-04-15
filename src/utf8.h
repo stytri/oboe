@@ -33,10 +33,10 @@ extern "C" {
 //------------------------------------------------------------------------------
 
 size_t
-utf8qlen(
+utf8off(
 	char const  *cs,
 	char const **endp,
-	size_t       maxlen
+	size_t       index
 );
 
 extern size_t

@@ -30,28 +30,24 @@ SOFTWARE.
 //------------------------------------------------------------------------------
 
 size_t
-utf8qlen(
+utf8off(
 	char const  *cs,
 	char const **endp,
-	size_t       maxlen
+	size_t       index
 ) {
-	size_t len = 0;
+	size_t off = 0;
 
-	for(; len < maxlen; ++len) {
-		char32_t c = *cs;
+	for(size_t i = 0; i++ < index; ) {
+		char32_t const c = *cs;
 		if(!c) goto end;
 
-		++cs;
-		if((c & 0x80) == 0) {
-			continue;
-		}
-
-		for(c = *cs; (c & 0xC0) == 0x80; c = *++cs)
-			;
+		size_t const n = UTF8LEN(c);
+		off += n;
+		cs += n;
 	}
 end:
-	*endp = cs;
-	return len;
+	if(endp) *endp = cs;
+	return off;
 }
 
 size_t
@@ -98,12 +94,12 @@ utf8len(
 			for(c = *++cs; (c & 0xC0) == 0x80; c = *++cs)
 				;
 		err:
-			*endp = cs;
+			if(endp) *endp = cs;
 			return ~(size_t)0;
 		}
 	}
 end:
-	*endp = cs;
+	if(endp) *endp = cs;
 	return len;
 }
 
@@ -117,14 +113,14 @@ utf8chr(
 	switch(n) {
 		char32_t cc;
 	case 1:
-		*endp = cs + !!c;
+		if(endp) *endp = cs + !!c;
 		return c;
 	case 2:
 		cc = (c & 0x1F) << 6;
 		c = *++cs;
 		if((c & 0xC0) != 0x80) goto err;
 		cc |= (c & 0x3F);
-		*endp = cs + 1;
+		if(endp) *endp = cs + 1;
 		return cc;
 	case 3:
 		cc = (c & 0x0F) << 12;
@@ -134,7 +130,7 @@ utf8chr(
 		c = *++cs;
 		if((c & 0xC0) != 0x80) goto err;
 		cc |= (c & 0x3F);
-		*endp = cs + 1;
+		if(endp) *endp = cs + 1;
 		return cc;
 	case 4:
 		if(c > 0xF7)           goto err;
@@ -148,14 +144,14 @@ utf8chr(
 		c = *++cs;
 		if((c & 0xC0) != 0x80) goto err;
 		cc |= (c & 0x3F);
-		*endp = cs + 1;
+		if(endp) *endp = cs + 1;
 		return cc;
 	case 0:
 	default:
 		for(c = *++cs; (c & 0xC0) == 0x80; c = *++cs)
 			;
 	err:
-		*endp = cs;
+		if(endp) *endp = cs;
 		return ~(char32_t)0;
 	}
 }
@@ -198,6 +194,6 @@ utf8encode(
 		break;
 	}
 
-	*endp = s;
+	if(endp) *endp = s;
 	return n;
 }
