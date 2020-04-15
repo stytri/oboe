@@ -247,11 +247,11 @@ addenv_arg(
 			arg = ident->m.rexpr;
 		}
 		ident = ident->m.lexpr;
-		arg = subeval(env, arg);
+		arg   = refeval(env, arg);
+		arg   = dup_ast(sloc, arg);
 
 	} else {
 		arg = subeval(env, arg);
-		arg = dup_ast(sloc, arg);
 	}
 
 	return addenv(to, sloc, ident, arg);
