@@ -261,7 +261,7 @@ codepointoffset(
 	size_t        r
 ) {
 	size_t const m = utf8len(cs, NULL, n);
-	return utf8off(cs, NULL, (r < m) ? r : m);
+	return ~m ? utf8off(cs, NULL, (r < m) ? r : m) : 0;
 }
 
 size_t
@@ -271,6 +271,6 @@ reversecodepointoffset(
 	size_t        r
 ) {
 	size_t const m = utf8len(cs, NULL, n);
-	return utf8off(cs, NULL, (r < m) ? (m - r) : 0);
+	return ~m ? utf8off(cs, NULL, (r < m) ? (m - r) : 0) : 0;
 }
 
