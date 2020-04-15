@@ -879,41 +879,42 @@ static INTEGEROP(exl, rval &= 63; return lval >> (64 - rval))
 static INTEGEROP(exr, rval &= 63; return lval  & (UINT64_C(~0) >> (64 - rval)))
 static INTEGEROP(rol, rval &= 63; return (lval << rval) | (lval >> (64 - rval)))
 static INTEGEROP(ror, rval &= 63; return (lval << (64 - rval)) | (lval >> rval))
+
 static STRINTOP (shl,
 	size_t      n;
 	char const *cs = StringToCharLiteral(lval, &n);
-	rval %= n;
+	rval = codepointoffset(cs, n, rval);
 	return CharLiteralToString(cs + rval, n - rval);
 )
 static STRINTOP (shr,
 	size_t      n;
 	char const *cs = StringToCharLiteral(lval, &n);
-	rval %= n;
-	return CharLiteralToString(cs, (n - rval));
+	rval = reversecodepointoffset(cs, n, rval);
+	return CharLiteralToString(cs, rval);
 )
 static STRINTOP (exl,
 	size_t      n;
 	char const *cs = StringToCharLiteral(lval, &n);
-	rval %= n;
+	rval = codepointoffset(cs, n, rval);
 	return CharLiteralToString(cs, rval);
 )
 static STRINTOP (exr,
 	size_t      n;
 	char const *cs = StringToCharLiteral(lval, &n);
-	rval %= n;
-	return CharLiteralToString(cs + (n - rval), rval);
+	rval = reversecodepointoffset(cs, n, rval);
+	return CharLiteralToString(cs + rval, n - rval);
 )
 static STRINTOP (rol,
 	size_t      n;
 	char const *cs = StringToCharLiteral(lval, &n);
-	rval %= n;
+	rval = codepointoffset(cs, n, rval);
 	return CharLiteralsToString(cs + rval, n - rval, cs, rval);
 )
 static STRINTOP (ror,
 	size_t      n;
 	char const *cs = StringToCharLiteral(lval, &n);
-	rval %= n;
-	return CharLiteralsToString(cs + (n - rval), rval, cs, n - rval);
+	rval = reversecodepointoffset(cs, n, rval);
+	return CharLiteralsToString(cs + rval, n - rval, cs, rval);
 )
 
 static BUILTIN_BITMOVE(shl)
