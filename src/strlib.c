@@ -72,7 +72,9 @@ esctoc(
 		break;
 	}
 
-	*endp = (char *)cs;
+	if(endp) {
+		*endp = (char *)cs;
+	}
 
 	return c;
 }
@@ -84,17 +86,11 @@ strtoc(
 	char const *cs,
 	char      **endp
 ) {
-	int c = *cs;
-
-	if(c == '\\') {
-		c = esctoc(cs + 1, &cs);
+	if(*cs != '\\') {
+		return utf8chr(cs, (char const **)endp);
 	}
 
-	if(endp) {
-		*endp = (char *)cs;
-	}
-
-	return c;
+	return esctoc(cs + 1, (char const **)endp);
 }
 
 //------------------------------------------------------------------------------
