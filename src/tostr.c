@@ -27,6 +27,7 @@ SOFTWARE.
 #include "env.h"
 #include "odt.h"
 #include "builtins.h"
+#include "utf8.h"
 #include <stdio.h>
 
 //------------------------------------------------------------------------------
@@ -89,7 +90,9 @@ toString_character(
 	uint64_t    value,
 	char const *postfix
 ) {
-	char temp[] = { (char)value, '\0' };
+	char   temp[8] = { '\0' };
+	size_t len     = utf8encode(temp, NULL, (char32_t)value);
+	temp[len]      = '\0';
 
 	s = StringAppendCharLiteral(s, prefix, strlen(prefix));
 	if(archival) {
@@ -97,7 +100,7 @@ toString_character(
 		s = EscapeString(s, temp, NULL, "`", '\0');
 		s = StringAppendChar(s, '`');
 	} else {
-		s = StringAppendChar(s, (int)value);
+		s = StringAppendCharLiteral(s, temp, len);
 	}
 	s = StringAppendCharLiteral(s, postfix, strlen(postfix));
 
