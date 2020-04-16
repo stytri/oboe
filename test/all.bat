@@ -10,6 +10,7 @@
 @call %1 basic-array        %2 %3 %4 %5 %6 %7 %8 %9
 @call %1 basic-unicode      %2 %3 %4 %5 %6 %7 %8 %9
 @call %1 basic-string       %2 %3 %4 %5 %6 %7 %8 %9
+@call %1 basic-character    %2 %3 %4 %5 %6 %7 %8 %9
 @call %1 basic-arguments    %2 %3 %4 %5 %6 %7 %8 %9
 @call %1 basic-quote+eval   %2 %3 %4 %5 %6 %7 %8 %9
 @call %1 basic-op-function  %2 %3 %4 %5 %6 %7 %8 %9
