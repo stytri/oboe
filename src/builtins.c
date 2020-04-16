@@ -28,6 +28,7 @@ SOFTWARE.
 #include "parse.h"
 #include "tostr.h"
 #include "hash.h"
+#include "utf8.h"
 #include "eval.h"
 #include "env.h"
 #include "odt.h"
@@ -1212,9 +1213,10 @@ builtin_array(
 			}
 			return rexpr;
 		case TYPE(AST_String, AST_Integer): {
-				size_t const index = rexpr->m.ival;
-				int    const c     = StringGetChar(lexpr->m.sval, index);
-				if(c >= 0) {
+				char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
+				utf8off(cs, &cs, rexpr->m.ival);
+				int  const  c = utf8chr(cs, NULL);
+				if(~c) {
 					return new_ast(rexpr->sloc, NULL, AST_Character, c);
 				}
 			}
