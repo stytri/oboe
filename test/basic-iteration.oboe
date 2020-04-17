@@ -5,8 +5,9 @@
 
 (j:0; j < 10; j=j+1) ?* (
 	(k:0; k < j; k=k+1) ?* ((
-		@println (j, k)
+		@print (j, k, ` `)
 	) ; (
-		@println "no iteration"
-	))
-)
+		@print "no iteration"
+	)),
+	@println ""
+);
