@@ -67,6 +67,8 @@ static unsigned builtin_time_enum          = -1;
 static unsigned builtin_difftime_enum      = -1;
 static unsigned builtin_localtime_enum     = -1;
 static unsigned builtin_utctime_enum       = -1;
+static unsigned builtin_rand_enum          = -1;
+static unsigned builtin_randf_enum         = -1;
 static unsigned builtin_eval_enum          = -1;
 static unsigned builtin_parse_enum         = -1;
 static unsigned builtin_load_enum          = -1;
@@ -763,6 +765,44 @@ builtin_utctime(
 
 //------------------------------------------------------------------------------
 
+static void
+initialize_rand(
+	void
+) {
+	int s = time(NULL);
+	srand(s);
+}
+
+static Ast
+builtin_rand(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	int const r = rand();
+	return new_ast(sloc, NULL, AST_Integer, (uint64_t)r);
+
+	(void)env;
+	(void)sloc;
+	(void)arg;
+}
+
+static Ast
+builtin_randf(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	int const r = rand();
+	return new_ast(sloc, NULL, AST_Float, (double)r / (double)RAND_MAX);
+
+	(void)env;
+	(void)sloc;
+	(void)arg;
+}
+
+//------------------------------------------------------------------------------
+
 static Ast
 builtin_eval(
 	Ast    env,
@@ -892,6 +932,8 @@ builtin_exit(
 	}
 
 	exit(EXIT_SUCCESS);
+
+	(void)sloc;
 }
 
 //------------------------------------------------------------------------------
@@ -928,6 +970,8 @@ initialise_system_environment(
 		BUILTIN("difftime"  , difftime)
 		BUILTIN("localtime" , localtime)
 		BUILTIN("utctime"   , utctime)
+		BUILTIN("rand"      , rand)
+		BUILTIN("randf"     , randf)
 		BUILTIN("eval"      , eval)
 		BUILTIN("parse"     , parse)
 		BUILTIN("load"      , load)
@@ -938,13 +982,17 @@ initialise_system_environment(
 
 	system_environment = new_env(0, NULL);
 
-	Ast version = new_ast(0, NULL, AST_Integer, (uint64_t)VERSION);
-	addenv_named(system_environment, 0, "VERSION", version);
+	Ast var;
+	var = new_ast(0, NULL, AST_Integer, (uint64_t)VERSION);
+	addenv_named(system_environment, 0, "VERSION", var);
+	var = new_ast(0, NULL, AST_Integer, (uint64_t)RAND_MAX);
+	addenv_named(system_environment, 0, "RAND_MAX", var);
 
 	initialise_datatypes();
 	initialise_builtinfn(system_environment, builtinfn, n_builtinfn);
 	initialise_builtinop(operators         , builtinop, n_builtinop);
 	initialise_errors();
+	initialize_rand();
 
 	return EXIT_SUCCESS;
 
