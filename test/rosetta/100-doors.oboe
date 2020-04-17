@@ -1,0 +1,18 @@
+# https://rosettacode.org/wiki/100_doors
+
+N:100;
+is_open:[];
+
+(door:0; door < N; door = door+1) ?* (
+	is_open[door] = 0
+);
+
+(pass:0; pass < N; pass=pass+1) ?* (
+	(door:(=pass); door < N; door = door+pass+1) ?* (
+		is_open[door] = is_open[door]!
+	)
+);
+
+(door:0; door < N; door = door+1) ?* (
+	("door ", door, " is ", is_open[door] ? ("open" ; "closed"))@println
+);
