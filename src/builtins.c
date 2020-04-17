@@ -1084,7 +1084,11 @@ builtin_tag(
 			rexpr
 		);
 	case AST_Identifier:
-		rexpr = refeval(env, rexpr);
+		rexpr = ast_isnotLiteral(rexpr) ? (
+			refeval(env, rexpr)
+		) : (
+			dup_ast(sloc, rexpr)
+		);
 		addenv(env, sloc, lexpr, rexpr);
 		return rexpr;
 	default:
@@ -1103,12 +1107,15 @@ builtin_array_push_back(
 ) {
 	if(ast_isTag(rexpr)) {
 		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
-			Ast def = refeval(env, rexpr->m.rexpr);
+			Ast def = ast_isnotLiteral(rexpr->m.rexpr) ? (
+				refeval(env, rexpr->m.rexpr)
+			) : (
+				dup_ast(sloc, rexpr->m.rexpr)
+			);
 			addenv(lexpr, sloc, rexpr->m.lexpr, def);
 			return lexpr;
 		}
 	} else {
-		rexpr = refeval(env, rexpr);
 		bool appended = array_push_back(lexpr->m.env, Ast, rexpr);
 		assert(appended);
 		return lexpr;
@@ -1131,7 +1138,11 @@ builtin_assign(
 	if(ast_isArray(lexpr)) {
 		Ast iexpr = eval(env, lexpr->m.rexpr);
 		lexpr     = eval(env, lexpr->m.lexpr);
-		rexpr     = refeval(env, rexpr);
+		rexpr     = ast_isnotLiteral(rexpr) ? (
+			refeval(env, rexpr)
+		) : (
+			dup_ast(sloc, rexpr)
+		);
 
 		switch(TYPE(ast_type(lexpr), ast_type(iexpr))) {
 		case TYPE(AST_Environment, AST_Integer): {
@@ -1165,7 +1176,11 @@ builtin_assign(
 
 	if(ast_isnotZen(lexpr)) {
 		lexpr = subeval(env, lexpr);
-		rexpr = refeval(env, rexpr);
+		rexpr = ast_isnotLiteral(rexpr) ? (
+			refeval(env, rexpr)
+		) : (
+			dup_ast(sloc, rexpr)
+		);
 
 		if(ast_isReference(lexpr)) {
 			for(lexpr = lexpr->m.rexpr;

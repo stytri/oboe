@@ -251,7 +251,11 @@ addenv_arg(
 		arg   = dup_ast(sloc, arg);
 
 	} else {
-		arg = subeval(env, arg);
+		arg = ast_isnotLiteral(arg) ? (
+			subeval(env, arg)
+		) : (
+			dup_ast(sloc, arg)
+		);
 	}
 
 	return addenv(to, sloc, ident, arg);
