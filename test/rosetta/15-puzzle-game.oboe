@@ -1,0 +1,112 @@
+# https://rosettacode.org/wiki/15_Puzzle_Game
+
+N:4;
+
+cells:[];
+
+hole:[
+	row:0,
+	column:0
+];
+
+dx:[  0,  0, -1, +1 ];
+dy:[ -1, +1,  0,  0 ];
+
+setup(): (
+	count: 0,
+	
+	(row:0; row < N; row = row+1) ?* (
+		(column:0; column < N; column = column+1) ?* (
+			cells[row * N + column] = (=count),
+			count = count+1
+		)
+	),
+	
+	hole row = 0, hole column = 0,
+
+	(i:0; i < 127; i = i+1) ?* (
+		update(@rand() // 4)
+	)
+);
+
+min(a:,b:): (
+	(a < b) ? (a ; b)
+);
+
+update(move): (
+	r: hole row    + dy[move], r = min(r, N-1),
+	c: hole column + dx[move], c = min(c, N-1),
+	
+	(r <> hole row || c <> hole column) ? (
+		cells[hole row * N + hole column] = cells[r * N + c],
+		
+		cells[r * N + c] = 0,
+		hole row         = r,
+		hole column      = c
+	)
+);
+
+is_not_finished(): (
+	return:0, count:0,
+	
+	(row:0; return == 0 && row < N; row = row+1) ?* (
+		(column:0; return == 0 && column < N; column = column+1) ?* (
+			count = count + 1,
+			
+			(cells[row * N + column] <> count) ? (
+				return = 1
+			)
+		)
+	),
+	
+	return
+);
+
+itos(ndigits, i): (
+	s:i@to_String,
+	((ndigits - s@length)` `)s
+);
+
+show_cells(): (
+	``@println,
+	(row:0; row < N; row = row+1) ?* (
+		(column:0; column < N; column = column+1) ?* (
+			(cells[row * N + column]) ? (
+				(" : ", itos(2, cells[row * N + column]))@print
+			;
+				" :   "@print
+			)
+		),
+		" :"@println
+	),
+	``@println
+);
+
+get_command(): (
+	"> "@print, @flush(),
+	@getln()
+);
+
+get_move(): (
+	s:get_command(),
+	(i:0; i < s@length; i = i+1) ?* (
+		s[i] ?: (
+		(`u`: update(0));
+		(`d`: update(1));
+		(`l`: update(2));
+		(`r`: update(3))
+		)
+	)
+);
+
+setup();
+show_cells();
+
+(is_not_finished()) ?* (
+	get_move(),
+	show_cells()
+);
+
+"You won"@println;
+
+
