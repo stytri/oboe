@@ -1,5 +1,7 @@
 # https://rosettacode.org/wiki/100_prisoners
 
+"libutil"@import;
+
 new_drawer(card_number): (
 	[card_number:(=card_number), opened:0]
 );
@@ -8,40 +10,24 @@ new_prisoner(id): (
 	[id:(=id), card_found:0]
 );
 
-select(N): (
-	@rand() // N
-);
-
 drawer:[], prisoner:[];
 
 initialize(N): (
-	card:[], card_count:0, card_number:0, id:0,
+	card:[],
 
-	(; card_count < N; card_count = card_count+1) ?* (
-		card[card_count] = card_count+1
+	(i:0; i < N; i++) ?* (
+		card[i] = i+1
 	),
+	shuffle(card),
 
-	(t:0, k:0, i:0; i < N; i = i+1) ?* (
-		id = i+1,
-
-		prisoner[i] = new_prisoner(id),
-
-		k           = select(card_count),
-		card_number = (=(card[k])),
-
-		card_count = card_count-1,
-		(card_count <> k) ? (
-			t                = (=(card[card_count])),
-			card[card_count] = (=card_number),
-			card[k]          = (=t),
-		),
-
-		drawer[i] = new_drawer(card_number)
+	(i:0; i < N; i++) ?* (
+		prisoner[i] = new_prisoner(i+1),
+		drawer[i] = new_drawer(card[i])
 	)
 );
 
 close_drawers(): (
-	(i:0; i < drawer@length; i = i+1) ?* (
+	(i:0; i < drawer@length; i++) ?* (
 		drawer[i]opened = 0
 	)
 );
@@ -49,12 +35,12 @@ close_drawers(): (
 play(is_random): (
 	N:prisoner@length, chances:N/2, chosen:0, found:1,
 
-	(i:0; found && i < N; i = i+1) ?* (
+	(i:0; found && i < N; i++) ?* (
 		close_drawers(),
 
 		found = 0,
 		chosen = is_random ? (select(N) ; i),
-		(j:0; found == 0 && j < chances; j = j+1) ?* (
+		(j:0; found == 0 && j < chances; j++) ?* (
 			drawer[chosen]opened = 1,
 
 			(drawer[chosen]card_number == prisoner[i]id) ? (
@@ -73,43 +59,32 @@ play(is_random): (
 	found
 );
 
+play_game(number_of_prisoners, games, verbose, is_random): (
+	won:0,
+
+	(once:0, i:0; i < games; i++) ?* (
+		initialize(number_of_prisoners),
+
+		once = play(is_random),
+		won = won + once,
+
+		verbose ? (
+			("...Game ", i, "...", once ? ("won" ; "lost"))@println,
+			(i:0; i < number_of_prisoners; i++) ?* (
+				prisoner[i]@println
+			)
+		)
+	),
+
+	(games, " games played, ", won, " games won : ", ((100.0*won)/games), "%")@println,
+);
+
 run(number_of_prisoners, games, verbose): (
-	won:0, once:0,
-
 	("Playing ", games, " random games...")@println,
-	(i:0; i < games; i = i+1) ?* (
-		initialize(number_of_prisoners),
-
-		once = play(1),
-		won = won + once,
-
-		verbose ? (
-			("...Game ", i, "...", once ? ("won" ; "lost"))@println,
-			(i:0; i < number_of_prisoners; i = i+1) ?* (
-				prisoner[i]@println
-			)
-		)
-	),
-
-	(games, " games played, ", won, " games won : ", ((100.0*won)/games), "%")@println,
-
-	won = 0,
+	play_game(number_of_prisoners, games, verbose, 1),
+	
 	("Playing ", games, " optimal games...")@println,
-	(i:0; i < games; i = i+1) ?* (
-		initialize(number_of_prisoners),
-
-		once = play(0),
-		won = won + once,
-
-		verbose ? (
-			("...Game ", i, "...", once ? ("won" ; "lost"))@println,
-			(i:0; i < number_of_prisoners; i = i+1) ?* (
-				prisoner[i]@println
-			)
-		)
-	),
-
-	(games, " games played, ", won, " games won : ", ((100.0*won)/games), "%")@println,
+	play_game(number_of_prisoners, games, verbose, 0)
 );
 
 run(100, 10000, 0);

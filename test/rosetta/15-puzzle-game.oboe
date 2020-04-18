@@ -1,5 +1,7 @@
 # https://rosettacode.org/wiki/15_Puzzle_Game
 
+"libutil"@import;
+
 N:4;
 
 cells:[];
@@ -15,22 +17,18 @@ dy:[ -1, +1,  0,  0 ];
 setup(): (
 	count: 0,
 	
-	(row:0; row < N; row = row+1) ?* (
-		(column:0; column < N; column = column+1) ?* (
+	(row:0; row < N; row++) ?* (
+		(column:0; column < N; column++) ?* (
 			cells[row * N + column] = (=count),
-			count = count+1
+			count++
 		)
 	),
 	
 	hole row = 0, hole column = 0,
 
-	(i:0; i < 127; i = i+1) ?* (
-		update(@rand() // 4)
+	(i:0; i < 127; i++) ?* (
+		update(select(4))
 	)
-);
-
-min(a:,b:): (
-	(a < b) ? (a ; b)
 );
 
 update(move): (
@@ -49,9 +47,9 @@ update(move): (
 is_not_finished(): (
 	return:0, count:0,
 	
-	(row:0; return == 0 && row < N; row = row+1) ?* (
-		(column:0; return == 0 && column < N; column = column+1) ?* (
-			count = count + 1,
+	(row:0; return == 0 && row < N; row++) ?* (
+		(column:0; return == 0 && column < N; column++) ?* (
+			count++,
 			
 			(cells[row * N + column] <> count) ? (
 				return = 1
@@ -62,15 +60,10 @@ is_not_finished(): (
 	return
 );
 
-itos(ndigits, i): (
-	s:i@to_String,
-	((ndigits - s@length)` `)s
-);
-
 show_cells(): (
 	``@println,
-	(row:0; row < N; row = row+1) ?* (
-		(column:0; column < N; column = column+1) ?* (
+	(row:0; row < N; row++) ?* (
+		(column:0; column < N; column++) ?* (
 			(cells[row * N + column]) ? (
 				(" : ", itos(2, cells[row * N + column]))@print
 			;
@@ -82,14 +75,9 @@ show_cells(): (
 	``@println
 );
 
-get_command(): (
-	"> "@print, @flush(),
-	@getln()
-);
-
 get_move(): (
-	s:get_command(),
-	(i:0; i < s@length; i = i+1) ?* (
+	s:getcmd(),
+	(i:0; i < s@length; i++) ?* (
 		s[i] ?: (
 		(`u`: update(0));
 		(`d`: update(1));
