@@ -1,11 +1,17 @@
 *	Documentation
 
+* Look again at assignment & evaluation 
+- possibly have two assignment types: by-value and by-reference
+
 *	Precedence specification for definable operators
-
-*	Move grammar handling from run time to parse time
-
-*	Value ranges + proto-types
+- currently set to additive precedence
 
 *	Improve library
+- some done, but ongoing as and when
+
+*	Value ranges + proto-types [sic]
+
+*	Move grammar handling from run time to parse time
+- or not; allow run time manipulation of the AST ?
 
 *	Documentation
