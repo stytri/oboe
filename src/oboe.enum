@@ -146,6 +146,11 @@ ENUM(OperatorFunction)
 	EVAL(RETURN())
 	GC(MARK(ast->m.sval); MARK(ast->m.rexpr))
 
+ENUM(OperatorAlias)
+	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.tval = add_leaf_to_gc(va_arg(va, String)), ast->qual = P_Additive)
+	EVAL(RETURN())
+	GC(MARK(ast->m.sval); MARK(ast->m.tval))
+
 ENUM(Environment)
 	STR(ENVIRONMENT("[", ast, "]"))
 	NEW(ast->m.env = va_arg(va, Array); ast->m.rexpr = va_arg(va, Ast))

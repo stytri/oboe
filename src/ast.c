@@ -160,6 +160,13 @@ makopr(
 	uint64_t hash  = memhash(cs, n, 0);
 	size_t   index = locate(operators, hash, cs, n);
 
+	Ast ast = getopr(index);
+	if(ast_isOperatorAlias(ast)) {
+		cs    = StringToCharLiteral(ast->m.tval, &n);
+		hash  = memhash(cs, n, 0);
+		index = locate(operators, hash, cs, n);
+	}
+
 	return index;
 }
 

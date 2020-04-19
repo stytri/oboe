@@ -14,6 +14,7 @@
 @call %1 basic-arguments    %2 %3 %4 %5 %6 %7 %8 %9
 @call %1 basic-quote+eval   %2 %3 %4 %5 %6 %7 %8 %9
 @call %1 basic-op-function  %2 %3 %4 %5 %6 %7 %8 %9
+@call %1 basic-op-alias     %2 %3 %4 %5 %6 %7 %8 %9
 @call %1 basic-file         %2 %3 %4 %5 %6 %7 %8 %9
 
 @call %1 rosetta\100-doors      %2 %3 %4 %5 %6 %7 %8 %9

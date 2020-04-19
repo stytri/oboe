@@ -1091,6 +1091,16 @@ builtin_tag(
 		);
 		addenv(env, sloc, lexpr, rexpr);
 		return rexpr;
+	case AST_String: // for OperatorAlias
+		if(ast_isString(rexpr)) {
+			String      s     = lexpr->m.sval;
+			uint64_t    hash  = lexpr->m.hash;
+			rexpr             = new_ast(sloc, NULL, AST_OperatorAlias, s, rexpr->m.sval);
+			size_t      index = define(operators, hash, rexpr);
+			assert(~index != 0);
+			return rexpr;
+		}
+		nobreak;
 	default:
 		return oboerr(sloc, ERR_InvalidOperand);
 	}

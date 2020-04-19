@@ -85,6 +85,7 @@ struct ast {
 		union {
 		void     *rptr;
 		Ast       rexpr;
+		String    tval;
 		uint64_t  hash;
 		BuiltinFn bfn;
 		BuiltinOp bop;
