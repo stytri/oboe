@@ -14,6 +14,6 @@
 *	Move grammar handling from run time to parse time
 -	or not; allow run time manipulation of the AST ?
 
-* Search path for import
+*	Search path for import
 
 *	Documentation
