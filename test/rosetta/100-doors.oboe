@@ -1,6 +1,6 @@
 # https://rosettacode.org/wiki/100_doors
 
-"libutil"@import;
+"rosetta/libutil"@import;
 
 N:100;
 is_open:[];

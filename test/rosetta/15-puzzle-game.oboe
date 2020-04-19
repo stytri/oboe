@@ -1,6 +1,6 @@
 # https://rosettacode.org/wiki/15_Puzzle_Game
 
-"libutil"@import;
+"rosetta/libutil"@import;
 
 N:4;
 

@@ -1,6 +1,6 @@
 # https://rosettacode.org/wiki/100_prisoners
 
-"libutil"@import;
+"rosetta/libutil"@import;
 
 new_drawer(card_number): (
 	[card_number:(=card_number), opened:0]
