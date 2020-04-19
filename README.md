@@ -229,6 +229,10 @@ or:
 
 _operator-string_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
 
+or:
+
+_operator-string_ `:` _operator-string_
+
 ##### evaluation
 
 _left-operand_ _operator_ _right-operand_
