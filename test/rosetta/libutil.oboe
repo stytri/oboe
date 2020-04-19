@@ -1,8 +1,5 @@
 # library of utility functions
 
-argc:(@argc),
-argv:(@argv);
-
 "++"(X):(X=X+1);
 "--"(X):(X=X-1);
 
