@@ -3,6 +3,7 @@
 "rosetta/libutil"@import;
 
 N:4;
+M:N-1;
 
 cells:[];
 
@@ -11,8 +12,12 @@ hole:[
 	column:0
 ];
 
-dx:[  0,  0, -1, +1 ];
-dy:[ -1, +1,  0,  0 ];
+nop(x):(x);
+inc(x):((x < M) ? (x+1 ; M));
+dec(x):((x > 0) ? (x-1 ; 0));
+
+dc:[ nop, nop, dec, inc ];
+dr:[ dec, inc, nop, nop ];
 
 setup(): (
 	count: 0,
@@ -32,8 +37,8 @@ setup(): (
 );
 
 update(move): (
-	r: hole row    + dy[move], r = min(r, N-1),
-	c: hole column + dx[move], c = min(c, N-1),
+	r: dr[move](hole row),
+	c: dc[move](hole column),
 	
 	(r <> hole row || c <> hole column) ? (
 		cells[hole row * N + hole column] = cells[r * N + c],
