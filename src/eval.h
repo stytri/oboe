@@ -39,6 +39,18 @@ unquote(
 );
 
 extern Ast
+undefer(
+	Ast env,
+	Ast ast
+);
+
+extern Ast
+dereference(
+	Ast env,
+	Ast arg
+);
+
+extern Ast
 assign(
 	sloc_t sloc,
 	Ast    ast,

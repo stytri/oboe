@@ -304,21 +304,6 @@ are_equal(
 	}
 }
 
-static Ast
-undefer(
-	Ast env,
-	Ast ast
-) {
-	if(ast_isIdentifier(ast)) {
-		ast = subeval(env, ast);
-	}
-	for(;
-		ast_isDeferred(ast);
-		ast = ast->m.rexpr
-	);
-	return ast;
-}
-
 //------------------------------------------------------------------------------
 
 static Ast

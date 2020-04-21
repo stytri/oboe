@@ -54,12 +54,6 @@ error_or(
 );
 
 extern Ast
-dereference(
-	Ast env,
-	Ast arg
-);
-
-extern Ast
 sequential_evaluation(
 	Ast  (*evaluator)(
 		Ast    env,

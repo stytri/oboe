@@ -91,20 +91,6 @@ error_or(
 }
 
 Ast
-dereference(
-	Ast env,
-	Ast arg
-) {
-	if(ast_isIdentifier(arg)) {
-		arg = subeval(env, arg);
-		if(ast_isReference(arg)) {
-			arg = arg->m.rexpr;
-		}
-	}
-	return arg;
-}
-
-Ast
 sequential_evaluation(
 	Ast  (*evaluator)(
 		Ast    env,
