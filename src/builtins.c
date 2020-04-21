@@ -1006,7 +1006,7 @@ evaluate_assignable(
 	sloc_t sloc,
 	Ast    expr
 ) {
-	return ast_isnotLiteral(expr) ? refeval(env, expr) : dup_ast(sloc, expr);
+	return ast_isCopyOnAssign(expr) ? dup_ast(sloc, refeval(env, expr)) : refeval(env, expr);
 }
 
 //------------------------------------------------------------------------------
