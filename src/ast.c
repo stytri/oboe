@@ -37,7 +37,7 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
-XMEM(struct ast, ZEN, (struct ast){ AST_Zen, 0, 0, {{ NULL }, { NULL }} });
+XMEM(struct ast, ZEN, (struct ast){ AST_Zen, ATTR_CopyOnAssign, 0, 0, {{ NULL }, { NULL }} });
 
 //------------------------------------------------------------------------------
 
@@ -207,7 +207,7 @@ static size_t high_gc_threshold = (MIN_GC_THRESHOLD / 3) * 2;
 typedef XMEM_STRUCT(struct ast, ast) xmem_ast;
 #define XMEM_AST(...)  (xmem_ast) { \
 	{ sizeof(xmem_ast), 0 }, \
-	{ AST_Zen, 0, 0, {{ NULL }, { NULL }} } \
+	{ AST_Void, 0, 0, 0, {{ NULL }, { NULL }} } \
 }
 static struct array ast_pool      = ARRAY();
 static Ast          ast_free_list = NULL;
@@ -436,12 +436,12 @@ new_ast(
 #	define ENUM(Name)      } break; case AST_##Name: {
 #	define NEW(...)        __VA_ARGS__;
 
-#	define INTEGER(S,N)    (S) ? makint((S), (N))    : va_arg(va, uint64_t)
-#	define FLOAT(S,N)      (S) ? makdbl((S), (N))    : va_arg(va, double)
-#	define CHARACTER(S,N)  (S) ? makchr((S), (N))    : va_arg(va, int)
-#	define STRING(S,N)     (S) ? makstr((S), (N), c) : add_leaf_to_gc(va_arg(va, String))
-#	define IDENTIFIER(S,N) (S) ? dupstr((S), (N))    : add_leaf_to_gc(va_arg(va, String))
-#	define OPERATOROF(S,N) (S) ? makopr((S), (N))    : va_arg(va, unsigned)
+#	define INTEGER(S,N)    (S) ? (ast->attr |= ATTR_CopyOnAssign, makint((S), (N))   ) : va_arg(va, uint64_t)
+#	define FLOAT(S,N)      (S) ? (ast->attr |= ATTR_CopyOnAssign, makdbl((S), (N))   ) : va_arg(va, double)
+#	define CHARACTER(S,N)  (S) ? (ast->attr |= ATTR_CopyOnAssign, makchr((S), (N))   ) : va_arg(va, int)
+#	define STRING(S,N)     (S) ? (ast->attr |= ATTR_CopyOnAssign, makstr((S), (N), c)) : add_leaf_to_gc(va_arg(va, String))
+#	define IDENTIFIER(S,N) (S) ? (                                dupstr((S), (N))   ) : add_leaf_to_gc(va_arg(va, String))
+#	define OPERATOROF(S,N) (S) ? (                                makopr((S), (N))   ) : va_arg(va, unsigned)
 
 #	include "oboe.enum"
 
@@ -467,6 +467,9 @@ dup_ast(
 		Ast dup = alloc_ast();
 
 		memcpy(dup, ast, sizeof(*ast));
+		if(ast_isRemoveCopyOnAssign(dup)) {
+			dup->attr &= ~ATTR_CopyOnAssign;
+		}
 		dup->sloc = sloc;
 
 		return add_branch_to_gc(dup);

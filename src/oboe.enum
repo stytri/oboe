@@ -120,9 +120,8 @@ ENUM(OpaqueDataReference)
 	GC(MARK(ast->m.lexpr))
 
 ENUM(OpaqueDataType)
-	NEW(odt_new(ast, va))
+	NEW(odt_new(ast, va); ast->attr |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign))
 	EVAL(RETURN(ast = odt_eval(ast)))
-	ASSIGN(ast = CLONE(ast))
 	DEL(odt_sweep(ast))
 	GC(odt_mark(ast))
 
@@ -153,9 +152,8 @@ ENUM(OperatorAlias)
 
 ENUM(Environment)
 	STR(ENVIRONMENT("[", ast, "]"))
-	NEW(ast->m.env = va_arg(va, Array); ast->m.rexpr = va_arg(va, Ast))
+	NEW(ast->m.env = va_arg(va, Array); ast->m.rexpr = va_arg(va, Ast); ast->attr |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign))
 	EVAL(RETURN())
-	ASSIGN(ast = CLONE(ast))
 	DEL(ENVIRONMENT(ast))
 	GC(ENVIRONMENT(ast); MARK(ast->m.rexpr))
 

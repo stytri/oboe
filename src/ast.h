@@ -44,9 +44,15 @@ typedef enum {
 	N_AST_Types
 } Type;
 
+typedef enum {
+	ATTR_CopyOnAssign       = 0x01,
+	ATTR_RetainCopyOnAssign = 0x02,
+	ATTR_BIT                = 2
+} Attr;
+
 enum { TYPE_MASK = BIT_MASK(N_AST_Types) };
 enum { TYPE_BIT  = BIT_COUNT(TYPE_MASK) };
-enum { QUAL_BIT  = (CHAR_BIT * sizeof(unsigned)) - TYPE_BIT };
+enum { QUAL_BIT  = (CHAR_BIT * sizeof(unsigned)) - TYPE_BIT - ATTR_BIT };
 
 typedef enum {
 #	define ENUM(Name)  ERR_##Name,
@@ -71,6 +77,7 @@ typedef Ast (*BuiltinOp)(
 
 struct ast {
 	Type      type : TYPE_BIT;
+	unsigned  attr : ATTR_BIT;
 	unsigned  qual : QUAL_BIT;
 	sloc_t    sloc;
 	struct {
@@ -203,6 +210,27 @@ ast_isReferenceType(
 	unsigned qual
 ) {
 	return ast_isOpaqueDataReference(ast) && (ast->qual == qual);
+}
+
+static inline bool
+ast_isCopyOnAssign(
+	Ast ast
+) {
+	return ast && (ast->attr & ATTR_CopyOnAssign);
+}
+
+static inline bool
+ast_isRetainCopyOnAssign(
+	Ast ast
+) {
+	return ast && (ast->attr & ATTR_RetainCopyOnAssign);
+}
+
+static inline bool
+ast_isRemoveCopyOnAssign(
+	Ast ast
+) {
+	return ast && (ast->attr & ATTR_CopyOnAssign) && !(ast->attr & ATTR_RetainCopyOnAssign);
 }
 
 //------------------------------------------------------------------------------

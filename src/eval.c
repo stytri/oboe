@@ -94,18 +94,16 @@ assign(
 	Ast    expr
 ) {
 	if(ast != expr) {
-		switch(ast_type(ast)) {
-		default: {
-#		define ENUM(Name)  } break; case AST_##Name: {
-#		define ASSIGN(...)    __VA_ARGS__;
-#		define CLONE(A)       dup_ast(sloc, (A))
-
-#		include "oboe.enum"
-
-#		undef CLONE
-		}}
+		if(ast_isCopyOnAssign(ast)) {
+			ast = new_ast(sloc, NULL, AST_Void);
+		}
 
 		memcpy(ast, expr, sizeof(*ast));
+		
+		if(ast_isRemoveCopyOnAssign(expr)) {
+			ast->attr = expr->attr & ~ATTR_CopyOnAssign;
+		}
+		ast->sloc = sloc;
 	}
 
 	return ast;
