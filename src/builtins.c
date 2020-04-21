@@ -1170,15 +1170,24 @@ builtin_assign(
 
 	if(ast_isnotZen(lexpr)) {
 		lexpr = subeval(env, lexpr);
-		rexpr = evaluate_assignable(env, sloc, rexpr);
+		rexpr = refeval(env, rexpr);
 
 		if(ast_isReference(lexpr)) {
-			for(lexpr = lexpr->m.rexpr;
-				ast_isReference(lexpr);
+			for(;
+				ast_isReference(lexpr->m.rexpr);
 				lexpr = lexpr->m.rexpr
 			);
-			if(ast_isnotZen(lexpr)) {
-				return assign(sloc, lexpr, rexpr);
+			if(ast_isReference(lexpr)) {
+				if(ast_isnotZen(lexpr->m.rexpr)) {
+					lexpr = lexpr->m.rexpr;
+					if(ast_isnotZen(lexpr)) {
+						return assign(sloc, lexpr, rexpr);
+					}
+				} else {
+					lexpr->m.rexpr = dup_ast(sloc, rexpr);
+					lexpr = lexpr->m.rexpr;
+					return lexpr;
+				}
 			}
 		}
 
