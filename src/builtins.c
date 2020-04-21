@@ -1001,7 +1001,7 @@ DOUBLE_BUILTINS
 //------------------------------------------------------------------------------
 
 static inline Ast
-dup_eval(
+evaluate_assignable(
 	Ast    env,
 	sloc_t sloc,
 	Ast    expr
@@ -1080,7 +1080,7 @@ builtin_tag(
 			rexpr
 		);
 	case AST_Identifier:
-		rexpr = dup_eval(env, sloc, rexpr);
+		rexpr = evaluate_assignable(env, sloc, rexpr);
 		addenv(env, sloc, lexpr, rexpr);
 		return rexpr;
 	case AST_String: // for OperatorAlias
@@ -1109,7 +1109,7 @@ builtin_array_push_back(
 ) {
 	if(ast_isTag(rexpr)) {
 		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
-			Ast def = dup_eval(env, sloc, rexpr->m.rexpr);
+			Ast def = evaluate_assignable(env, sloc, rexpr->m.rexpr);
 			addenv(lexpr, sloc, rexpr->m.lexpr, def);
 			return lexpr;
 		}
@@ -1136,7 +1136,7 @@ builtin_assign(
 	if(ast_isArray(lexpr)) {
 		Ast iexpr = eval(env, lexpr->m.rexpr);
 		lexpr     = eval(env, lexpr->m.lexpr);
-		rexpr     = dup_eval(env, sloc, rexpr);
+		rexpr     = evaluate_assignable(env, sloc, rexpr);
 
 		switch(TYPE(ast_type(lexpr), ast_type(iexpr))) {
 		case TYPE(AST_Environment, AST_Integer): {
@@ -1170,7 +1170,7 @@ builtin_assign(
 
 	if(ast_isnotZen(lexpr)) {
 		lexpr = subeval(env, lexpr);
-		rexpr = dup_eval(env, sloc, rexpr);
+		rexpr = evaluate_assignable(env, sloc, rexpr);
 
 		if(ast_isReference(lexpr)) {
 			for(lexpr = lexpr->m.rexpr;
