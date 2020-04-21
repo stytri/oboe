@@ -34,7 +34,7 @@ select(N): (
 );
 
 shuffle(a): (
-	(t:0, i:0, n:a@length; n > 0) ?* (
+	(t:, i:, n:a@length; n > 0) ?* (
 		i = select(n),
 		n--,
 		(n <> i) ? (
@@ -43,7 +43,7 @@ shuffle(a): (
 			a[i] = (=t)
 		)
 	),
-	
+
 	a
 );
 
