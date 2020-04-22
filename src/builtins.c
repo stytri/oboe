@@ -1217,9 +1217,6 @@ builtin_array(
 			return oboerr(sloc, ERR_InvalidOperand);
 		case TYPE(AST_Environment, AST_String):
 			rexpr = inenv(lexpr, rexpr);
-			if(ast_isReference(rexpr)) {
-				rexpr = rexpr->m.rexpr;
-			}
 			return rexpr;
 		case TYPE(AST_String, AST_Integer): {
 				char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
