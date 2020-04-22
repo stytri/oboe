@@ -1177,18 +1177,13 @@ builtin_assign(
 				ast_isReference(lexpr->m.rexpr);
 				lexpr = lexpr->m.rexpr
 			);
-			if(ast_isReference(lexpr)) {
-				if(ast_isnotZen(lexpr->m.rexpr)) {
-					lexpr = lexpr->m.rexpr;
-					if(ast_isnotZen(lexpr)) {
-						return assign(sloc, lexpr, rexpr);
-					}
-				} else {
-					lexpr->m.rexpr = dup_ast(sloc, rexpr);
-					lexpr = lexpr->m.rexpr;
-					return lexpr;
-				}
+			if(ast_isnotZen(lexpr->m.rexpr)) {
+				lexpr->m.rexpr = assign(sloc, lexpr->m.rexpr, rexpr);
+			} else {
+				lexpr->m.rexpr = dup_ast(sloc, rexpr);
 			}
+			lexpr = lexpr->m.rexpr;
+			return lexpr;
 		}
 
 		return oboerr(sloc, ERR_InvalidReferent);
