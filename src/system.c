@@ -124,7 +124,7 @@ initialise_errors(
 		char const *leme;
 		Error       err;
 	} builtinerr[] = {
-#	define ENUM(Name,...)  { "ERROR "#Name, ERR_##Name },
+#	define ENUM(Name,...)  { "ERROR_"#Name, ERR_##Name },
 #	include "oboerr.enum"
 	};
 	static size_t const n_builtinerr = sizeof(builtinerr) / sizeof(builtinerr[0]);
