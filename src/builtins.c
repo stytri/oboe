@@ -1114,6 +1114,7 @@ builtin_array_push_back(
 			return lexpr;
 		}
 	} else {
+		rexpr = evaluate_assignable(env, sloc, rexpr);
 		bool appended = array_push_back(lexpr->m.env, Ast, rexpr);
 		assert(appended);
 		return lexpr;
@@ -1136,13 +1137,13 @@ builtin_assign(
 	if(ast_isArray(lexpr)) {
 		Ast iexpr = eval(env, lexpr->m.rexpr);
 		lexpr     = eval(env, lexpr->m.lexpr);
-		rexpr     = evaluate_assignable(env, sloc, rexpr);
 
 		switch(TYPE(ast_type(lexpr), ast_type(iexpr))) {
 		case TYPE(AST_Environment, AST_Integer): {
 				size_t const length = array_length(lexpr->m.env);
 				size_t const index  = iexpr->m.ival;
 				if(index < length) {
+					rexpr = evaluate_assignable(env, sloc, rexpr);
 					array_at(lexpr->m.env, Ast, index) = rexpr;
 					return rexpr;
 				}
@@ -1152,6 +1153,7 @@ builtin_assign(
 			}
 			return oboerr(sloc, ERR_InvalidOperand);
 		case TYPE(AST_Environment, AST_String): {
+				rexpr   = evaluate_assignable(env, sloc, rexpr);
 				Ast def = inenv(lexpr, iexpr);
 				if(ast_isnotZen(def)) {
 					def->m.rexpr = rexpr;
