@@ -1,0 +1,43 @@
+# https://rosettacode.org/wiki/Lah_numbers
+
+"rosetta/libutil"@import;
+
+factorial(n:): (
+    return:1,
+    (; n > 0; n--) ?* (
+		return = return * n
+	)
+);
+ 
+lah(n:, k:): (
+	1 ?: (
+		(k == 1):
+			factorial(n);
+		(k == n):
+			1;
+		(k > n):
+			0;
+		(k < 1 || n < 1):
+			0;
+		((factorial(n) * factorial(n - 1))
+		/ (factorial(k) * factorial(k - 1))
+		/ factorial(n - k))
+	)
+);
+ 
+row:, i:;
+ 
+"Unsigned Lah numbers: L(n, k):"@println;
+"n/k"@print;
+(i = 0; i < 13; i++) ?* (
+	itos(11, i)@print
+);
+""@println;
+(row = 0; row < 13; row++) ?* (
+	itos(3, row)@print,
+	(l:, i = 0; i < row + 1; i++) ?* (
+		l = lah(row, i),
+		itos(11, l)@print
+	),
+	""@println
+);
