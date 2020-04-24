@@ -23,8 +23,9 @@ setup(): (
 	count: 0,
 	
 	(row:0; row < N; row++) ?* (
+		cells[row]=[],
 		(column:0; column < N; column++) ?* (
-			cells[row * N + column] = (=count),
+			cells[row][column] = (=count),
 			count++
 		)
 	),
@@ -41,11 +42,11 @@ update(move): (
 	c: dc[move](hole column),
 	
 	(r <> hole row || c <> hole column) ? (
-		cells[hole row * N + hole column] = cells[r * N + c],
+		cells[hole row][hole column] = cells[r][c],
 		
-		cells[r * N + c] = 0,
-		hole row         = r,
-		hole column      = c
+		cells[r][c] = 0,
+		hole row    = r,
+		hole column = c
 	)
 );
 
@@ -56,7 +57,7 @@ is_not_finished(): (
 		(column:0; return == 0 && column < N; column++) ?* (
 			count++,
 			
-			(cells[row * N + column] <> count) ? (
+			(cells[row][column] <> count) ? (
 				return = 1
 			)
 		)
@@ -69,8 +70,8 @@ show_cells(): (
 	``@println,
 	(row:0; row < N; row++) ?* (
 		(column:0; column < N; column++) ?* (
-			(cells[row * N + column]) ? (
-				(" : ", itos(2, cells[row * N + column]))@print
+			(cells[row][column]) ? (
+				(" : ", itos(2, cells[row][column]))@print
 			;
 				" :   "@print
 			)
