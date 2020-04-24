@@ -1,0 +1,13 @@
+# https://rosettacode.org/wiki/Jensen's_Device
+
+"rosetta/libutil"@import;
+
+sum(i, lo:, hi:, term) : (
+	return:0.0,
+	(i = (=lo); i <= hi; i++) ?* (
+		return = return + term
+	)
+);
+
+i:;
+sum(i, 1, 100, :(1.0/i))@println;
