@@ -179,7 +179,13 @@ The `!` operator is as above, except the condition is inverted.
 
 ##### selection
 
+either:
+
 _expression_ `?:` `(` (_case-expression_ `:` _case-operand_ `;`)+ _default-operand_?`)`
+
+or:
+
+ `?:` `(` (_case-expression_ `:` _case-operand_ `;`)+ _default-operand_?`)`
 
 ##### iteration
 
