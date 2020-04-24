@@ -10,7 +10,7 @@ factorial(n:): (
 );
  
 lah(n:, k:): (
-	1 ?: (
+	?: (
 		(k == 1):
 			factorial(n);
 		(k == n):

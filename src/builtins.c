@@ -384,33 +384,66 @@ builtin_case(
 		eval(env, lexpr->m.lexpr);
 	}
 
-	Ast sel, cond = eval(env, lexpr);
+	if(ast_isZen(lexpr)) {
+		Ast  sel;
+		bool cond;
 
-	for(rexpr = undefer(env, rexpr);
-		ast_isAssemblage(rexpr);
-		rexpr = rexpr->m.rexpr
-	) {
-		lexpr = rexpr->m.lexpr;
+		for(rexpr = undefer(env, rexpr);
+			ast_isAssemblage(rexpr);
+			rexpr = rexpr->m.rexpr
+		) {
+			lexpr = rexpr->m.lexpr;
 
-		if(ast_isTag(lexpr)) {
-			sel = eval(env, lexpr->m.lexpr);
-			if(are_equal(sel, cond)) {
-				return refeval(env, lexpr->m.rexpr);
+			if(ast_isTag(lexpr)) {
+				sel = eval(env, lexpr->m.lexpr);
+				cond = ast_toBool(sel);
+				if(cond) {
+					return refeval(env, lexpr->m.rexpr);
+				}
+				continue;
 			}
-			continue;
+
+			eval(env, lexpr);
 		}
 
-		eval(env, lexpr);
-	}
-
-	if(ast_isTag(rexpr)) {
-		sel = eval(env, rexpr->m.lexpr);
-		if(are_equal(sel, cond)) {
-			return refeval(env, rexpr->m.rexpr);
+		if(ast_isTag(rexpr)) {
+			sel = eval(env, rexpr->m.lexpr);
+			cond = ast_toBool(sel);
+			if(cond) {
+				return refeval(env, rexpr->m.rexpr);
+			}
+			return ZEN;
 		}
-		return ZEN;
-	}
+		
+	} else {
+		Ast sel, cond = eval(env, lexpr);
 
+		for(rexpr = undefer(env, rexpr);
+			ast_isAssemblage(rexpr);
+			rexpr = rexpr->m.rexpr
+		) {
+			lexpr = rexpr->m.lexpr;
+
+			if(ast_isTag(lexpr)) {
+				sel = eval(env, lexpr->m.lexpr);
+				if(are_equal(sel, cond)) {
+					return refeval(env, lexpr->m.rexpr);
+				}
+				continue;
+			}
+
+			eval(env, lexpr);
+		}
+
+		if(ast_isTag(rexpr)) {
+			sel = eval(env, rexpr->m.lexpr);
+			if(are_equal(sel, cond)) {
+				return refeval(env, rexpr->m.rexpr);
+			}
+			return ZEN;
+		}
+	}
+	
 	return refeval(env, rexpr);
 }
 
