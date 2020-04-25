@@ -11,17 +11,21 @@ max(a:,b:): (
 	(a > b) ? (a ; b)
 );
 
-itos(n, i): (
-	s:i@to_String,
+spad(n, s, c): (
 	(n > s@length) ? (
 		(-n < n) ? (
-			s((-n - s@length)` `)
+			s((-n - s@length)c)
 		;
-			((n - s@length)` `)s
+			((n - s@length)c)s
 		)
 	;
 		s
 	)
+);
+
+itos(n, i): (
+	s:i@to_String,
+	spad(n, s, ` `)
 );
 
 ndigits(i:0): (
