@@ -14,7 +14,11 @@ max(a:,b:): (
 itos(n, i): (
 	s:i@to_String,
 	(n > s@length) ? (
-		((n - s@length)` `)s
+		(-n < n) ? (
+			s((-n - s@length)` `)
+		;
+			((n - s@length)` `)s
+		)
 	;
 		s
 	)
