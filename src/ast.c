@@ -218,7 +218,7 @@ static inline void *
 add_leaf_to_gc(
 	void const *p
 ) {
-	return gc_leaf(p);
+	return gc_push(gc_leaf(p));
 }
 
 static inline void *
