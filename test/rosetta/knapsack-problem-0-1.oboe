@@ -1,0 +1,87 @@
+# https://rosettacode.org/wiki/Knapsack_problem/0-1
+
+"rosetta/libutil"@import;
+
+new_item(name, weight, value): (
+	[name:(=name), weight:(=weight), value:(=value)]
+);
+
+items:[
+	new_item("map",                      9,   150),
+	new_item("compass",                 13,    35),
+	new_item("water",                  153,   200),
+	new_item("sandwich",                50,   160),
+	new_item("glucose",                 15,    60),
+	new_item("tin",                     68,    45),
+	new_item("banana",                  27,    60),
+	new_item("apple",                   39,    40),
+	new_item("cheese",                  23,    30),
+	new_item("beer",                    52,    10),
+	new_item("suntan cream",            11,    70),
+	new_item("camera",                  32,    30),
+	new_item("T-shirt",                 24,    15),
+	new_item("trousers",                48,    10),
+	new_item("umbrella",                73,    40),
+	new_item("waterproof trousers",     42,    70),
+	new_item("waterproof overclothes",  43,    75),
+	new_item("note-case",               22,    80),
+	new_item("sunglasses",               7,    20),
+	new_item("towel",                   18,    12),
+	new_item("socks",                    4,    50),
+	new_item("book",                    30,    10),
+];
+N_items:items@length;
+
+max_name_width:0;
+(i:0; i < N_items; i++) ?* (
+	(max_name_width < items[i]name@length) ? (
+		max_name_width = items[i]name@length
+	)
+);
+
+knapsack(items, n:, w:): (
+	m:[calloc(w + 1)],
+	(i:1; i <= n; i++) ?* (
+        m[i] = calloc(w + 1),
+        (a:, b:, j:0; j <= w; j++) ?* (
+			(items[i - 1]weight > j) ? ((
+				m[i][j] = m[i - 1][j]
+			) ; (
+				a = m[i - 1][j],
+				b = m[i - 1][j - items[i - 1]weight] + items[i - 1]value,
+				m[i][j] = max(a, b)
+			))
+		)
+	),
+
+	s:calloc(n),
+	(i:n, j:w; i > 0; i--) ?* (
+		(m[i][j] > m[i - 1][j]) ? (
+			j = j - items[i - 1]weight,
+			s[i - 1] = 1
+		)
+	),
+	s
+);
+
+print(name, weight, value): (
+	@println(
+		spad(-max_name_width, name, ` `), ":",
+		itos(6, weight),
+		itos(6, value)
+	)
+);
+
+is_packed:knapsack(items, N_items, 400);
+
+total_weight:0;
+total_value:0;
+
+(i:0; i < N_items; i++) ?* (
+	is_packed[i] ? (
+		print(items[i]name, items[i]weight, items[i]value),
+		total_weight = total_weight + items[i]weight,
+		total_value = total_value + items[i]value
+	)
+);
+print("totals", total_weight, total_value);

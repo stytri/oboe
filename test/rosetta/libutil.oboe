@@ -59,3 +59,12 @@ getcmd(): (
 	"> "@print, @flush(),
 	@getln()
 );
+
+calloc(n:): (
+	m:[],
+	(i:0; i < n; i++) ?* (
+		m[i] = 0
+	),
+	m
+);
+
