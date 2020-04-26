@@ -1,0 +1,83 @@
+# https://rosettacode.org/wiki/Determine_if_a_string_has_all_unique_characters
+
+"rosetta/libutil"@import;
+
+pos:[];
+
+length_max:6;
+length_digits:6;
+
+no_yes:["no", "yes"];
+
+print(s, len, uniq, diff, hex): (
+	@print(
+		spad(-length_max, s, ` `), " | ",
+		itos(-length_digits, len), " | ",
+		spad(-6, uniq, ` `), " | ",
+		spad(-8, diff, ` `), " | "
+	),
+	(n:pos[diff]@length, i:0; 0 < n && i < n; i++) ?* (
+		itos(-3, pos[diff][i])@print
+	),
+	``@println
+);
+
+is_unique(c:, i:): (
+	n:pos[c]@length,
+	n ! (pos[c] = []),
+	pos[c][n] = i,
+	(n > 0) ? (0 ; 1)
+);
+
+process(s): (
+	pos = [],
+	len:s@length,
+	unique:1,
+	diff1:"",
+
+	(cs:"", uniq:0, i:0; i < len; i++) ?* (
+		cs = s[i]@to_String,
+		uniq = is_unique(cs, i),
+		(!uniq && unique) ? (
+			unique = 0,
+			diff1 = cs
+		)
+	),
+
+	print(s, len, no_yes[unique], diff1)
+);
+
+main(argc, argv): (
+	(len:, nd:, i:1; i < argc; i++) ?* (
+		len = argv[i]@length,
+		nd = ndigits(len),
+		(length_digits < nd) ? (
+			length_digits = nd
+		),
+		(length_max < len) ? (
+			length_max = len
+		)
+	);
+
+	@println(
+		spad(-length_max, "string", ` `), " | ",
+		spad(-length_digits, "length", ` `), " | ",
+		spad(-6, "unique", ` `), " | ",
+		spad(-8, "1st diff", ` `), " | "
+		"positions"
+	),
+	@println(
+		spad(-length_max, "", `-`), "-|-",
+		spad(-length_digits, "", `-`), "-|-",
+		spad(-6, "", `-`), "-|-",
+		spad(-8, "", `-`), "-|-"
+		"---------"
+	),
+
+	(i:1; i < argc; i++) ?* (
+		process(argv[i])
+	);
+);
+
+main(@argc, @argv);
+
