@@ -79,7 +79,8 @@ marray_element_pointer(
 	) : ( \
 		true \
 	)) ? ( \
-		marray_at((Arr),Type,(Arr)->length++) = (Val), \
+		marray_at((Arr),Type,(Arr)->length) = (Val), \
+		(Arr)->length++, \
 		true \
 	) : ( \
 		false \
