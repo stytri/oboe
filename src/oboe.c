@@ -108,7 +108,7 @@ main(
 		"s:'hello world!\\n';\n"
 		,
 #	elif 0
-		"test.oboe"
+		"test.oboe",
 #	endif
 		NULL
 	};
