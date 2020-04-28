@@ -58,7 +58,7 @@ marray_element_pointer(
 )
 
 #define marray_at(Arr,Type,Index)  ( \
-	((Type *)marray_element_pointer((Array)(Arr), sizeof(Type), (Index)))[Index] \
+	*marray_ptr(Arr, Type, Index) \
 )
 
 #define marray_create_back(Arr,Type)  ( \
