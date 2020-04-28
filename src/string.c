@@ -50,7 +50,6 @@ static size_t const  sizes[] = {
 	(STRING_MIN * 8 * 6),
 	(STRING_MIN * 8 * 7),
 	(STRING_MIN * 8 * 8 * 1),
-	(STRING_MIN * 8 * 8 * 1),
 	(STRING_MIN * 8 * 8 * 2),
 	(STRING_MIN * 8 * 8 * 3),
 	(STRING_MIN * 8 * 8 * 4),
