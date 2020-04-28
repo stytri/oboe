@@ -310,6 +310,7 @@ builtin_to_String(
 ) {
 	arg = eval(env, arg);
 	String s = tostr(arg, false);
+	assert(s != NULL);
 	return new_ast(sloc, NULL, AST_String, s);
 }
 
@@ -321,6 +322,7 @@ builtin_to_Literal(
 ) {
 	arg = eval(env, arg);
 	String s = tostr(arg, true);
+	assert(s != NULL);
 	return new_ast(sloc, NULL, AST_String, s);
 }
 
