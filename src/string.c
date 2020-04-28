@@ -28,21 +28,105 @@ SOFTWARE.
 
 struct string {
 	size_t len;
+	size_t cap;
 	char   cs[];
 };
 
 //------------------------------------------------------------------------------
 
-static inline size_t
-rounded_length(
-	size_t len
+static size_t const  sizes[] = {
+	(STRING_MIN * 1),
+	(STRING_MIN * 2),
+	(STRING_MIN * 3),
+	(STRING_MIN * 4),
+	(STRING_MIN * 5),
+	(STRING_MIN * 6),
+	(STRING_MIN * 7),
+	(STRING_MIN * 8 * 1),
+	(STRING_MIN * 8 * 2),
+	(STRING_MIN * 8 * 3),
+	(STRING_MIN * 8 * 4),
+	(STRING_MIN * 8 * 5),
+	(STRING_MIN * 8 * 6),
+	(STRING_MIN * 8 * 7),
+	(STRING_MIN * 8 * 8 * 1),
+	(STRING_MIN * 8 * 8 * 1),
+	(STRING_MIN * 8 * 8 * 2),
+	(STRING_MIN * 8 * 8 * 3),
+	(STRING_MIN * 8 * 8 * 4),
+	(STRING_MIN * 8 * 8 * 5),
+	(STRING_MIN * 8 * 8 * 6),
+	(STRING_MIN * 8 * 8 * 7),
+	(STRING_MIN * 8 * 8 * 8 *  1),
+	(STRING_MIN * 8 * 8 * 8 *  2),
+	(STRING_MIN * 8 * 8 * 8 *  3),
+	(STRING_MIN * 8 * 8 * 8 *  4),
+	(STRING_MIN * 8 * 8 * 8 *  5),
+	(STRING_MIN * 8 * 8 * 8 *  6),
+	(STRING_MIN * 8 * 8 * 8 *  7),
+	(STRING_MIN * 8 * 8 * 8 *  8),
+	(STRING_MIN * 8 * 8 * 8 *  9),
+	(STRING_MIN * 8 * 8 * 8 * 10),
+	(STRING_MIN * 8 * 8 * 8 * 11),
+	(STRING_MIN * 8 * 8 * 8 * 12),
+	(STRING_MIN * 8 * 8 * 8 * 13),
+	(STRING_MIN * 8 * 8 * 8 * 14),
+	(STRING_MIN * 8 * 8 * 8 * 15),
+	(STRING_MIN * 8 * 8 * 8 * 16 *  1),
+	(STRING_MIN * 8 * 8 * 8 * 16 *  2),
+	(STRING_MIN * 8 * 8 * 8 * 16 *  3),
+	(STRING_MIN * 8 * 8 * 8 * 16 *  4),
+	(STRING_MIN * 8 * 8 * 8 * 16 *  5),
+	(STRING_MIN * 8 * 8 * 8 * 16 *  6),
+	(STRING_MIN * 8 * 8 * 8 * 16 *  7),
+	(STRING_MIN * 8 * 8 * 8 * 16 *  8),
+	(STRING_MIN * 8 * 8 * 8 * 16 *  9),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 10),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 11),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 12),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 13),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 14),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 15),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  1),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  2),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  3),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  4),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  5),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  6),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  7),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  8),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  9),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 10),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 11),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 12),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 13),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 14),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 15),
+	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 16),
+};
+static size_t const n_sizes = sizeof(sizes) / sizeof(sizes[0]);
+
+static size_t
+string_allocation_size(
+	size_t siz
 ) {
-	return (len + (STRING_MIN - 1)) & ~(STRING_MIN - 1);
+	for(size_t i = 0; i < n_sizes; ++i) {
+		if(siz < sizes[i]) {
+			return sizes[i];
+		}
+	}
+
+	siz = capacity_of(siz + 1);
+	if(siz < STRING_MAX) {
+		return siz;
+	}
+
+	return STRING_MAX;
 }
 
 static inline char const *
 char_pointer(
-	String s
+	StringConst s
 ) {
 	return s ? s->cs : "";
 }
@@ -61,15 +145,18 @@ expand_string(
 	size_t n
 ) {
 	size_t o = s->len;
-	size_t m = capacity_of(o);
+	size_t m = s->cap;
 
 	if(n > (m - o)) {
 		if((n > (STRING_MAX - o)) || (m >= STRING_MAX)) {
 			return NULL;
 		}
 
-		n = capacity_of(o + n);
-		s = xrealloc(s, sizeof(*s) + n + 1);
+		size_t z = string_allocation_size(o + n);
+		s = xrealloc(s, sizeof(*s) + z);
+		if(s) {
+			s->cap = z - 1;
+		}
 	}
 
 	return s;
@@ -79,22 +166,22 @@ expand_string(
 
 inline size_t
 StringLength(
-	String s
+	StringConst s
 ) {
 	return s ? s->len : 0;
 }
 
 inline size_t
 StringCapacity(
-	String s
+	StringConst s
 ) {
-	return capacity_of(StringLength(s));
+	return s ? s->cap : 0;
 }
 
 int
 StringGetChar(
-	String s,
-	size_t i
+	StringConst s,
+	size_t      i
 ) {
 	size_t n = StringLength(s);
 
@@ -105,11 +192,12 @@ StringGetChar(
 	return -1;
 }
 
-String
+StringConst
 NullString(
 	void
 ) {
-	static String nulls = NULL;
+	static StringConst nulls = NULL;
+
 	if(!nulls) {
 		nulls = StringCreate();
 	}
@@ -121,10 +209,12 @@ String
 StringCreate(
 	void
 ) {
-	String s = xmalloc(sizeof(*s) + 1);
+	size_t z = string_allocation_size(0);
+	String s = xmalloc(sizeof(*s) + z);
 
 	if(s) {
 		s->len = 0;
+		s->cap = z - 1;
 		s->cs[0] = '\0';
 	}
 
@@ -137,11 +227,13 @@ StringReserve(
 ) {
 	String s = NULL;
 
-	if(n < (SIZE_MAX - sizeof(*s))) {
-		s = xmalloc(sizeof(*s) + n + 1);
+	if(n < STRING_MAX) {
+		size_t z = string_allocation_size(n);
+		s = xmalloc(sizeof(*s) + z);
 
 		if(s) {
 			s->len = n;
+			s->cap = z - 1;
 			s->cs[n] = '\0';
 		}
 	}
@@ -157,19 +249,24 @@ StringBuild(
 	void  *context,
 	size_t reserve
 ) {
-	size_t siz = rounded_length(reserve ? reserve : 1);
-	String s   = StringReserve(siz);
-	if(!s) {
-		return s;
-	}
+	String s = NULL;
 
-	s->len = 0;
+	if(reserve < STRING_MAX) {
+		size_t z = string_allocation_size(reserve);
+		s = xmalloc(sizeof(*s) + z);
+		if(!s) {
+			return s;
+		}
+
+		s->len = 0;
+		s->cap = z - 1;
+	}
 
 	for(int c = get(context);
 		c > 0;
 		c = get(context)
 	) {
-		if(s->len == siz) {
+		if(s->len == s->cap) {
 			String t = s;
 			s = expand_string(s, s->len);
 			if(!s) {
@@ -183,12 +280,14 @@ StringBuild(
 
 	s->cs[s->len] = '\0';
 
-	if(s->len != siz) {
+	size_t z = string_allocation_size(s->len);
+	if(s->cap >= z) {
 		String t = s;
-		s = xrealloc(s, sizeof(*s) + s->len + 1);
+		s = xrealloc(s, sizeof(*s) + z);
 		if(!s) {
 			return t;
 		}
+		s->cap = z - 1;
 	}
 
 	return s;
@@ -203,7 +302,7 @@ StringDelete(
 
 String
 DuplicateString(
-	String s
+	StringConst s
 ) {
 	String t = StringReserve(StringLength(s));
 	if(s && t) {
@@ -215,8 +314,8 @@ DuplicateString(
 
 String
 RepeatedString(
-	String s,
-	size_t n
+	StringConst s,
+	size_t      n
 ) {
 	size_t len = StringLength(s);
 	if((n > 0)
@@ -292,12 +391,14 @@ CharLiteralToString(
 ) {
 	n = char_length(cs, n);
 
-	String s = xmalloc(sizeof(*s) + n + 1);
+	size_t z = string_allocation_size(n);
+	String s = xmalloc(sizeof(*s) + z);
 
 	if(s) {
 		memcpy(s->cs, cs, n);
-		s->cs[n] = '\0';
 		s->len = n;
+		s->cap = z - 1;
+		s->cs[n] = '\0';
 	}
 
 	return s;
@@ -312,7 +413,8 @@ CharLiteralsToString(
 ) {
 	size_t n = n1 + n2;
 
-	String s = xmalloc(sizeof(*s) + n + 1);
+	size_t z = string_allocation_size(n);
+	String s = xmalloc(sizeof(*s) + z);
 
 	if(s) {
 		if(n1 > 0) {
@@ -321,8 +423,9 @@ CharLiteralsToString(
 		if(n2 > 0) {
 			memcpy(s->cs+n1, cs2, n2);
 		}
-		s->cs[n] = '\0';
 		s->len = n;
+		s->cap = z - 1;
+		s->cs[n] = '\0';
 	}
 
 	return s;
@@ -334,14 +437,15 @@ StringAppendChar(
 	int    c
 ) {
 	if(t && (c > 0)) {
-		if(is_at_capacity(t->len)) {
+		if(t->len == t->cap) {
 			t = expand_string(t, 1);
+			if(!t) {
+				return t;
+			}
 		}
 
-		if(t) {
-			t->cs[t->len++] = c;
-			t->cs[t->len]   = '\0';
-		}
+		t->cs[t->len++] = c;
+		t->cs[t->len]   = '\0';
 	}
 
 	return t;
@@ -360,7 +464,6 @@ StringAppendCharLiteral(
 			memcpy(t->cs + t->len, cs, n);
 			t->len       += n;
 			t->cs[t->len] = '\0';
-
 		}
 	}
 
@@ -369,26 +472,29 @@ StringAppendCharLiteral(
 
 String
 StringAppend(
-	String t,
-	String s
+	String      t,
+	StringConst s
 ) {
 	return StringAppendCharLiteral(t, char_pointer(s), StringLength(s));
 }
 
 String
 StringConcatenate(
-	String s1,
-	String s2
+	StringConst s1,
+	StringConst s2
 ) {
 	size_t n1 = StringLength(s1);
 	size_t n2 = StringLength(s2);
 	size_t n  = n1 + n2;
-	String s  = xmalloc(sizeof(*s) + n + 1);
+	size_t z  = string_allocation_size(n);
+	String s  = xmalloc(sizeof(*s) + z);
 
 	if(s) {
 		memcpy(s->cs, char_pointer(s1), n1);
 		memcpy(s->cs + n1, char_pointer(s2), n2);
 		s->len = n;
+		s->cap = z - 1;
+		s->cs[n] = '\0';
 	}
 
 	return s;
@@ -396,16 +502,16 @@ StringConcatenate(
 
 String
 StringPrefix(
-	String s,
-	size_t n
+	StringConst s,
+	size_t      n
 ) {
 	return SubString(s, 0, n);
 }
 
 String
 StringSuffix(
-	String s,
-	size_t n
+	StringConst s,
+	size_t      n
 ) {
 	size_t sn = StringLength(s);
 	if(n > sn) {
@@ -416,9 +522,9 @@ StringSuffix(
 
 String
 SubString(
-	String s,
-	size_t o,
-	size_t n
+	StringConst s,
+	size_t      o,
+	size_t      n
 ) {
 	size_t sn = StringLength(s);
 	if((sn >= n) && ((sn - n) >= o)) {
@@ -430,8 +536,8 @@ SubString(
 
 char const *
 StringToCharLiteral(
-	String  s,
-	size_t *n
+	StringConst s,
+	size_t     *n
 ) {
 	if(n) {
 		*n = StringLength(s);
@@ -441,7 +547,7 @@ StringToCharLiteral(
 
 int
 StringEqualCharLiteral(
-	String      s,
+	StringConst s,
 	char const *cs,
 	size_t      n
 ) {
@@ -455,8 +561,8 @@ StringEqualCharLiteral(
 
 int
 StringEqual(
-	String s1,
-	String s2
+	StringConst s1,
+	StringConst s2
 ) {
 	size_t n = StringLength(s1);
 	if(n == StringLength(s2)) {
@@ -468,14 +574,14 @@ StringEqual(
 
 int
 StringCompare(
-	String s1,
-	String s2
+	StringConst s1,
+	StringConst s2
 ) {
 	size_t      n1, n2;
 	char const *cs1 = StringToCharLiteral(s1, &n1);
 	char const *cs2 = StringToCharLiteral(s2, &n2);
-	if(n1 < n2) {
 
+	if(n1 < n2) {
 		int r = strncmp(cs1, cs2, n1);
 		if(r == 0) {
 			return -1;

@@ -35,7 +35,8 @@ extern "C" {
 
 //------------------------------------------------------------------------------
 
-typedef struct string *String;
+typedef struct string       *String;
+typedef struct string const *StringConst;
 
 enum { STRING_MAX = BIT_ROUND(XMEM_MAX/2) };
 enum { STRING_MIN = XMEM_MIN };
@@ -44,21 +45,21 @@ enum { STRING_MIN = XMEM_MIN };
 
 extern size_t
 StringLength(
-	String s
+	StringConst s
 );
 
 extern size_t
 StringCapacity(
-	String s
+	StringConst s
 );
 
 extern int
 StringGetChar(
-	String s,
-	size_t i
+	StringConst s,
+	size_t      i
 );
 
-extern String
+extern StringConst
 NullString(
 	void
 );
@@ -89,12 +90,12 @@ StringDelete(
 
 extern String
 DuplicateString(
-	String s
+	StringConst s
 );
 
 extern String
 RepeatedString(
-	String s,
+	StringConst s,
 	size_t n
 );
 
@@ -144,50 +145,50 @@ StringAppendCharLiteral(
 
 extern String
 StringAppend(
-	String t,
-	String s
+	String      t,
+	StringConst s
 );
 
 extern String
 StringConcatenate(
-	String s1,
-	String s2
+	StringConst s1,
+	StringConst s2
 );
 
 extern String
 StringPrefix(
-	String s,
-	size_t n
+	StringConst s,
+	size_t      n
 );
 
 extern String
 StringSuffix(
-	String s,
-	size_t n
+	StringConst s,
+	size_t      n
 );
 
 extern String
 SubString(
-	String s,
-	size_t o,
-	size_t n
+	StringConst s,
+	size_t      o,
+	size_t      n
 );
 
 extern char const *
 StringToCharLiteral(
-	String  s,
-	size_t *n
+	StringConst s,
+	size_t     *n
 );
 
 extern int
 StringEqualCharLiteral(
-	String      s,
+	StringConst s,
 	char const *cs,
 	size_t      n
 );
 static inline int
 StringNotEqualCharLiteral(
-	String      s,
+	StringConst s,
 	char const *cs,
 	size_t      n
 ) {
@@ -196,21 +197,21 @@ StringNotEqualCharLiteral(
 
 extern int
 StringEqual(
-	String s1,
-	String s2
+	StringConst s1,
+	StringConst s2
 );
 static inline int
 StringNotEqual(
-	String s1,
-	String s2
+	StringConst s1,
+	StringConst s2
 ) {
 	return !StringEqual(s1, s2);
 }
 
 extern int
 StringCompare(
-	String s1,
-	String s2
+	StringConst s1,
+	StringConst s2
 );
 
 //------------------------------------------------------------------------------

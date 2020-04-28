@@ -180,22 +180,22 @@ typedef double (*FloatOp)(double, double);
 		__VA_ARGS__; \
 	}
 
-typedef String (*StringOp)(String, String);
+typedef String (*StringOp)(StringConst, StringConst);
 #define STRINGOP(Name,...) \
 	String \
 	string_##Name( \
-		String lval, \
-		String rval  \
+		StringConst lval, \
+		StringConst rval  \
 	) { \
 		__VA_ARGS__; \
 	}
 
-typedef String (*StrIntOp)(String, uint64_t);
+typedef String (*StrIntOp)(StringConst, uint64_t);
 #define STRINTOP(Name,...) \
 	String \
 	string_##Name( \
-		String   lval, \
-		uint64_t rval  \
+		StringConst lval, \
+		uint64_t    rval  \
 	) { \
 		__VA_ARGS__; \
 	}
@@ -220,12 +220,12 @@ typedef uint64_t (*FloatCmp)(double, double);
 		__VA_ARGS__; \
 	}
 
-typedef uint64_t (*StringCmp)(String, String);
+typedef uint64_t (*StringCmp)(StringConst, StringConst);
 #define STRINGCMP(Name,...) \
 	uint64_t \
 	string_##Name( \
-		String lval, \
-		String rval  \
+		StringConst lval, \
+		StringConst rval  \
 	) { \
 		__VA_ARGS__; \
 	}
@@ -414,7 +414,7 @@ builtin_case(
 			}
 			return ZEN;
 		}
-		
+
 	} else {
 		Ast sel, cond = eval(env, lexpr);
 
@@ -443,7 +443,7 @@ builtin_case(
 			return ZEN;
 		}
 	}
-	
+
 	return refeval(env, rexpr);
 }
 
