@@ -122,15 +122,15 @@ gc_mark(
 ) {
 	uintptr_t *up = xmemheader(p);
 
-	if((*up & MARK_MASK) != gc_tag) {
+	if(up && ((*up & MARK_MASK) != gc_tag)) {
 		*up ^= MARK_MASK;
 
 		if((*up & LEAF_FLAG) == 0) {
 			mark(p);
 		}
-	}
 
-	++gc_stats.marked;
+		++gc_stats.marked;
+	}
 
 	return;
 }
@@ -141,7 +141,7 @@ gc_leaf(
 ) {
 	uintptr_t *up = xmemheader(p);
 
-	if(!*up) {
+	if(up && !*up) {
 		*up = gc_list | LEAF_FLAG | gc_tag;
 
 		gc_list = (uintptr_t)p;
@@ -159,7 +159,7 @@ gc_branch(
 ) {
 	uintptr_t *up = xmemheader(p);
 
-	if(!*up) {
+	if(up && !*up) {
 		*up = gc_list | gc_tag;
 
 		gc_list = (uintptr_t)p;
@@ -177,7 +177,8 @@ gc_remove(
 ) {
 	uintptr_t *up = xmemheader(p);
 
-	if(((*up & ~(uintptr_t)TAG_BITS) != 0)
+	if(up
+		&& ((*up & ~(uintptr_t)TAG_BITS) != 0)
 		&& ((*up ^ ~(uintptr_t)TAG_BITS) != 0)
 	) {
 		*up = 0;
@@ -195,14 +196,14 @@ gc_is_leaf(
 ) {
 	uintptr_t const *up = xmemheader(p);
 
-	return (*up & LEAF_FLAG) != 0;
+	return up && ((*up & LEAF_FLAG) != 0);
 }
 
 inline void *
 gc_push(
 	void const *p
 ) {
-	return array_push_back(&gc_stack, void const *, p) ? (
+	return p && array_push_back(&gc_stack, void const *, p) ? (
 		(void *)p
 	) : (
 		NULL
