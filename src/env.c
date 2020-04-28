@@ -67,8 +67,6 @@ new_env(
 		env = &xenv->data;
 	}
 
-	*xmemheader(env) = 1;
-
 	Ast ast = new_ast(sloc, NULL, AST_Environment, env, outer);
 
 	env_stats.total++;
@@ -88,9 +86,18 @@ dup_env(
 		dup->m.rexpr = outer;
 	}
 
-	++*xmemheader(dup->m.env);
-
 	return dup;
+}
+
+void
+env_dup(
+	Ast ast
+) {
+	Array env = ast->m.env;
+
+	if(env) {
+		++*xmemheader(env);
+	}
 }
 
 void

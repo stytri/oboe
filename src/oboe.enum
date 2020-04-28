@@ -31,6 +31,9 @@ SOFTWARE.
 #ifndef NEW
 #	define NEW(...)
 #endif
+#ifndef DUP
+#	define DUP(...)
+#endif
 #ifndef EVAL
 #	define EVAL(...)
 #endif
@@ -152,10 +155,11 @@ ENUM(OperatorAlias)
 
 ENUM(Environment)
 	STR(ENVIRONMENT("[", ast, "]"))
-	NEW(ast->m.env = va_arg(va, Array); ast->m.rexpr = va_arg(va, Ast); ast->attr |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign))
+	NEW(ENVIRONMENT(); ast->m.rexpr = va_arg(va, Ast); ast->attr |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign))
 	EVAL(RETURN())
-	DEL(ENVIRONMENT(ast))
-	GC(ENVIRONMENT(ast); MARK(ast->m.rexpr))
+	DUP(ENVIRONMENT())
+	DEL(ENVIRONMENT())
+	GC(ENVIRONMENT(); MARK(ast->m.rexpr))
 
 ENUM(Error)
 	STR(ERRORMESSAGE("#(ERROR: ", ast, ")"))
@@ -167,6 +171,7 @@ ENUM(Error)
 #undef ENUM
 #undef STR
 #undef NEW
+#undef DUP
 #undef EVAL
 #undef ASSIGN
 #undef DEL

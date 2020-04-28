@@ -243,11 +243,11 @@ ast_gc_mark(
 
 	switch(ast->type) {
 	default: {
-#	define ENUM(Name)      } break; case AST_##Name: {
-#	define GC(...)         __VA_ARGS__;
+#	define ENUM(Name)       } break; case AST_##Name: {
+#	define GC(...)          __VA_ARGS__;
 
-#	define MARK(P)         mrkptr(P)
-#	define ENVIRONMENT(E)  mrkenv((E)->m.env)
+#	define MARK(P)          mrkptr(P)
+#	define ENVIRONMENT(...) mrkenv(ast->m.env)
 
 #	include "oboe.enum"
 
@@ -271,10 +271,10 @@ ast_gc_sweep(
 
 	switch(ast->type) {
 	default: {
-#	define ENUM(Name)      } break; case AST_##Name: {
-#	define DEL(...)        __VA_ARGS__;
+#	define ENUM(Name)       } break; case AST_##Name: {
+#	define DEL(...)         __VA_ARGS__;
 
-#	define ENVIRONMENT(E)  del_env(E)
+#	define ENVIRONMENT(...) del_env(ast)
 
 #	include "oboe.enum"
 
@@ -434,15 +434,16 @@ new_ast(
 
 	switch(type) {
 	default: {
-#	define ENUM(Name)      } break; case AST_##Name: {
-#	define NEW(...)        __VA_ARGS__;
+#	define ENUM(Name)       } break; case AST_##Name: {
+#	define NEW(...)         __VA_ARGS__;
 
-#	define INTEGER(S,N)    (S) ? (ast->attr |= ATTR_CopyOnAssign, makint((S), (N))   ) : va_arg(va, uint64_t)
-#	define FLOAT(S,N)      (S) ? (ast->attr |= ATTR_CopyOnAssign, makdbl((S), (N))   ) : va_arg(va, double)
-#	define CHARACTER(S,N)  (S) ? (ast->attr |= ATTR_CopyOnAssign, makchr((S), (N))   ) : va_arg(va, int)
-#	define STRING(S,N)     (S) ? (ast->attr |= ATTR_CopyOnAssign, makstr((S), (N), c)) : add_leaf_to_gc(va_arg(va, String))
-#	define IDENTIFIER(S,N) (S) ? (                                dupstr((S), (N))   ) : add_leaf_to_gc(va_arg(va, String))
-#	define OPERATOROF(S,N) (S) ? (                                makopr((S), (N))   ) : va_arg(va, unsigned)
+#	define INTEGER(S,N)     (S) ? (ast->attr |= ATTR_CopyOnAssign, makint((S), (N))   ) : va_arg(va, uint64_t)
+#	define FLOAT(S,N)       (S) ? (ast->attr |= ATTR_CopyOnAssign, makdbl((S), (N))   ) : va_arg(va, double)
+#	define CHARACTER(S,N)   (S) ? (ast->attr |= ATTR_CopyOnAssign, makchr((S), (N))   ) : va_arg(va, int)
+#	define STRING(S,N)      (S) ? (ast->attr |= ATTR_CopyOnAssign, makstr((S), (N), c)) : add_leaf_to_gc(va_arg(va, String))
+#	define IDENTIFIER(S,N)  (S) ? (                                dupstr((S), (N))   ) : add_leaf_to_gc(va_arg(va, String))
+#	define OPERATOROF(S,N)  (S) ? (                                makopr((S), (N))   ) : va_arg(va, unsigned)
+#	define ENVIRONMENT(...)        ast->m.env = va_arg(va, Array); env_dup(ast)
 
 #	include "oboe.enum"
 
@@ -452,6 +453,7 @@ new_ast(
 #	undef STRING
 #	undef IDENTIFIER
 #	undef OPERATOROF
+#	undef ENVIRONMENT
 	}}
 
 	va_end(va);
@@ -468,10 +470,23 @@ dup_ast(
 		Ast dup = alloc_ast();
 
 		memcpy(dup, ast, sizeof(*ast));
+
 		if(ast_isRemoveCopyOnAssign(dup)) {
 			dup->attr &= ~ATTR_CopyOnAssign;
 		}
 		dup->sloc = sloc;
+
+		switch(ast->type) {
+		default: {
+#		define ENUM(Name)       } break; case AST_##Name: {
+#		define DUP(...)         __VA_ARGS__;
+
+#		define ENVIRONMENT(...) env_dup(ast);
+
+#		include "oboe.enum"
+
+#		undef ENVIRONMENT
+		}}
 
 		return add_branch_to_gc(dup);
 	}
