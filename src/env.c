@@ -38,6 +38,7 @@ struct env_stats env_stats;
 
 //------------------------------------------------------------------------------
 
+#ifndef NPOOL
 typedef XMEM_STRUCT(struct array, env) xmem_env;
 #define XMEM_ENV(...)  (xmem_env) { \
 	{ sizeof(xmem_env), 0 }, \
@@ -45,6 +46,7 @@ typedef XMEM_STRUCT(struct array, env) xmem_env;
 }
 static struct array env_pool      = ARRAY();
 static Array        env_free_list = NULL;
+#endif//ndef NPOOL
 
 //------------------------------------------------------------------------------
 
@@ -77,6 +79,7 @@ new_env(
 ) {
 	Array env;
 
+#ifndef NPOOL
 	if(env_free_list != NULL) {
 		env           = env_free_list;
 		env_free_list = (Array)env->map;
@@ -88,6 +91,11 @@ new_env(
 		*xenv = XMEM_ENV();
 		env = &xenv->data;
 	}
+#else//ifndef NPOOL
+	env = xmalloc(sizeof(*env));
+	assert(env != NULL);
+	*env = ARRAY();
+#endif//ndef NPOOL
 
 	Ast ast = new_ast(sloc, NULL, AST_Environment, env, outer);
 
@@ -128,8 +136,12 @@ del_env(
 		array_free(env);
 
 		memset(env, 0, sizeof(*env));
+#ifndef NPOOL
 		env->map      = (uintptr_t)env_free_list;
 		env_free_list = env;
+#else//ifndef NPOOL
+		xfree(env);
+#endif//ndef NPOOL
 
 		env_stats.dead++;
 		env_stats.live--;

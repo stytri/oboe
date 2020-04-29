@@ -204,6 +204,7 @@ static size_t gc_threshold      =  MIN_GC_THRESHOLD;
 static size_t low_gc_threshold  =  MIN_GC_THRESHOLD / 3;
 static size_t high_gc_threshold = (MIN_GC_THRESHOLD / 3) * 2;
 
+#ifndef NPOOL
 typedef XMEM_STRUCT(struct ast, ast) xmem_ast;
 #define XMEM_AST(...)  (xmem_ast) { \
 	{ sizeof(xmem_ast), 0 }, \
@@ -211,6 +212,7 @@ typedef XMEM_STRUCT(struct ast, ast) xmem_ast;
 }
 static struct array ast_pool      = ARRAY();
 static Ast          ast_free_list = NULL;
+#endif//ndef NPOOL
 
 //------------------------------------------------------------------------------
 
@@ -282,9 +284,12 @@ ast_gc_sweep(
 	}}
 
 	memset(ast, 0, sizeof(*ast));
-	ast->m.lexpr    = ast_free_list;
+#ifndef NPOOL
+	ast->m.lexpr  = ast_free_list;
 	ast_free_list = ast;
-
+#else//ifndef NPOOL
+	xfree(ast);
+#endif//ndef NPOOL
 	return;
 }
 
@@ -318,6 +323,7 @@ static Ast
 alloc_ast(
 	void
 ) {
+#ifndef NPOOL
 	if((ast_free_list == NULL)
 		&& (gc_stats.live >= gc_threshold)
 	) {
@@ -334,6 +340,16 @@ alloc_ast(
 	assert(xast != NULL);
 	*xast = XMEM_AST();
 	return &xast->data;
+#else//ifndef NPOOL
+	if(gc_stats.live >= gc_threshold) {
+		run_gc();
+	}
+
+	Ast ast = xmalloc(sizeof(*ast));
+	assert(ast != NULL);
+	*ast = (struct ast){ AST_Void, 0, 0, 0, {{ NULL }, { NULL }} };
+	return ast;
+#endif//ndef NPOOL
 }
 
 //------------------------------------------------------------------------------
