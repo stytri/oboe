@@ -48,6 +48,28 @@ static Array        env_free_list = NULL;
 
 //------------------------------------------------------------------------------
 
+static inline uintptr_t
+env_rc_inc(
+	Array env
+) {
+	uintptr_t *p = xmemheader(env);
+	if(p && ~*p) {
+		return ++*p;
+	}
+	return ~(uintptr_t)0;
+}
+
+static inline uintptr_t
+env_rc_dec(
+	Array env
+) {
+	uintptr_t *p = xmemheader(env);
+	if(p && *p && ~*p) {
+		return --*p;
+	}
+	return ~(uintptr_t)0;
+}
+
 Ast
 new_env(
 	sloc_t sloc,
@@ -93,11 +115,7 @@ void
 env_dup(
 	Ast ast
 ) {
-	Array env = ast->m.env;
-
-	if(env) {
-		++*xmemheader(env);
-	}
+	env_rc_inc(ast->m.env);
 }
 
 void
@@ -106,7 +124,7 @@ del_env(
 ) {
 	Array env = ast->m.env;
 
-	if(env && ((--*xmemheader(env)) == 0)) {
+	if(env && (env_rc_dec(env) == 0)) {
 		array_free(env);
 
 		memset(env, 0, sizeof(*env));
