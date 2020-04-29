@@ -377,7 +377,6 @@ process(
 			graph(gfile, gtitle, ast);
 		}
 		if(ast && doeval) {
-			TRACE(trace_global_indent, ast);
 			ast = refeval(globals, ast);
 			if(!quiet) {
 				print(ast);
