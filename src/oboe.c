@@ -128,6 +128,7 @@ main(
 
 		{10, "-q, --quiet",                     "suppress result output" },
 		{11, "-t, --trace",                     "enable trace output" },
+		{12, "-v, --verbose",                   "enable verbose trace output" },
 		{19, "-n, --noeval",                    "parse, but do not evaluate" },
 
 		{20, "-m, --math",                      "enable math functions" },
@@ -196,6 +197,12 @@ main(
 
 			case 11:
 				trace_enabled = true;
+				trace_verbose = false;
+				break;
+
+			case 12:
+				trace_enabled = true;
+				trace_verbose = true;
 				break;
 
 			case 19:

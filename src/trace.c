@@ -36,6 +36,8 @@ trace(
 ) {
 	static const char tabs[] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
 #	define N_TABS (sizeof(tabs) - 1)
+	static unsigned last_source = ~0u;
+	static unsigned last_line   = ~0u;
 
 	if(indent > 0) {
 		for(; indent > N_TABS; indent -= N_TABS) {
@@ -46,33 +48,52 @@ trace(
 		}
 	}
 
+	bool do_trace = true;
+
 	if(ast_isnotZen(ast)) {
-		String      s      = StringCreate();
-		String      srcs   = get_source(sloc_source(ast->sloc));
-		char const *source = StringToCharLiteral(srcs, NULL);
-		char        line[(CHAR_BIT * sizeof(unsigned)) + 1];
-		snprintf(line, sizeof(line), ":%u: ", sloc_line(ast->sloc));
+		unsigned this_source = sloc_source(ast->sloc);
+		unsigned this_line   = sloc_line  (ast->sloc);
 
-		s = StringAppendCharLiteral(s, source , strlen(source));
-		s = StringAppendCharLiteral(s, line   , strlen(line));
-		s = StringAppend           (s, tostr(ast, true));
+		do_trace = trace_verbose
+			|| (last_source != this_source)
+			|| (last_line   != this_line)
+		;
+		if(do_trace) {
+			String      s      = StringCreate();
+			String      srcs   = get_source(this_source);
+			char const *source = StringToCharLiteral(srcs, NULL);
+			char        line[(CHAR_BIT * sizeof(unsigned)) + 1];
+			if(trace_verbose) {
+				snprintf(line, sizeof(line), ":%u: ", this_line);
+			} else {
+				snprintf(line, sizeof(line), ":%u", this_line);
+			}
 
-		if(s) {
-			fputs(StringToCharLiteral(s, NULL), stdout);
-			StringDelete(s);
-			if(comment && *comment) {
-				fputc(' ', stdout);
+			s = StringAppendCharLiteral(s, source , strlen(source));
+			s = StringAppendCharLiteral(s, line   , strlen(line));
+			if(trace_verbose) {
+				s = StringAppend(s, tostr(ast, true));
+			}
+
+			if(s) {
+				fputs(StringToCharLiteral(s, NULL), stdout);
+				StringDelete(s);
+				if(comment && *comment) {
+					fputc(' ', stdout);
+				}
 			}
 		}
 	}
 
-	if(comment && *comment) {
-		fputs("# ", stdout);
-		fputs(comment, stdout);
-	}
+	if(do_trace) {
+		if(comment && *comment) {
+			fputs("# ", stdout);
+			fputs(comment, stdout);
+		}
 
-	fputc('\n', stdout);
-	fflush(stdout);
+		fputc('\n', stdout);
+		fflush(stdout);
+	}
 
 	return;
 #	undef N_TABS
@@ -81,5 +102,6 @@ trace(
 //------------------------------------------------------------------------------
 
 bool   trace_enabled       = false;
+bool   trace_verbose       = false;
 size_t trace_global_indent = 0;
 
