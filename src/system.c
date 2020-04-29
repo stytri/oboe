@@ -855,18 +855,18 @@ builtin_import_1(
 	arg = eval(env, arg);
 	if(ast_isString(arg)) {
 
-		String s = mapoboefile(arg->m.sval);
+		String file = arg->m.sval;
+		String s    = mapoboefile(file);
 		if(s) {
 			arg = ZEN;
 
+			unsigned    source = add_source(0, file);
+			unsigned    line   = 0;
 			char const *cs     = StringToCharLiteral(s, NULL);
-			unsigned    source = sloc_source(sloc);
 
 			for(size_t ts = gc_topof_stack();
 				*cs;
 			) {
-				unsigned line = sloc_line(sloc);
-
 				arg = parse(cs, &cs, source, &line, new_ast, false);
 				if(ast_isnotZen(arg)) {
 					arg = eval(globals, arg);
