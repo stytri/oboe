@@ -41,7 +41,7 @@ struct env_stats env_stats;
 typedef XMEM_STRUCT(struct array, env) xmem_env;
 #define XMEM_ENV(...)  (xmem_env) { \
 	{ sizeof(xmem_env), 0 }, \
-	{ 0, 0, 0, (uintptr_t)NULL } \
+	ARRAY() \
 }
 static struct array env_pool      = ARRAY();
 static Array        env_free_list = NULL;
