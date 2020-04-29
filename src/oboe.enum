@@ -90,13 +90,13 @@ ENUM(Operator)
 ENUM(Sequence)
 	STR(SEQUENCE("", ast->m.lexpr, ",", ast->m.rexpr, ""))
 	NEW(ast->m.lexpr = va_arg(va, Ast); ast->m.rexpr = va_arg(va, Ast))
-	EVAL(eval(env, ast->m.lexpr); ast = eval(env, ast->m.rexpr))
+	EVAL(TRACE(trace_global_indent, ast->m.lexpr); eval(env, ast->m.lexpr); ast = eval(env, ast->m.rexpr))
 	GC(MARK(ast->m.lexpr); MARK(ast->m.rexpr))
 
 ENUM(Assemblage)
 	STR(SEQUENCE("", ast->m.lexpr, ";", ast->m.rexpr, ""))
 	NEW(ast->m.lexpr = va_arg(va, Ast); ast->m.rexpr = va_arg(va, Ast))
-	EVAL(eval(env, ast->m.lexpr); ast = eval(env, ast->m.rexpr))
+	EVAL(TRACE(trace_global_indent, ast->m.lexpr); eval(env, ast->m.lexpr); ast = eval(env, ast->m.rexpr))
 	GC(MARK(ast->m.lexpr); MARK(ast->m.rexpr))
 
 // Internal Types
