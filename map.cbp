@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="map" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="mapd" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="map" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-O3" />
+				</Compiler>
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="Debug;Release;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="map_test.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/array.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/array.h" />
+		<Unit filename="src/assert.h" />
+		<Unit filename="src/bitmac.h" />
+		<Unit filename="src/bits.h" />
+		<Unit filename="src/mapfile.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/mapfile.h" />
+		<Unit filename="src/marray.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/stdtypes.h" />
+		<Unit filename="src/string.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/string.h" />
+		<Unit filename="src/xmem.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/xmem.h" />
+		<Extensions>
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="marray" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="marrayd" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="marray" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-O3" />
+				</Compiler>
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="Debug;Release;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="marray_test.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/array.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/array.h" />
+		<Unit filename="src/assert.h" />
+		<Unit filename="src/bitmac.h" />
+		<Unit filename="src/bits.h" />
+		<Unit filename="src/marray.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/marray.h" />
+		<Unit filename="src/stdtypes.h" />
+		<Unit filename="src/xmem.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/xmem.h" />
+		<Unit filename="test_timing.h" />
+		<Extensions>
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
