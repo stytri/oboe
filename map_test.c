@@ -130,7 +130,7 @@ int main(
 				if(hash) {
 					printf("#%16.16llx: ", h);
 				}
-				printf("%*.*s\n", (int)n, (int)n, start);
+				printf("%*.*s\n", (int)n, (int)n, array_at(&arr, char const *, x));
 			}
 		}
 	}
