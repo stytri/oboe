@@ -185,7 +185,7 @@ mrkenv(
 ) {
 	if(env) {
 		for(size_t i = array_length(env); i-- > 0;) {
-			void const *p = array_at(env, void const *, i);
+			void const *p = array_at(env, Ast, i);
 			if(p) {
 				gc_mark(ast_gc_mark, p);
 			}
