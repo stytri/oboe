@@ -12,11 +12,12 @@ max(a:,b:): (
 );
 
 spad(n, s, c): (
-	(n > s@length) ? (
+	m:s@length,
+	((-m >= m) && (n > m)) ? (
 		(-n < n) ? (
-			s((-n - s@length)c)
+			s((-n - m)c)
 		;
-			((n - s@length)c)s
+			((n - m)c)s
 		)
 	;
 		s
