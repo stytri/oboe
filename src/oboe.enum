@@ -133,6 +133,7 @@ ENUM(Sequence)
 	EVAL(
 		TRACE(trace_global_indent, ast->m.lexpr);
 		eval(env, ast->m.lexpr);
+		TRACE_IF(ast_isnotSequence(ast->m.rexpr), trace_global_indent, ast->m.rexpr);
 		ast = eval(env, ast->m.rexpr)
 	)
 	GC(
@@ -149,6 +150,7 @@ ENUM(Assemblage)
 	EVAL(
 		TRACE(trace_global_indent, ast->m.lexpr);
 		eval(env, ast->m.lexpr);
+		TRACE_IF(ast_isnotAssemblage(ast->m.rexpr), trace_global_indent, ast->m.rexpr);
 		ast = eval(env, ast->m.rexpr)
 	)
 	GC(
