@@ -52,119 +52,268 @@ SOFTWARE.
 ENUM(Zen)
 	STR(EXPRESSION("(", NULL, ")"))
 	NEW()
-	EVAL(RETURN())
+	EVAL(
+		RETURN()
+	)
 
 ENUM(Integer)
 	STR(INTEGER("", ast->m.ival, ""))
-	NEW(ast->m.ival = INTEGER(leme, n))
-	EVAL(RETURN())
+	NEW(
+		ast->m.ival = INTEGER(leme, n)
+	)
+	EVAL(
+		RETURN()
+	)
 
 ENUM(Float)
 	STR(FLOAT("", ast->m.fval, ""))
-	NEW(ast->m.fval = FLOAT(leme, n))
-	EVAL(RETURN())
+	NEW(
+		ast->m.fval = FLOAT(leme, n)
+	)
+	EVAL(
+		RETURN()
+	)
 
 ENUM(Character)
 	STR(CHARACTER("", ast->m.ival, ""))
-	NEW(ast->m.ival = CHARACTER(leme, n))
-	EVAL(RETURN())
+	NEW(
+		ast->m.ival = CHARACTER(leme, n)
+	)
+	EVAL(
+		RETURN()
+	)
 
 ENUM(String)
 	STR(STRING("", ast->m.sval, ""))
-	NEW(ast->m.sval = STRING(leme, n); ast->m.hash = HashString(ast->m.sval))
-	EVAL(RETURN())
-	GC(MARK(ast->m.sval))
+	NEW(
+		ast->m.sval = STRING(leme, n);
+		ast->m.hash = HashString(ast->m.sval)
+	)
+	EVAL(
+		RETURN()
+	)
+	GC(
+		MARK(ast->m.sval)
+	)
 
 ENUM(Identifier)
 	STR(IDENTIFIER("", ast->m.sval, ""))
-	NEW(ast->m.sval = IDENTIFIER(leme, n); ast->m.hash = HashString(ast->m.sval))
-	EVAL(ast = REFERENCE(ast->m.sval, ast->m.hash))
-	GC(MARK(ast->m.sval))
+	NEW(
+		ast->m.sval = IDENTIFIER(leme, n);
+		ast->m.hash = HashString(ast->m.sval)
+	)
+	EVAL(
+		ast = REFERENCE(ast->m.sval, ast->m.hash)
+	)
+	GC(
+		MARK(ast->m.sval)
+	)
 
 ENUM(Operator)
 	STR(OPERATOR("", ast->m.lexpr, OPERATOROF(ast->qual), ast->m.rexpr, ""))
-	NEW(ast->m.lexpr = va_arg(va, Ast); ast->m.rexpr = va_arg(va, Ast); ast->qual = OPERATOROF(leme, n))
-	EVAL(ast = OPERATOR(ast->qual, ast->m.lexpr, ast->m.rexpr))
-	GC(MARK(ast->m.lexpr); MARK(ast->m.rexpr))
+	NEW(
+		ast->m.lexpr = va_arg(va, Ast);
+		ast->m.rexpr = va_arg(va, Ast);
+		ast->qual    = OPERATOROF(leme, n)
+	)
+	EVAL(
+		ast = OPERATOR(ast->qual, ast->m.lexpr, ast->m.rexpr)
+	)
+	GC(
+		MARK(ast->m.lexpr);
+		MARK(ast->m.rexpr)
+	)
 
 ENUM(Sequence)
 	STR(SEQUENCE("", ast->m.lexpr, ",", ast->m.rexpr, ""))
-	NEW(ast->m.lexpr = va_arg(va, Ast); ast->m.rexpr = va_arg(va, Ast))
-	EVAL(TRACE(trace_global_indent, ast->m.lexpr); eval(env, ast->m.lexpr); ast = eval(env, ast->m.rexpr))
-	GC(MARK(ast->m.lexpr); MARK(ast->m.rexpr))
+	NEW(
+		ast->m.lexpr = va_arg(va, Ast);
+		ast->m.rexpr = va_arg(va, Ast)
+	)
+	EVAL(
+		TRACE(trace_global_indent, ast->m.lexpr);
+		eval(env, ast->m.lexpr);
+		ast = eval(env, ast->m.rexpr)
+	)
+	GC(
+		MARK(ast->m.lexpr);
+		MARK(ast->m.rexpr)
+	)
 
 ENUM(Assemblage)
 	STR(SEQUENCE("", ast->m.lexpr, ";", ast->m.rexpr, ""))
-	NEW(ast->m.lexpr = va_arg(va, Ast); ast->m.rexpr = va_arg(va, Ast))
-	EVAL(TRACE(trace_global_indent, ast->m.lexpr); eval(env, ast->m.lexpr); ast = eval(env, ast->m.rexpr))
-	GC(MARK(ast->m.lexpr); MARK(ast->m.rexpr))
+	NEW(
+		ast->m.lexpr = va_arg(va, Ast);
+		ast->m.rexpr = va_arg(va, Ast)
+	)
+	EVAL(
+		TRACE(trace_global_indent, ast->m.lexpr);
+		eval(env, ast->m.lexpr);
+		ast = eval(env, ast->m.rexpr)
+	)
+	GC(
+		MARK(ast->m.lexpr);
+		MARK(ast->m.rexpr)
+	)
 
 // Internal Types
 
 ENUM(Void)
 	NEW()
-	EVAL(RETURN())
+	EVAL(
+		RETURN()
+	)
 
 ENUM(Quoted)
 	STR(OPERATOR("", ast->m.lexpr, OPERATOROF(ast->qual), ast->m.rexpr, ""))
-	NEW(ast->m.lexpr = ZEN; ast->m.rexpr = va_arg(va, Ast))
-	EVAL(RETURN())
-	GC(MARK(ast->m.sval); MARK(ast->m.rexpr))
+	NEW(
+		ast->m.lexpr = ZEN;
+		ast->m.rexpr = va_arg(va, Ast)
+	)
+	EVAL(
+		RETURN()
+	)
+	GC(
+		MARK(ast->m.sval);
+		MARK(ast->m.rexpr)
+	)
 
 ENUM(Reference)
 	STR(IDENTIFIER("", ast->m.sval, ""))
-	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.rexpr = va_arg(va, Ast))
-	EVAL(RETURN())
-	GC(MARK(ast->m.sval); MARK(ast->m.rexpr))
+	NEW(
+		ast->m.sval  = add_leaf_to_gc(va_arg(va, String));
+		ast->m.rexpr = va_arg(va, Ast)
+	)
+	EVAL(
+		RETURN()
+	)
+	GC(
+		MARK(ast->m.sval);
+		MARK(ast->m.rexpr)
+	)
 
 ENUM(OpaqueDataReference)
-	NEW(ast->m.lexpr = va_arg(va, Ast); ast->qual = ast->m.lexpr->qual)
-	EVAL(RETURN())
-	GC(MARK(ast->m.lexpr))
+	NEW(
+		ast->m.lexpr = va_arg(va, Ast);
+		ast->qual    = ast->m.lexpr->qual
+	)
+	EVAL(
+		RETURN()
+	)
+	GC(
+		MARK(ast->m.lexpr)
+	)
 
 ENUM(OpaqueDataType)
-	NEW(odt_new(ast, va); ast->attr |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign))
-	EVAL(RETURN(ast = odt_eval(ast)))
-	DEL(odt_sweep(ast))
-	GC(odt_mark(ast))
+	NEW(
+		odt_new(ast, va);
+		ast->attr |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign)
+	)
+	EVAL(
+		RETURN(ast = odt_eval(ast))
+	)
+	DEL(
+		odt_sweep(ast)
+	)
+	GC(
+		odt_mark(ast)
+	)
 
 ENUM(Function)
-	NEW(ast->m.lexpr = va_arg(va, Ast); ast->m.rexpr = va_arg(va, Ast))
-	EVAL(RETURN())
-	GC(MARK(ast->m.lexpr); MARK(ast->m.rexpr))
+	NEW(
+		ast->m.lexpr = va_arg(va, Ast);
+		ast->m.rexpr = va_arg(va, Ast)
+	)
+	EVAL(
+		RETURN()
+	)
+	GC(
+		MARK(ast->m.lexpr);
+		MARK(ast->m.rexpr)
+	)
 
 ENUM(BuiltinFunction)
-	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.bfn = va_arg(va, BuiltinFn))
-	EVAL(RETURN())
-	GC(MARK(ast->m.sval))
+	NEW(
+		ast->m.sval = add_leaf_to_gc(va_arg(va, String));
+		ast->m.bfn = va_arg(va, BuiltinFn)
+	)
+	EVAL(
+		RETURN()
+	)
+	GC(
+		MARK(ast->m.sval)
+	)
 
 ENUM(BuiltinOperator)
-	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.bop = va_arg(va, BuiltinOp), ast->qual = va_arg(va, Precedence))
-	EVAL(RETURN())
-	GC(MARK(ast->m.sval))
+	NEW(
+		ast->m.sval = add_leaf_to_gc(va_arg(va, String));
+		ast->m.bop  = va_arg(va, BuiltinOp);
+		ast->qual   = va_arg(va, Precedence)
+	)
+	EVAL(
+		RETURN()
+	)
+	GC(
+		MARK(ast->m.sval)
+	)
 
 ENUM(OperatorFunction)
-	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.rexpr = va_arg(va, Ast), ast->qual = P_Additive)
-	EVAL(RETURN())
-	GC(MARK(ast->m.sval); MARK(ast->m.rexpr))
+	NEW(
+		ast->m.sval  = add_leaf_to_gc(va_arg(va, String));
+		ast->m.rexpr = va_arg(va, Ast);
+		ast->qual    = P_Additive
+	)
+	EVAL(
+		RETURN()
+	)
+	GC(
+		MARK(ast->m.sval);
+		MARK(ast->m.rexpr)
+	)
 
 ENUM(OperatorAlias)
-	NEW(ast->m.sval = add_leaf_to_gc(va_arg(va, String)); ast->m.tval = add_leaf_to_gc(va_arg(va, String)), ast->qual = P_Additive)
-	EVAL(RETURN())
-	GC(MARK(ast->m.sval); MARK(ast->m.tval))
+	NEW(
+		ast->m.sval = add_leaf_to_gc(va_arg(va, String));
+		ast->m.tval = add_leaf_to_gc(va_arg(va, String));
+		ast->qual   = P_Additive
+	)
+	EVAL(
+		RETURN()
+	)
+	GC(
+		MARK(ast->m.sval);
+		MARK(ast->m.tval)
+	)
 
 ENUM(Environment)
 	STR(ENVIRONMENT("[", ast, "]"))
-	NEW(ENVIRONMENT(); ast->m.rexpr = va_arg(va, Ast); ast->attr |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign))
-	EVAL(RETURN())
-	DUP(ENVIRONMENT())
-	DEL(ENVIRONMENT())
-	GC(ENVIRONMENT(); MARK(ast->m.rexpr))
+	NEW(
+		ENVIRONMENT();
+		ast->m.rexpr = va_arg(va, Ast);
+		ast->attr |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign)
+	)
+	EVAL(
+		RETURN()
+	)
+	DUP(
+		ENVIRONMENT()
+	)
+	DEL(
+		ENVIRONMENT()
+	)
+	GC(
+		ENVIRONMENT();
+		MARK(ast->m.rexpr)
+	)
 
 ENUM(Error)
 	STR(ERRORMESSAGE("#(ERROR: ", ast, ")"))
-	NEW(ast->qual = va_arg(va, Error))
-	EVAL(RETURN())
+	NEW(
+		ast->qual = va_arg(va, Error)
+	)
+	EVAL(
+		RETURN()
+	)
 
 //------------------------------------------------------------------------------
 

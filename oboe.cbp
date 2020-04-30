@@ -33,6 +33,9 @@
 		<VirtualTargets>
 			<Add alias="All" targets="Debug;Release;" />
 		</VirtualTargets>
+		<Compiler>
+			<Add option="-DNPOOL=1" />
+		</Compiler>
 		<Unit filename="src/array.c">
 			<Option compilerVar="CC" />
 		</Unit>
