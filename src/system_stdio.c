@@ -637,7 +637,7 @@ builtin_read_1(
 	sloc_t sloc,
 	Ast    arg
 ) {
-	Ast    ast = refeval(env, arg);
+	Ast    ast = subeval(env, arg);
 	String s   = StringBuild(builtin_read_1_char, file->m.lptr, 0);
 	arg        = s ? (
 		builtin_read_1_parse(s)
@@ -645,8 +645,12 @@ builtin_read_1(
 		oboerr(sloc, ERR_FailedOperation)
 	);
 
-	if(ast_isnotZen(ast)) {
-		return assign(sloc, ast, arg);
+	if(ast_isReference(ast)) {
+		for(;
+			ast_isReference(ast->m.rexpr);
+			ast = ast->m.rexpr
+		);
+		return assign(sloc, &ast->m.rexpr, arg);
 	}
 
 	return error_or(sloc, arg, ERR_InvalidOperand);

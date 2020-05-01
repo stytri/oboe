@@ -3,7 +3,7 @@
 "rosetta/libutil"@import;
 
 new_item(name, weight, value): (
-	[name:(=name), weight:(=weight), value:(=value)]
+	[name:name, weight:weight, value:value]
 );
 
 items:[

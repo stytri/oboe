@@ -90,16 +90,18 @@ unquote(
 Ast
 assign(
 	sloc_t sloc,
-	Ast    ast,
+	Ast   *past,
 	Ast    expr
 ) {
+	Ast ast = *past;
+
 	if(ast != expr) {
 		if(ast_isCopyOnAssign(ast)) {
-			ast = new_ast(sloc, NULL, AST_Void);
+			*past = ast = new_ast(sloc, NULL, AST_Void);
 		}
 
 		memcpy(ast, expr, sizeof(*ast));
-		
+
 		if(ast_isRemoveCopyOnAssign(expr)) {
 			ast->attr = expr->attr & ~ATTR_CopyOnAssign;
 		}

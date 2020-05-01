@@ -3,11 +3,11 @@
 "rosetta/libutil"@import;
 
 new_drawer(card_number): (
-	[card_number:(=card_number), opened:0]
+	[card_number:card_number, opened:0]
 );
 
 new_prisoner(id): (
-	[id:(=id), card_found:0]
+	[id:id, card_found:0]
 );
 
 drawer:[], prisoner:[];
@@ -82,7 +82,7 @@ play_game(number_of_prisoners, games, verbose, is_random): (
 run(number_of_prisoners, games, verbose): (
 	("Playing ", games, " random games...")@println,
 	play_game(number_of_prisoners, games, verbose, 1),
-	
+
 	("Playing ", games, " optimal games...")@println,
 	play_game(number_of_prisoners, games, verbose, 0)
 );

@@ -21,15 +21,15 @@ dr:[ dec, inc, nop, nop ];
 
 setup(): (
 	count: 0,
-	
+
 	(row:0; row < N; row++) ?* (
 		cells[row]=[],
 		(column:0; column < N; column++) ?* (
-			cells[row][column] = (=count),
+			cells[row][column] = count,
 			count++
 		)
 	),
-	
+
 	hole row = 0, hole column = 0,
 
 	(i:0; i < 127; i++) ?* (
@@ -40,10 +40,10 @@ setup(): (
 update(move): (
 	r: dr[move](hole row),
 	c: dc[move](hole column),
-	
+
 	(r <> hole row || c <> hole column) ? (
 		cells[hole row][hole column] = cells[r][c],
-		
+
 		cells[r][c] = 0,
 		hole row    = r,
 		hole column = c
@@ -52,17 +52,17 @@ update(move): (
 
 is_not_finished(): (
 	return:0, count:0,
-	
+
 	(row:0; return == 0 && row < N; row++) ?* (
 		(column:0; return == 0 && column < N; column++) ?* (
 			count++,
-			
+
 			(cells[row][column] <> count) ? (
 				return = 1
 			)
 		)
 	),
-	
+
 	return
 );
 

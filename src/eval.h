@@ -53,7 +53,7 @@ dereference(
 extern Ast
 assign(
 	sloc_t sloc,
-	Ast    ast,
+	Ast   *past,
 	Ast    expr
 );
 

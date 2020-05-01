@@ -1034,12 +1034,25 @@ DOUBLE_BUILTINS
 //------------------------------------------------------------------------------
 
 static inline Ast
+evaluate_instance(
+	Ast    env,
+	sloc_t sloc,
+	Ast    expr
+) {
+	return dup_ast(sloc, refeval(env, expr));
+}
+
+static inline Ast
 evaluate_assignable(
 	Ast    env,
 	sloc_t sloc,
 	Ast    expr
 ) {
-	return ast_isCopyOnAssign(expr) ? dup_ast(sloc, refeval(env, expr)) : refeval(env, expr);
+	return ast_isCopyOnAssign(expr) ?
+		evaluate_instance(env, sloc, expr)
+	:
+		refeval(env, expr)
+	;
 }
 
 //------------------------------------------------------------------------------
@@ -1113,7 +1126,7 @@ builtin_tag(
 			rexpr
 		);
 	case AST_Identifier:
-		rexpr = evaluate_assignable(env, sloc, rexpr);
+		rexpr = evaluate_instance(env, sloc, rexpr);
 		addenv(env, sloc, lexpr, rexpr);
 		return rexpr;
 	case AST_String: // for OperatorAlias
@@ -1142,12 +1155,12 @@ builtin_array_push_back(
 ) {
 	if(ast_isTag(rexpr)) {
 		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
-			Ast def = evaluate_assignable(env, sloc, rexpr->m.rexpr);
+			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr);
 			addenv(lexpr, sloc, rexpr->m.lexpr, def);
 			return lexpr;
 		}
 	} else {
-		rexpr = evaluate_assignable(env, sloc, rexpr);
+		rexpr = evaluate_instance(env, sloc, rexpr);
 		bool appended = array_push_back(lexpr->m.env, Ast, rexpr);
 		assert(appended);
 		return lexpr;
@@ -1177,20 +1190,22 @@ builtin_assign(
 				size_t const index  = iexpr->m.ival;
 				if(index < length) {
 					rexpr = evaluate_assignable(env, sloc, rexpr);
-					array_at(lexpr->m.env, Ast, index) = rexpr;
+					assign(sloc, array_ptr(lexpr->m.env, Ast, index), rexpr);
 					return rexpr;
 				}
 				if(index == length) {
+					rexpr = evaluate_instance(env, sloc, rexpr);
 					return builtin_array_push_back(env, sloc, lexpr, rexpr);
 				}
 			}
 			return oboerr(sloc, ERR_InvalidOperand);
 		case TYPE(AST_Environment, AST_String): {
-				rexpr   = evaluate_assignable(env, sloc, rexpr);
 				Ast def = inenv(lexpr, iexpr);
 				if(ast_isnotZen(def)) {
-					def->m.rexpr = rexpr;
+					rexpr = evaluate_assignable(env, sloc, rexpr);
+					assign(sloc, &def->m.rexpr, rexpr);
 				} else {
+					rexpr = evaluate_instance(env, sloc, rexpr);
 					rexpr = addenv(lexpr, sloc, iexpr, rexpr);
 					if(ast_isnotZen(rexpr)) {
 						rexpr = rexpr->m.rexpr;
@@ -1205,7 +1220,6 @@ builtin_assign(
 
 	if(ast_isnotZen(lexpr)) {
 		lexpr = subeval(env, lexpr);
-		rexpr = refeval(env, rexpr);
 
 		if(ast_isReference(lexpr)) {
 			for(;
@@ -1213,9 +1227,11 @@ builtin_assign(
 				lexpr = lexpr->m.rexpr
 			);
 			if(ast_isnotZen(lexpr->m.rexpr)) {
-				lexpr->m.rexpr = assign(sloc, lexpr->m.rexpr, rexpr);
+				rexpr = evaluate_assignable(env, sloc, rexpr);
+				assign(sloc, &lexpr->m.rexpr, rexpr);
 			} else {
-				lexpr->m.rexpr = dup_ast(sloc, rexpr);
+				rexpr = evaluate_instance(env, sloc, rexpr);
+				lexpr->m.rexpr = rexpr;
 			}
 			lexpr = lexpr->m.rexpr;
 			return lexpr;

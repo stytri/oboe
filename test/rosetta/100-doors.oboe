@@ -10,7 +10,7 @@ is_open:[];
 );
 
 (pass:0; pass < N; pass++) ?* (
-	(door:(=pass); door < N; door = door+pass+1) ?* (
+	(door:pass; door < N; door = door+pass+1) ?* (
 		is_open[door] = is_open[door]!
 	)
 );
