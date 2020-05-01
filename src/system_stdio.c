@@ -136,9 +136,11 @@ builtin_file_type_eval(
 
 static void
 builtin_file_type_mark(
-	Ast ast
+	Ast    ast,
+	void (*gc_mark)(void const *)
 ) {
 	(void)ast;
+	(void)gc_mark;
 }
 
 static void
@@ -196,9 +198,11 @@ builtin_fpos_type_eval(
 
 static void
 builtin_fpos_type_mark(
-	Ast ast
+	Ast    ast,
+	void (*gc_mark)(void const *)
 ) {
 	(void)ast;
+	(void)gc_mark;
 }
 
 static void

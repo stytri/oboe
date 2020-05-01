@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include "array.h"
-#include "xmem.h"
+#include "bitmac.h"
 #include "bits.h"
+#include "gc.h"
 
 //------------------------------------------------------------------------------
 
@@ -79,7 +80,7 @@ node_free(
 		node_free(untag_pointer(node->ptr[n]), node_is_leaf(node->ptr[n]));
 	}
 
-	xfree(node);
+	free(node);
 	return;
 }
 
@@ -91,7 +92,7 @@ array_expand(
 	size_t size,
 	size_t count
 ) {
-	size_t const buf_max = XMEM_MAX / size;
+	size_t const buf_max = BIT_ROUND(SIZE_MAX/2) / size;
 
 	if(arr && ((buf_max - arr->capacity) >= count)) {
 		count = capacity_of(arr->length + count);
@@ -99,7 +100,7 @@ array_expand(
 		if(buf_max >= count) {
 			size *= count;
 
-			void *p = xrealloc(arr->base, size);
+			void *p = realloc(arr->base, size);
 			if(p) {
 				arr->base     = p;
 				arr->capacity = count;
@@ -131,7 +132,7 @@ array_free(
 			arr->map = (uintptr_t)NULL;
 		}
 
-		xfree(arr->base);
+		free(arr->base);
 
 		arr->capacity = 0;
 		arr->length   = 0;
@@ -190,7 +191,7 @@ array_map_index(
 					if(is_at_capacity(i)) {
 						// expand if filled to capacity
 						z    = sizeof(struct node) + ((i * 2) * sizeof(uintptr_t));
-						leaf = xrealloc(leaf, z);
+						leaf = realloc(leaf, z);
 						if(!leaf) {
 							return ~(size_t)0;
 						}
@@ -206,7 +207,7 @@ array_map_index(
 				// create a new branch node
 				// with 1 entry
 				z    = sizeof(struct node) + sizeof(uintptr_t);
-				node = xmalloc(z);
+				node = malloc(z);
 				if(!node) {
 					return ~(size_t)0;
 				}
@@ -236,7 +237,7 @@ array_map_index(
 				if(is_at_capacity(k)) {
 					// expand node if filled to capacity
 					z    = sizeof(struct node) + ((k * 2) * sizeof(uintptr_t));
-					node = xrealloc(node, z);
+					node = realloc(node, z);
 					if(!node) {
 						return ~(size_t)0;
 					}
@@ -247,7 +248,7 @@ array_map_index(
 				// create new leaf node
 				// with 1 entry
 				z    = sizeof(struct node) + sizeof(uintptr_t);
-				leaf = xmalloc(z);
+				leaf = malloc(z);
 				if(!leaf) {
 					return ~(size_t)0;
 				}
@@ -279,7 +280,7 @@ array_map_index(
 		// so create an initial leaf node
 
 		size_t       z    = sizeof(struct node) + sizeof(uintptr_t);
-		struct node *leaf = xmalloc(z);
+		struct node *leaf = malloc(z);
 		if(leaf) {
 			leaf->map    = hash;
 			leaf->ptr[0] = uip;

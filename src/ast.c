@@ -26,7 +26,6 @@ SOFTWARE.
 #include "odt.h"
 #include "hash.h"
 #include "strlib.h"
-#include "marray.h"
 #include "assert.h"
 #include "utf8.h"
 #include "parse.h"
@@ -37,24 +36,9 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
-XMEM(struct ast, ZEN, (struct ast){ AST_Zen, ATTR_CopyOnAssign, 0, 0, {{ NULL }, { NULL }} });
+Ast ZEN = NULL;
 
 //------------------------------------------------------------------------------
-
-static void *
-add_leaf_to_gc(
-	void const *p
-);
-
-static void *
-add_branch_to_gc(
-	void const *p
-);
-
-static void
-ast_gc_mark(
-	void const *p
-);
 
 static inline String
 dupstr(
@@ -64,7 +48,7 @@ dupstr(
 	String t = CharLiteralToString(cs, n);
 	assert(t != NULL);
 
-	return add_leaf_to_gc(t);
+	return t;
 }
 
 static uint64_t
@@ -76,7 +60,7 @@ makint(
 
 	char tmp[sizeof(val) * CHAR_BIT];
 	char *buf = (n >= sizeof(tmp)) ? (
-		xmalloc(n+1)
+		malloc(n+1)
 	) : (
 		tmp
 	);
@@ -87,7 +71,7 @@ makint(
 	val = strtou(buf, NULL);
 
 	if(buf != tmp) {
-		xfree(buf);
+		free(buf);
 	}
 
 	return val;
@@ -102,7 +86,7 @@ makdbl(
 
 	char tmp[sizeof(val) * CHAR_BIT];
 	char *buf = (n >= sizeof(tmp)) ? (
-		xmalloc(n+1)
+		malloc(n+1)
 	) : (
 		tmp
 	);
@@ -113,7 +97,7 @@ makdbl(
 	val = strtod(buf, NULL);
 
 	if(buf != tmp) {
-		xfree(buf);
+		free(buf);
 	}
 
 	return val;
@@ -149,7 +133,7 @@ makstr(
 	String t = UnEscapeString(NULL, cs, NULL, q);
 	assert(t != NULL);
 
-	return add_leaf_to_gc(t);
+	return t;
 }
 
 static unsigned
@@ -170,145 +154,29 @@ makopr(
 	return index;
 }
 
-static inline void
-mrkptr(
-	void const *p
-) {
-	if(p) {
-		gc_mark(ast_gc_mark, p);
-	}
-}
-
-static void
-mrkenv(
-	Array env
-) {
-	if(env) {
-		for(size_t i = array_length(env); i-- > 0;) {
-			void const *p = array_at(env, Ast, i);
-			if(p) {
-				gc_mark(ast_gc_mark, p);
-			}
-		}
-	}
-
-	return;
-}
-
 //------------------------------------------------------------------------------
 
-#define MIN_GC_THRESHOLD  (CHAR_BIT * sizeof(size_t))
-#define MAX_GC_THRESHOLD  (SIZE_MAX / MIN_GC_THRESHOLD)
+#define MIN_GC_THRESHOLD  ((CHAR_BIT * sizeof(size_t)) * 1024)
+#define MAX_GC_THRESHOLD  BIT_ROUND(SIZE_MAX/2)
 
 static size_t gc_threshold      =  MIN_GC_THRESHOLD;
 static size_t low_gc_threshold  =  MIN_GC_THRESHOLD / 3;
 static size_t high_gc_threshold = (MIN_GC_THRESHOLD / 3) * 2;
 
-#ifndef NPOOL
-typedef XMEM_STRUCT(struct ast, ast) xmem_ast;
-#define XMEM_AST(...)  (xmem_ast) { \
-	{ sizeof(xmem_ast), 0 }, \
-	{ AST_Void, 0, 0, 0, {{ NULL }, { NULL }} } \
-}
-static struct array ast_pool      = ARRAY();
-static Ast          ast_free_list = NULL;
-#endif//ndef NPOOL
-
-//------------------------------------------------------------------------------
-
-static inline void *
-add_leaf_to_gc(
-	void const *p
-) {
-	return gc_push(gc_leaf(p));
-}
-
-static inline void *
-add_branch_to_gc(
-	void const *p
-) {
-	return gc_push(gc_branch(p));
-}
-
-static inline void *
-remove_from_gc(
-	void const *p
-) {
-	return gc_remove(p);
-}
-
-static void
-ast_gc_mark(
-	void const *p
-) {
-	Ast ast = (Ast)p;
-
-	switch(ast->type) {
-	default: {
-#	define ENUM(Name)       } break; case AST_##Name: {
-#	define GC(...)          __VA_ARGS__;
-
-#	define MARK(P)          mrkptr(P)
-#	define ENVIRONMENT(...) mrkenv(ast->m.env)
-
-#	include "oboe.enum"
-
-#	undef MARK
-#	undef ENVIRONMENT
-	}}
-
-	return;
-}
-
-static void
-ast_gc_sweep(
-	void const *p
-) {
-	if(gc_is_leaf(p)) {
-		xfree(remove_from_gc(p));
-		return;
-	}
-
-	Ast ast = remove_from_gc(p);
-
-	switch(ast->type) {
-	default: {
-#	define ENUM(Name)       } break; case AST_##Name: {
-#	define DEL(...)         __VA_ARGS__;
-
-#	define ENVIRONMENT(...) del_env(ast)
-
-#	include "oboe.enum"
-
-#	undef ENVIRONMENT
-	}}
-
-	memset(ast, 0, sizeof(*ast));
-#ifndef NPOOL
-	ast->m.lexpr  = ast_free_list;
-	ast_free_list = ast;
-#else//ifndef NPOOL
-	xfree(ast);
-#endif//ndef NPOOL
-	return;
-}
-
 void
 run_gc(
 	void
 ) {
-	gc_stats.collect++;
+	gc_mark_and_sweep();
 
-	gc(ast_gc_mark, ast_gc_sweep);
-
-	if(gc_stats.live > high_gc_threshold) {
+	if(gc_total_size() > high_gc_threshold) {
 		if(gc_threshold < MAX_GC_THRESHOLD) {
 			gc_threshold     *= 2;
 			low_gc_threshold  = gc_threshold / 3;
 			high_gc_threshold = low_gc_threshold * 2;
 		}
 
-	} else if(gc_stats.live < low_gc_threshold) {
+	} else if(gc_total_size() < low_gc_threshold) {
 		if(gc_threshold > MIN_GC_THRESHOLD) {
 			gc_threshold     /= 2;
 			low_gc_threshold  = gc_threshold / 3;
@@ -319,37 +187,57 @@ run_gc(
 	return;
 }
 
+//------------------------------------------------------------------------------
+
+static void
+ast_gc_mark(
+	void const *p,
+	void      (*gc_mark)(void const *)
+) {
+	Ast ast = (Ast)p;
+
+	switch(ast->type) {
+	default: {
+#	define ENUM(Name)       } break; case AST_##Name: {
+#	define MARK(...)          __VA_ARGS__;
+
+#	include "oboe.enum"
+	}}
+
+	return;
+}
+
+static void
+ast_gc_sweep(
+	void const *p
+) {
+	Ast ast = (Ast)p;
+
+	switch(ast->type) {
+	default: {
+#	define ENUM(Name)       } break; case AST_##Name: {
+#	define SWEEP(...)         __VA_ARGS__;
+
+#	include "oboe.enum"
+	}}
+
+	memset(ast, 0, sizeof(*ast));
+	gc_free(ast);
+	return;
+}
+
 static Ast
 alloc_ast(
 	void
 ) {
-#ifndef NPOOL
-	if((ast_free_list == NULL)
-		&& (gc_stats.live >= gc_threshold)
-	) {
+	if(gc_total_size() >= gc_threshold) {
 		run_gc();
 	}
 
-	if(ast_free_list != NULL) {
-		Ast ast       = ast_free_list;
-		ast_free_list = ast->m.lexpr;
-		return ast;
-	}
-
-	xmem_ast *xast = marray_create_back(&ast_pool, xmem_ast);
-	assert(xast != NULL);
-	*xast = XMEM_AST();
-	return &xast->data;
-#else//ifndef NPOOL
-	if(gc_stats.live >= gc_threshold) {
-		run_gc();
-	}
-
-	Ast ast = xmalloc(sizeof(*ast));
+	Ast ast = gc_malloc(sizeof(*ast), ast_gc_mark, ast_gc_sweep);
 	assert(ast != NULL);
 	*ast = (struct ast){ AST_Void, 0, 0, 0, {{ NULL }, { NULL }} };
 	return ast;
-#endif//ndef NPOOL
 }
 
 //------------------------------------------------------------------------------
@@ -374,6 +262,18 @@ ast_typename(
 }
 
 //------------------------------------------------------------------------------
+
+void
+initialise_ast(
+	void
+) {
+	if(!ZEN) {
+		ZEN = alloc_ast();
+		assert(ZEN != NULL);
+		ZEN->type = AST_Zen;
+		gc_push(ZEN);
+	}
+}
 
 Ast
 new_ast(
@@ -432,6 +332,7 @@ new_ast(
 		case '\'': type = AST_String;     break;
 		case '`' : type = AST_Character;  break;
 		case '(' :
+			va_end(va);
 			return ZEN;
 		}
 
@@ -456,10 +357,9 @@ new_ast(
 #	define INTEGER(S,N)     (S) ? (ast->attr |= ATTR_CopyOnAssign, makint((S), (N))   ) : va_arg(va, uint64_t)
 #	define FLOAT(S,N)       (S) ? (ast->attr |= ATTR_CopyOnAssign, makdbl((S), (N))   ) : va_arg(va, double)
 #	define CHARACTER(S,N)   (S) ? (ast->attr |= ATTR_CopyOnAssign, makchr((S), (N))   ) : va_arg(va, int)
-#	define STRING(S,N)      (S) ? (ast->attr |= ATTR_CopyOnAssign, makstr((S), (N), c)) : add_leaf_to_gc(va_arg(va, String))
-#	define IDENTIFIER(S,N)  (S) ? (                                dupstr((S), (N))   ) : add_leaf_to_gc(va_arg(va, String))
+#	define STRING(S,N)      (S) ? (ast->attr |= ATTR_CopyOnAssign, makstr((S), (N), c)) : va_arg(va, String)
+#	define IDENTIFIER(S,N)  (S) ? (                                dupstr((S), (N))   ) : va_arg(va, String)
 #	define OPERATOROF(S,N)  (S) ? (                                makopr((S), (N))   ) : va_arg(va, unsigned)
-#	define ENVIRONMENT(...)        ast->m.env = va_arg(va, Array); env_dup(ast)
 
 #	include "oboe.enum"
 
@@ -469,12 +369,11 @@ new_ast(
 #	undef STRING
 #	undef IDENTIFIER
 #	undef OPERATOROF
-#	undef ENVIRONMENT
 	}}
 
 	va_end(va);
 
-	return add_branch_to_gc(ast);
+	return gc_push(ast);
 }
 
 Ast
@@ -497,14 +396,10 @@ dup_ast(
 #		define ENUM(Name)       } break; case AST_##Name: {
 #		define DUP(...)         __VA_ARGS__;
 
-#		define ENVIRONMENT(...) env_dup(ast);
-
 #		include "oboe.enum"
-
-#		undef ENVIRONMENT
 		}}
 
-		return add_branch_to_gc(dup);
+		return gc_push(dup);
 	}
 
 	return ast;

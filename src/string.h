@@ -27,7 +27,7 @@ SOFTWARE.
 #include <string.h>
 #include "stdtypes.h"
 #include "bitmac.h"
-#include "xmem.h"
+#include "gc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,8 +38,8 @@ extern "C" {
 typedef struct string       *String;
 typedef struct string const *StringConst;
 
-enum { STRING_MAX = BIT_ROUND(XMEM_MAX/2) };
-enum { STRING_MIN = XMEM_MIN };
+enum { STRING_MAX = BIT_ROUND(SIZE_MAX/2) };
+enum { STRING_MIN = (8 << (SIZE_MAX > UINT32_MAX)) << (SIZE_MAX > UINT16_MAX) };
 
 //------------------------------------------------------------------------------
 

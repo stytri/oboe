@@ -74,6 +74,7 @@ initialise(
 	if(!initialised) {
 		initialised = true;
 
+		initialise_ast();
 		initialise_env();
 		initialise_sources();
 		initialise_builtins(has_math);
@@ -329,17 +330,14 @@ interactive(
 	FILE     *gfile
 ) {
 	for(;;) {
-		size_t mem_used    = xmemtotal();
+		size_t mem_used    = gc_total_size();
 		size_t stack_depth = gc_topof_stack();
 
 		if(!quiet) {
 			fprintf(stdout,
-				"[%zu](%zu)%zu/%zu/%zu> ",
+				"[%zu](%zu)> ",
 				mem_used,
-				stack_depth,
-				gc_stats.total,
-				gc_stats.dead,
-				gc_stats.live
+				stack_depth
 			);
 		}
 		fflush(stdout);

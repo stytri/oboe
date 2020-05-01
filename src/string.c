@@ -23,6 +23,7 @@ SOFTWARE.
 */
 #include "string.h"
 #include "bits.h"
+#include "gc.h"
 
 //------------------------------------------------------------------------------
 
@@ -152,7 +153,7 @@ expand_string(
 		}
 
 		size_t z = string_allocation_size(o + n);
-		s = xrealloc(s, sizeof(*s) + z);
+		s = realloc(s, sizeof(*s) + z);
 		if(s) {
 			s->cap = z - 1;
 		}
@@ -209,7 +210,7 @@ StringCreate(
 	void
 ) {
 	size_t z = string_allocation_size(0);
-	String s = xmalloc(sizeof(*s) + z);
+	String s = malloc(sizeof(*s) + z);
 
 	if(s) {
 		s->len = 0;
@@ -228,7 +229,7 @@ StringReserve(
 
 	if(n < STRING_MAX) {
 		size_t z = string_allocation_size(n);
-		s = xmalloc(sizeof(*s) + z);
+		s = malloc(sizeof(*s) + z);
 
 		if(s) {
 			s->len = n;
@@ -252,7 +253,7 @@ StringBuild(
 
 	if(reserve < STRING_MAX) {
 		size_t z = string_allocation_size(reserve);
-		s = xmalloc(sizeof(*s) + z);
+		s = malloc(sizeof(*s) + z);
 		if(!s) {
 			return s;
 		}
@@ -282,7 +283,7 @@ StringBuild(
 	size_t z = string_allocation_size(s->len);
 	if(s->cap >= z) {
 		String t = s;
-		s = xrealloc(s, sizeof(*s) + z);
+		s = realloc(s, sizeof(*s) + z);
 		if(!s) {
 			return t;
 		}
@@ -296,7 +297,7 @@ void
 StringDelete(
 	String s
 ) {
-	xfree(s);
+	free(s);
 }
 
 String
@@ -391,7 +392,7 @@ CharLiteralToString(
 	n = char_length(cs, n);
 
 	size_t z = string_allocation_size(n);
-	String s = xmalloc(sizeof(*s) + z);
+	String s = malloc(sizeof(*s) + z);
 
 	if(s) {
 		memcpy(s->cs, cs, n);
@@ -413,7 +414,7 @@ CharLiteralsToString(
 	size_t n = n1 + n2;
 
 	size_t z = string_allocation_size(n);
-	String s = xmalloc(sizeof(*s) + z);
+	String s = malloc(sizeof(*s) + z);
 
 	if(s) {
 		if(n1 > 0) {
@@ -486,7 +487,7 @@ StringConcatenate(
 	size_t n2 = StringLength(s2);
 	size_t n  = n1 + n2;
 	size_t z  = string_allocation_size(n);
-	String s  = xmalloc(sizeof(*s) + z);
+	String s  = malloc(sizeof(*s) + z);
 
 	if(s) {
 		memcpy(s->cs, char_pointer(s1), n1);

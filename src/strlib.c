@@ -23,7 +23,7 @@ SOFTWARE.
 */
 #include "strlib.h"
 #include "nobreak.h"
-#include "xmem.h"
+#include "gc.h"
 #include "hash.h"
 #include "utf8.h"
 

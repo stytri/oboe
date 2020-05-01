@@ -26,7 +26,6 @@ SOFTWARE.
 #include "eval.h"
 #include "builtins.h"
 #include "strlib.h"
-#include "marray.h"
 #include "assert.h"
 #include "gc.h"
 #include <stdlib.h>
@@ -38,70 +37,40 @@ struct env_stats env_stats;
 
 //------------------------------------------------------------------------------
 
-#ifndef NPOOL
-typedef XMEM_STRUCT(struct array, env) xmem_env;
-#define XMEM_ENV(...)  (xmem_env) { \
-	{ sizeof(xmem_env), 0 }, \
-	ARRAY() \
+static void
+env_gc_mark(
+	void const *p,
+	void      (*mark)(void const *)
+) {
+	Array env = (Array)p;
+	for(size_t i = array_length(env); i-- > 0; mark(array_at(env, Ast, i)))
+		;
+	return;
 }
-static struct array env_pool      = ARRAY();
-static Array        env_free_list = NULL;
-#endif//ndef NPOOL
+
+static void
+env_gc_sweep(
+	void const *p
+) {
+	Array env = (Array)p;
+	array_free(env);
+	memset(env, 0, sizeof(*env));
+	gc_free(p);
+	return;
+}
 
 //------------------------------------------------------------------------------
-
-static inline uintptr_t
-env_rc_inc(
-	Array env
-) {
-	uintptr_t *p = xmemheader(env);
-	if(p && ~*p) {
-		return ++*p;
-	}
-	return ~(uintptr_t)0;
-}
-
-static inline uintptr_t
-env_rc_dec(
-	Array env
-) {
-	uintptr_t *p = xmemheader(env);
-	if(p && *p && ~*p) {
-		return --*p;
-	}
-	return ~(uintptr_t)0;
-}
 
 Ast
 new_env(
 	sloc_t sloc,
 	Ast    outer
 ) {
-	Array env;
-
-#ifndef NPOOL
-	if(env_free_list != NULL) {
-		env           = env_free_list;
-		env_free_list = (Array)env->map;
-		*env = ARRAY();
-
-	} else {
-		xmem_env *xenv = marray_create_back(&env_pool, xmem_env);
-		assert(xenv != NULL);
-		*xenv = XMEM_ENV();
-		env = &xenv->data;
-	}
-#else//ifndef NPOOL
-	env = xmalloc(sizeof(*env));
+	Array env = gc_malloc(sizeof(*env), env_gc_mark, env_gc_sweep);
 	assert(env != NULL);
 	*env = ARRAY();
-#endif//ndef NPOOL
 
 	Ast ast = new_ast(sloc, NULL, AST_Environment, env, outer);
-
-	env_stats.total++;
-	env_stats.live++;
-
 	return ast;
 }
 
@@ -117,37 +86,6 @@ dup_env(
 	}
 
 	return dup;
-}
-
-void
-env_dup(
-	Ast ast
-) {
-	env_rc_inc(ast->m.env);
-}
-
-void
-del_env(
-	Ast ast
-) {
-	Array env = ast->m.env;
-
-	if(env && (env_rc_dec(env) == 0)) {
-		array_free(env);
-
-		memset(env, 0, sizeof(*env));
-#ifndef NPOOL
-		env->map      = (uintptr_t)env_free_list;
-		env_free_list = env;
-#else//ifndef NPOOL
-		xfree(env);
-#endif//ndef NPOOL
-
-		env_stats.dead++;
-		env_stats.live--;
-	}
-
-	return;
 }
 
 //------------------------------------------------------------------------------
@@ -423,6 +361,7 @@ initialise_env(
 ) {
 	operators = new_env(0, NULL);
 	globals   = new_env(0, NULL);
+
 
 	return EXIT_SUCCESS;
 }

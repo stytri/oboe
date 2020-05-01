@@ -23,7 +23,6 @@ SOFTWARE.
 */
 #include "odt.h"
 #include "array.h"
-#include "xmem.h"
 #include "hash.h"
 #include "gc.h"
 
@@ -40,7 +39,8 @@ struct odt {
 		Ast ast
 	);
 	void      (*mark)(
-		Ast ast
+		Ast    ast,
+		void (*gc_mark)(void const *)
 	);
 	void      (*sweep)(
 		Ast ast
@@ -98,7 +98,8 @@ add_odt(
 		Ast ast
 	),
 	void      (*mark)(
-		Ast ast
+		Ast    ast,
+		void (*gc_mark)(void const *)
 	),
 	void      (*sweep)(
 		Ast ast
@@ -165,10 +166,11 @@ odt_eval(
 
 void
 odt_mark(
-	Ast ast
+	Ast    ast,
+	void (*gc_mark)(void const *)
 ) {
 	Odt odt = odt_of(ast);
-	if(odt) odt->mark(ast);
+	if(odt) odt->mark(ast, gc_mark);
 }
 
 void

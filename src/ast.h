@@ -100,7 +100,7 @@ struct ast {
 	}	m;
 };
 
-extern struct ast *const ZEN;
+extern struct ast *ZEN;
 
 //------------------------------------------------------------------------------
 
@@ -256,6 +256,11 @@ ast_toBool(
 );
 
 //------------------------------------------------------------------------------
+
+extern void
+initialise_ast(
+	void
+);
 
 extern Ast
 new_ast(

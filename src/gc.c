@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Tristan Styles
+Copyright (c) 2020 Tristan Styles
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,218 +22,399 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include "gc.h"
-#include "array.h"
+#include "bitmac.h"
+#include <string.h>
 
 //------------------------------------------------------------------------------
 
-struct gc_stats gc_stats = GC_STATS();
+struct gc {
+	uintptr_t link;
+	size_t    size;
+	void    (*mark )(void const *ptr, void (*gc_mark)(void const *));
+	void    (*sweep)(void const *ptr);
+};
 
 //------------------------------------------------------------------------------
 
-// Bit  0    Mark bit
-// Bit  1    Leaf flag
-// Bits 2..  Link address
+#define GC_MIN  BIT_ROUND(sizeof(struct gc))
+#define GC_MAX  (BIT_ROUND(SIZE_MAX/2) - GC_MIN)
+#define GC_TAG  ((uintptr_t)0x3)
 
-enum { MARK_MASK = 0x01u };
-enum { LEAF_FLAG = 0x02u };
-enum { TAG_BITS  = LEAF_FLAG | MARK_MASK };
+static size_t       _gc_total_size   = 0;
+static size_t       _gc_sizeof_stack = 0;
+static size_t       _gc_topof_stack  = 0;
+static void const **_gc_stack        = NULL;
+static uintptr_t    _gc_list         = ((uintptr_t)NULL & ~GC_TAG) | 0x1;
+
+//------------------------------------------------------------------------------
+
+static inline bool
+_gc_in_limit(
+	size_t count,
+	size_t size
+) {
+	return (GC_MAX >= _gc_total_size)
+		&& (((GC_MAX - _gc_total_size) / count) >= size)
+	;
+}
+
+static inline size_t
+_gc_rounded_size(
+	size_t size
+) {
+	return GC_MIN + ((size + (GC_MIN - 1)) & ~(GC_MIN - 1));
+}
+
+//------------------------------------------------------------------------------
+
+static inline struct gc *
+_gc(
+	void const *ptr
+) {
+	return (struct gc *)ptr;
+}
 
 static inline void *
-toptr(
-	uintptr_t uip
+_gc_wrap(
+	void const *ptr
 ) {
-	return (void *)(uip & ~(uintptr_t)TAG_BITS);
+	return (void *)((char *)ptr + GC_MIN);
 }
 
-//------------------------------------------------------------------------------
-
-static struct array gc_stack = ARRAY();
-static uintptr_t    gc_list  = (uintptr_t)&gc_list;
-static uintptr_t    gc_tag   = 0x0;
-
-//------------------------------------------------------------------------------
-
-//                     +---------+        +---------+
-//  +---------+        |  xmem   |        |  xmem   |     +---------+
-//  | gc_list | --+    | header  | --+    | header  | --> | gc_list |
-//  +---------+   |    +---------+   |    +---------+     +---------+
-//                +--> |         |   +--> |         |
-//                               |                  |
-//                     |                  |
-//                     |         |        |         |
-//                     +---------+        +---------+
-
-//------------------------------------------------------------------------------
-
-void
-gc(
-	void (*mark)(
-		void const *p
-	),
-	void (*sweep)(
-		void const *p
-	)
+static inline void *
+_gc_unwrap(
+	void const *ptr
 ) {
-	gc_stats.marked = 0;
-	gc_stats.swept = 0;
-	gc_stats.kept  = 0;
-
-	if(gc_list != (uintptr_t)&gc_list) {
-		gc_tag ^= MARK_MASK;
-
-		for(size_t i = gc_stack.length; i-- > 0; ) {
-			void const *curr = array_at(&gc_stack, void const *, i);
-
-			if(curr) {
-				gc_mark(mark, curr);
-			}
-		}
-
-		uintptr_t *prev = &gc_list;
-		for(void const *next, *curr = toptr(gc_list); curr != &gc_list; curr = next) {
-			uintptr_t *up = xmemheader(curr);
-
-			next = toptr(*up);
-
-			if((*up & MARK_MASK) == gc_tag) {
-				prev = up;
-
-				++gc_stats.kept;
-
-			} else {
-				*prev = (uintptr_t)next | (*prev & TAG_BITS);
-
-				sweep(curr);
-
-				++gc_stats.swept;
-			}
-		}
-	}
-
-	return;
+	return (void *)((char *)ptr - GC_MIN);
 }
 
-void
-gc_mark(
-	void      (*mark)(
-		void const *p
-	),
-	void const *p
+static inline void
+_gc_push(
+	void const *ptr
 ) {
-	uintptr_t *up = xmemheader(p);
-
-	if(up && ((*up & MARK_MASK) != gc_tag)) {
-		*up ^= MARK_MASK;
-
-		if((*up & LEAF_FLAG) == 0) {
-			mark(p);
-		}
-
-		++gc_stats.marked;
-	}
-
-	return;
-}
-
-void *
-gc_leaf(
-	void const *p
-) {
-	uintptr_t *up = xmemheader(p);
-
-	if(up && !*up) {
-		*up = gc_list | LEAF_FLAG | gc_tag;
-
-		gc_list = (uintptr_t)p;
-
-		gc_stats.live++;
-		gc_stats.total++;
-	}
-
-	return (void *)p;
-}
-
-void *
-gc_branch(
-	void const *p
-) {
-	uintptr_t *up = xmemheader(p);
-
-	if(up && !*up) {
-		*up = gc_list | gc_tag;
-
-		gc_list = (uintptr_t)p;
-
-		gc_stats.live++;
-		gc_stats.total++;
-	}
-
-	return (void *)p;
-}
-
-void *
-gc_remove(
-	void const *p
-) {
-	uintptr_t *up = xmemheader(p);
-
-	if(up
-		&& ((*up & ~(uintptr_t)TAG_BITS) != 0)
-		&& ((*up ^ ~(uintptr_t)TAG_BITS) != 0)
+	if((_gc_topof_stack == _gc_sizeof_stack)
+		&& (_gc_sizeof_stack <= GC_MAX)
 	) {
-		*up = 0;
-
-		gc_stats.live--;
-		gc_stats.dead++;
+		size_t       new_sizeof_stack = _gc_sizeof_stack ? (_gc_sizeof_stack * 2) : GC_MIN;
+		void const **new_stack        = (realloc)(_gc_stack, new_sizeof_stack * sizeof(_gc_stack[0]));
+		if(!new_stack) {
+			return;
+		}
+		_gc_stack        = new_stack;
+		_gc_sizeof_stack = new_sizeof_stack;
 	}
 
-	return (void *)p;
+	_gc_stack[_gc_topof_stack++] = ptr;
+
+	return;
 }
 
-bool
-gc_is_leaf(
-	void const *p
+static inline void *
+_gc_link(
+	void *ptr
 ) {
-	uintptr_t const *up = xmemheader(p);
-
-	return up && ((*up & LEAF_FLAG) != 0);
-}
-
-inline void *
-gc_push(
-	void const *p
-) {
-	return p && array_push_back(&gc_stack, void const *, p) ? (
-		(void *)p
-	) : (
-		NULL
-	);
-}
-
-inline void
-gc_revert(
-	size_t ts
-) {
-	if(gc_stack.length > ts) {
-		gc_stack.length = ts;
+	if(_gc(ptr)->link == 0) {
+		_gc(ptr)->link = _gc_list;
+		_gc_list       = ((uintptr_t)ptr & ~GC_TAG) | (_gc_list & GC_TAG);
 	}
+	return ptr;
 }
 
-extern void *
-gc_return(
-	size_t      ts,
-	void const *p
+static void
+_gc_mark_callback(
+	void const *ptr
+);
+
+static inline void
+_gc_mark(
+	void const *ptr
 ) {
-	gc_revert(ts);
+	if((_gc_list ^ _gc(ptr)->link) & GC_TAG) {
+		_gc(ptr)->link ^= GC_TAG;
+		_gc(ptr)->mark(_gc_wrap(ptr), _gc_mark_callback);
+	}
 
-	return gc_push(p);
+	return;
 }
 
+static void
+_gc_mark_callback(
+	void const *ptr
+) {
+	if(!ptr) {
+		return;
+	}
+
+	_gc_mark(_gc_unwrap(ptr));
+
+	return;
+}
+
+//------------------------------------------------------------------------------
+
+static void
+_gc_no_mark(
+	void const *ptr,
+	void      (*gc_mark)(void const *)
+) {
+	(void)ptr;
+	(void)gc_mark;
+}
+
+static void
+_gc_no_sweep(
+	void const *ptr
+) {
+	(void)ptr;
+}
+
+static void
+_gc_default_mark(
+	void const *ptr,
+	void      (*gc_mark)(void const *)
+) {
+	(void)ptr;
+	(void)gc_mark;
+}
+
+static void
+_gc_default_sweep(
+	void const *ptr
+) {
+	(free)(_gc_unwrap(ptr));
+}
+
+static inline void *
+_gc_set(
+	void  *ptr,
+	size_t size,
+	void (*mark )(void const *ptr, void (*gc_mark)(void const *)),
+	void (*sweep)(void const *ptr)
+) {
+	_gc(ptr)->link  = 0;
+	_gc(ptr)->size  = size;
+	_gc(ptr)->mark  = mark  ? mark  : _gc_default_mark;
+	_gc(ptr)->sweep = sweep ? sweep : _gc_default_sweep;
+
+	return _gc_wrap(ptr);
+}
+
+//------------------------------------------------------------------------------
+
+void *
+gc_malloc(
+	size_t size,
+	void (*mark )(void const *ptr, void (*gc_mark)(void const *)),
+	void (*sweep)(void const *ptr)
+) {
+	void *ptr = NULL;
+
+	size += !size;
+	if(_gc_in_limit(1, size)) {
+		size = _gc_rounded_size(size);
+		ptr  =  (malloc)(size);
+		if(ptr) {
+			memset(ptr, 0, GC_MIN);
+			ptr = _gc_set(ptr, size, mark, sweep);
+			_gc_total_size += size;
+		}
+	}
+
+	return ptr;
+}
+
+void *
+gc_calloc(
+	size_t count,
+	size_t size,
+	void (*mark )(void const *ptr, void (*gc_mark)(void const *)),
+	void (*sweep)(void const *ptr)
+) {
+	void *ptr = NULL;
+
+	size += !size;
+	count += !count;
+	if(_gc_in_limit(count, size)) {
+		size = _gc_rounded_size(count * size);
+		ptr  =  (calloc)(1, size);
+		if(ptr) {
+			ptr = _gc_set(ptr, size, mark, sweep);
+			_gc_total_size += size;
+		}
+	}
+
+	return ptr;
+}
+
+void *
+gc_realloc(
+	void const *ptr,
+	size_t      size,
+	void      (*mark )(void const *ptr, void (*gc_mark)(void const *)),
+	void      (*sweep)(void const *ptr)
+) {
+	if(!ptr) {
+		return gc_malloc(size, mark, sweep);
+	}
+
+	ptr = _gc_unwrap(ptr);
+
+	size += !size;
+	if(_gc_in_limit(1, size)
+		&& (_gc(ptr)->link == 0)
+	) {
+		size_t oldz = _gc(ptr)->size;
+		size        = _gc_rounded_size(size);
+		if(oldz == size) {
+			return _gc_wrap(ptr);
+		}
+
+		ptr = (realloc)((void *)ptr, size);
+		if(ptr) {
+			if(oldz < size) {
+				_gc_total_size += (size - oldz);
+			} else {
+				_gc_total_size -= (oldz - size);
+			}
+
+			_gc(ptr)->size = size;
+			return _gc_wrap(ptr);
+		}
+	}
+
+	return NULL;
+}
+
+void
+gc_free(
+	void const *ptr
+) {
+	if(ptr) {
+		ptr = _gc_unwrap(ptr);
+		if(_gc(ptr)->link == 0) {
+			_gc(ptr)->mark  = _gc_no_mark;
+			_gc(ptr)->sweep = _gc_no_sweep;
+			_gc_total_size -= _gc(ptr)->size;
+			(free)((void *)ptr);
+		}
+	}
+
+	return;
+}
+
+size_t
+gc_sizeof(
+	void const *ptr
+) {
+	if(!ptr) {
+		return 0;
+	}
+
+	ptr = _gc_unwrap(ptr);
+
+	return _gc(ptr)->size - GC_MIN;
+}
+
+//------------------------------------------------------------------------------
+
+size_t
+gc_total_size(
+	void
+) {
+	return _gc_total_size;
+}
 
 size_t
 gc_topof_stack(
 	void
 ) {
-	return gc_stack.length;
+	return _gc_topof_stack;
+}
+
+void
+gc_revert(
+	size_t top
+) {
+	if(top < _gc_topof_stack) {
+		_gc_topof_stack = top;
+	}
+
+	return;
+}
+
+void *
+gc_return(
+	size_t      top,
+	void const *ptr
+) {
+	gc_revert(top);
+
+	return gc_push(ptr);
+}
+
+void *
+gc_push(
+	void const *ptr
+) {
+	if(!ptr) {
+		return (void *)ptr;
+	}
+
+	_gc_push(_gc_link(_gc_unwrap(ptr)));
+
+	return (void *)ptr;
+}
+
+void *
+gc_link(
+	void const *ptr
+) {
+	if(!ptr) {
+		return (void *)ptr;
+	}
+
+	_gc_link(_gc_unwrap(ptr));
+
+	return (void *)ptr;
+}
+
+void *
+gc_unlink(
+	void const *ptr
+) {
+	return NULL;
+	(void)ptr;
+}
+
+void
+gc_mark_and_sweep(
+	void
+) {
+	if((_gc_list & ~GC_TAG) == (uintptr_t)NULL) {
+		return;
+	}
+
+	uintptr_t const tag = (_gc_list ^= GC_TAG) & GC_TAG;
+
+	for(size_t i = _gc_topof_stack; i-- > 0; ) {
+		_gc_mark(_gc_stack[i]);
+	}
+
+	uintptr_t *prev = &_gc_list;
+	for(void *ptr, *next = (void *)(_gc_list & ~GC_TAG); (ptr = next); ) {
+		next = (void *)(_gc(ptr)->link & ~GC_TAG);
+
+		if(((_gc(ptr)->link ^ tag) & GC_TAG) == 0) {
+			prev = &_gc(ptr)->link;
+			continue;
+		}
+
+		*prev = (uintptr_t)next | tag;
+
+		_gc(ptr)->link = 0;
+		_gc(ptr)->sweep(_gc_wrap(ptr));
+	}
+
+	return;
 }
 

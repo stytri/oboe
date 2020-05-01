@@ -3,7 +3,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Tristan Styles
+Copyright (c) 2020 Tristan Styles
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
 #include "stdtypes.h"
-#include "xmem.h"
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,58 +32,57 @@ extern "C" {
 
 //------------------------------------------------------------------------------
 
+typedef void (*gc_mark_t )(void const *ptr, void (*mark)(void const *));
+typedef void (*gc_sweep_t)(void const *ptr);
+
+//------------------------------------------------------------------------------
+
+#undef  malloc
+#define malloc(Size)  gc_malloc((Size), NULL, NULL)
+extern void *
+gc_malloc(
+	size_t size,
+	void (*mark )(void const *ptr, void (*gc_mark)(void const *)),
+	void (*sweep)(void const *ptr)
+);
+
+#undef  calloc
+#define calloc(Count,Size)  gc_calloc((Count), (Size), NULL, NULL)
+extern void *
+gc_calloc(
+	size_t count,
+	size_t size,
+	void (*mark )(void const *ptr, void (*gc_mark)(void const *)),
+	void (*sweep)(void const *ptr)
+);
+
+#undef  realloc
+#define realloc(Ptr,Size)  gc_realloc((Ptr), (Size), NULL, NULL)
+extern void *
+gc_realloc(
+	void const *ptr,
+	size_t      size,
+	void      (*mark )(void const *ptr, void (*gc_mark)(void const *)),
+	void      (*sweep)(void const *ptr)
+);
+
+#undef  free
+#define free(Ptr)  gc_free((Ptr))
 extern void
-gc(
-	void (*mark)(
-		void const *p
-	),
-	void (*sweep)(
-		void const *p
-	)
+gc_free(
+	void const *ptr
 );
 
-extern void
-gc_mark(
-	void      (*mark)(
-		void const *p
-	),
-	void const *p
+extern size_t
+gc_sizeof(
+	void const *ptr
 );
 
-extern void *
-gc_leaf(
-	void const *p
-);
+//------------------------------------------------------------------------------
 
-extern void *
-gc_branch(
-	void const *p
-);
-
-extern void *
-gc_remove(
-	void const *p
-);
-
-extern bool
-gc_is_leaf(
-	void const *p
-);
-
-extern void *
-gc_push(
-	void const *p
-);
-
-extern void
-gc_revert(
-	size_t ts
-);
-
-extern void *
-gc_return(
-	size_t      ts,
-	void const *p
+extern size_t
+gc_total_size(
+	void
 );
 
 extern size_t
@@ -92,20 +90,36 @@ gc_topof_stack(
 	void
 );
 
-//------------------------------------------------------------------------------
+extern void
+gc_revert(
+	size_t top
+);
 
-struct gc_stats {
-	size_t live;
-	size_t dead;
-	size_t total;
-	size_t collect;
-	size_t marked;
-	size_t swept;
-	size_t kept;
-};
-#define GC_STATS(...)  (struct gc_stats){ 0, 0, 0, 0, 0, 0, 0 }
+extern void *
+gc_return(
+	size_t      top,
+	void const *ptr
+);
 
-extern struct gc_stats gc_stats;
+extern void *
+gc_push(
+	void const *ptr
+);
+
+extern void *
+gc_link(
+	void const *ptr
+);
+
+extern void *
+gc_unlink(
+	void const *ptr
+);
+
+extern void
+gc_mark_and_sweep(
+	void
+);
 
 //------------------------------------------------------------------------------
 

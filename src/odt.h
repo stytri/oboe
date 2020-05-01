@@ -44,7 +44,8 @@ add_odt(
 		Ast ast
 	),
 	void      (*mark)(
-		Ast ast
+		Ast     ast,
+		void  (*gc_mark)(void const *)
 	),
 	void      (*sweep)(
 		Ast ast
@@ -74,7 +75,8 @@ odt_eval(
 
 extern void
 odt_mark(
-	Ast ast
+	Ast    ast,
+	void (*gc_mark)(void const *)
 );
 
 extern void

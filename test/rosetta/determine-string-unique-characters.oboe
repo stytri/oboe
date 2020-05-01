@@ -26,7 +26,7 @@ is_unique(c:, i:): (
 	n:pos[c]@length,
 	n ! (pos[c] = []),
 	pos[c][n] = i,
-	(n > 0) ? (0 ; 1)
+	!n
 );
 
 process(s): (
@@ -35,7 +35,7 @@ process(s): (
 	unique:1,
 	diff1:"",
 
-	(cs:"", uniq:0, i:0; i < len; i++) ?* (
+	(cs:, uniq:, i:0; i < len; i++) ?* (
 		cs = s[i]@to_String,
 		uniq = is_unique(cs, i),
 		(!uniq && unique) ? (
