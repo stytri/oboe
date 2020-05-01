@@ -914,7 +914,7 @@ builtin_exit(
 		case AST_Integer:
 			exit((int)arg->m.ival);
 		default:
-//			arg = builtin_print_line(env, sloc, arg);
+			builtin_printerr(env, sloc, arg);
 			exit(EXIT_FAILURE);
 		}
 	}
