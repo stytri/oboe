@@ -67,6 +67,17 @@ sequential_evaluation(
 
 //------------------------------------------------------------------------------
 
+// system_stdio
+
+extern Ast
+builtin_printerr(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+);
+
+//------------------------------------------------------------------------------
+
 #ifdef __cplusplus
 }
 #endif

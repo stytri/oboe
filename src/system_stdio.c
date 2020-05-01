@@ -792,7 +792,7 @@ builtin_println(
 	return arg;
 }
 
-static Ast
+Ast
 builtin_printerr(
 	Ast    env,
 	sloc_t sloc,
