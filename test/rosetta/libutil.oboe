@@ -49,7 +49,7 @@ shuffle(a): (
 		(n <> i) ? (
 			t    = a[n],
 			a[n] = a[i],
-			a[i] = t)
+			a[i] = t
 		)
 	),
 
