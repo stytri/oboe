@@ -15,15 +15,27 @@ Further to this I arrived at the following guides for implementation:
 -	Only use Standard C
 -	Use it as a sandbox for other ideas
 
+## Development Environment
 
+Windows 7
+
+[jEdit](http://jedit.org/) Editor
+
+[MingGW](https://nuwen.net/mingw.html) ([GCC](https://gcc.gnu.org/)) Compiler
+
+[Git](https://git-scm.com/) Source Control Management
+
+[FreeCommander](https://freecommander.com) File Manager
+
+[ConEmu](https://conemu.github.io/) Console Terminal
 
 ## Implementation
 
-Implemented as an executable syntax tree.
+Implemented as an executable syntax tree interpreter.
 
 #### Lexicon
 
-UTF-8 encoding.
+[UTF-8](https://en.wikipedia.org/wiki/UTF-8) encoding.
 
 #### Comments
 
@@ -155,6 +167,32 @@ A _sequence_ may be evaluated differently when used as an operand, but is otherw
 
 _left-operand_ is evaluated, then _right-operand_ is evaluated.
 
+##### declaration
+
+either:
+
+_referent_ `:` _operand_
+
+or:
+
+_referent_ `:` `[` `]`
+
+or:
+
+_referent_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
+
+or:
+
+_operator-string_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
+
+or:
+
+_operator-string_ `:` _operator-string_
+
+##### assignment
+
+_reference_ `=` _operand_
+
 ##### conditional
 
 either:
@@ -185,7 +223,7 @@ _expression_ `?:` `(` (_case-expression_ `:` _case-operand_ `;`)+ _default-opera
 
 or:
 
- `?:` `(` (_case-expression_ `:` _case-operand_ `;`)+ _default-operand_?`)`
+ **Zen** `?:` `(` (_case-expression_ `:` _case-operand_ `;`)+ _default-operand_?`)`
 
 ##### iteration
 
@@ -198,6 +236,10 @@ or:
 _iteration-control_ `?*` `(` _iteration-operand_ `;` _no-iteration-operand_ `)`
 
 _no-iteration-operand_ is evaluated if the controlling _condition_ never evaluates **true**
+
+or:
+
+_iteration-control_ `?*` **Zen**
 
 where _iteration-control_ is either:
 
@@ -213,37 +255,9 @@ or:
 
 The `!*` operator is as above, except the condition is inverted.
 
-##### assignment
-
-_reference_ `=` _operand_
-
-##### declaration
-
-either:
-
-_referent_ `:` _operand_
-
-or:
-
-_referent_ `[` `] ` `:` _operand_
-
-or:
-
-_referent_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
-
-or:
-
-_operator-string_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
-
-or:
-
-_operator-string_ `:` _operator-string_
-
 ##### evaluation
 
 _left-operand_ _operator_ _right-operand_
-
-`=`	assignment
 
 `&&`	logical AND
 
