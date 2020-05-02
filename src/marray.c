@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include "marray.h"
-#include "xmem.h"
 #include "bits.h"
+#include "gc.h"
 
 //------------------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ marray_expand(
 	size_t size,
 	size_t count
 ) {
-	size_t const buf_max  = XMEM_MAX / size;
+	size_t const buf_max  = (SIZE_MAX/2) / size;
 	size_t       capacity = arr ? arr->capacity : buf_max;
 
 	if((0 < count) && (count <= (buf_max - capacity))) {
@@ -45,12 +45,12 @@ marray_expand(
 		void **slot              = arr->base;
 
 		if(!slot || (tail < new_tail)) {
-			slot = xrealloc(arr->base, (new_tail * sizeof(void *)));
+			slot = realloc(arr->base, (new_tail * sizeof(void *)));
 			if(slot) {
 				arr->base = slot;
 
 				if(capacity == 0) {
-					slot[0] = xmalloc(size);
+					slot[0] = malloc(size);
 					if(!slot[0]) {
 						return false;
 					}
@@ -59,7 +59,7 @@ marray_expand(
 				}
 
 				for(; tail < new_tail; ++tail) {
-					slot[tail] = xmalloc(capacity * size);
+					slot[tail] = malloc(capacity * size);
 					if(!slot[tail]) {
 						return false;
 					}
@@ -86,7 +86,7 @@ marray_free(
 			size_t m = bitmaskz (arr->capacity);
 			size_t n = popcountz(m);
 			for(size_t i = 0; i < n; ++i) {
-				xfree(slot[i]);
+				free(slot[i]);
 			}
 		}
 

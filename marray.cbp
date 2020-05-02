@@ -42,15 +42,15 @@
 		<Unit filename="src/assert.h" />
 		<Unit filename="src/bitmac.h" />
 		<Unit filename="src/bits.h" />
+		<Unit filename="src/gc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/gc.h" />
 		<Unit filename="src/marray.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/marray.h" />
 		<Unit filename="src/stdtypes.h" />
-		<Unit filename="src/xmem.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/xmem.h" />
 		<Unit filename="test_timing.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />

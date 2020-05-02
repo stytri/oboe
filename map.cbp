@@ -42,6 +42,10 @@
 		<Unit filename="src/assert.h" />
 		<Unit filename="src/bitmac.h" />
 		<Unit filename="src/bits.h" />
+		<Unit filename="src/gc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/gc.h" />
 		<Unit filename="src/mapfile.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -54,10 +58,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/string.h" />
-		<Unit filename="src/xmem.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/xmem.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>
