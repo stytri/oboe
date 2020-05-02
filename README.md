@@ -23,6 +23,8 @@ Windows 7
 
 [MingGW](https://nuwen.net/mingw.html) ([GCC](https://gcc.gnu.org/)) Compiler
 
+[CodeBlocks](http://www.codeblocks.org/) (to build and debug)
+
 [Git](https://git-scm.com/) Source Control Management
 
 [FreeCommander](https://freecommander.com) File Manager
