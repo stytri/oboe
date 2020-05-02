@@ -1,8 +1,5 @@
 *	Documentation
 
-*	Look again at assignment & evaluation 
--	possibly have two assignment types: by-value and by-reference
-
 *	Precedence specification for definable operators
 -	currently set to additive precedence
 
@@ -10,9 +7,6 @@
 -	some done, but ongoing as and when
 
 *	Value ranges + proto-types [sic]
-
-*	Move grammar handling from run time to parse time
--	or not; allow run time manipulation of the AST ?
 
 *	Search path for import
 
