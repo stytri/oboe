@@ -652,6 +652,9 @@ builtin_read_1(
 		);
 		return assign(sloc, &ast->m.rexpr, arg);
 	}
+	if(ast_isZen(ast)) {
+		return arg;
+	}
 
 	return error_or(sloc, arg, ERR_InvalidOperand);
 }
@@ -684,9 +687,7 @@ builtin_read(
 	} else {
 		Ast file = eval_file(env, arg);
 		if(ast_isFileType(file) && (file->m.lptr != NULL)) {
-			arg = new_ast(sloc, NULL, AST_Void);
-
-			return builtin_read_1(file, env, sloc, arg);
+			return builtin_read_1(file, env, sloc, ZEN);
 		}
 
 		return error_or(sloc, file, ERR_InvalidOperand);
