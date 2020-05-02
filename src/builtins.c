@@ -1048,11 +1048,8 @@ evaluate_assignable(
 	sloc_t sloc,
 	Ast    expr
 ) {
-	return ast_isCopyOnAssign(expr) ?
-		evaluate_instance(env, sloc, expr)
-	:
-		refeval(env, expr)
-	;
+	return refeval(env, expr);
+	(void)sloc;
 }
 
 //------------------------------------------------------------------------------
