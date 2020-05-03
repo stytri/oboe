@@ -1,4 +1,4 @@
-# https://rosettacode.org/wiki/Aliquot_sequence_classification
+# https://rosettacode.org/wiki/Aliquot_sequence_classifications
 
 "rosetta/libutil"@import;
 
