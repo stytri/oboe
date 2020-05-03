@@ -595,7 +595,7 @@ builtin_time(
 			ok  = ast_isInteger(ast);
 		}
 		if(ok) {
-			tm.tm_mday = ast->m.ival;
+			tm.tm_mday = ast->m.ival - 1;
 
 			ast = eval_named(arg, sloc, "month");
 			ok  = ast_isInteger(ast);
@@ -696,9 +696,9 @@ convert_time_to_env(
 		addenv_named(env, sloc, "minutes", ast);
 		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_hour);
 		addenv_named(env, sloc, "hour", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_mday + 1);
+		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_mday);
 		addenv_named(env, sloc, "day", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_mon);
+		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_mon + 1);
 		addenv_named(env, sloc, "month", ast);
 		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_year + 1900);
 		addenv_named(env, sloc, "year", ast);
