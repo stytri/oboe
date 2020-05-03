@@ -696,7 +696,7 @@ convert_time_to_env(
 		addenv_named(env, sloc, "minutes", ast);
 		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_hour);
 		addenv_named(env, sloc, "hour", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_mday - 1);
+		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_mday + 1);
 		addenv_named(env, sloc, "day", ast);
 		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_mon);
 		addenv_named(env, sloc, "month", ast);
