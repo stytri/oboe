@@ -1,0 +1,48 @@
+# https://en.wikipedia.org/wiki/ISO_week_date
+
+iso_p(y): (
+	(y + y/4 - y/100 + y/400) // 7
+);
+
+iso_weeks(y): (
+	52 + ((iso_p(y) == 4) || (iso_p(y-1) == 3))
+);
+
+iso_week_number(tm): (
+	doy:tm year_day,
+	dow:tm week_day,
+	iwn:(doy + 10 - dow) / 7,
+	?: (
+	iwn == 0                : iso_weeks(tm year - 1);
+	iwn > iso_weeks(tm year): 1;
+	iwn
+	)
+);
+
+trimlz(s): (
+	i:0,
+	(s[i] == `0`) ?* (
+		i = i+1
+	),
+	(i > 0) ? (s << i ; s)
+);
+
+main(argc, argv): (
+	(argc > 1) ? (
+		(tm:, i:3; i < argc; i = i+3) ?* (
+			tm = [
+				year   :trimlz(argv[i-2])@to_Integer,
+				month  :trimlz(argv[i-1])@to_Integer,
+				day    :trimlz(argv[i  ])@to_Integer,
+				hour   :12,
+				minutes:0,
+				seconds:0
+			],
+			iso_week_number((@time(tm))@utctime)@println
+		)
+	;
+		iso_week_number((@time())@utctime)@println
+	)
+);
+
+main(@argc, @argv);
