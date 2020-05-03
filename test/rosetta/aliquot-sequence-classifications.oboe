@@ -1,0 +1,84 @@
+# https://rosettacode.org/wiki/Aliquot_sequence_classification
+
+"rosetta/libutil"@import;
+
+proper_divisor_sum(n:): (
+	sum:0,
+
+	(i:1; i < n; i++) ?* (
+		(n // i) ! (
+			sum = sum + i
+		)
+	),
+
+	sum
+);
+
+print(type, term): (
+	(type, ": ", term)@println
+);
+
+aliquot_classifier(K:): (
+	term:[K],
+	continue:1,
+	i:1,
+
+	(ti:,t1:; continue && i < 16; i++) ?* (
+		term[i] = (ti = proper_divisor_sum(t1 = term[i-1])),
+
+		?: (
+		(ti == 0): (
+			print("Terminating", term),
+			continue = 0);
+		(ti == K && i == 1): (
+			print("Perfect", term),
+			continue = 0);
+		(ti == K && i == 2): (
+			print("Amicable", term),
+			continue = 0);
+		(ti == K): (
+			print("Sociable", term),
+			continue = 0);
+		(ti == t1 && ti <> K): (
+			print("Aspiring", term),
+			continue = 0);
+		(j:1; j < i; j++) ?* (
+			(term[j] == ti) ? (
+				print("Cyclic", term),
+				continue = 0
+			)
+		))
+	),
+
+	continue ? print("Non-Terminating", term)
+);
+
+process(file): (
+	f:file@open,
+	f@is_File ? (
+		(n:f@read; n@is_Integer; n=f@read) ?* (
+			aliquot_classifier(n)
+		;
+			("unable to read file: ", file, ": ", n)@printerr
+		),
+		f@close
+	;
+		("unable to open file: ", file, ": ", f)@printerr
+	)
+);
+
+main(argc, argv): (
+	(i:1; i < argc; i++) ?* (
+		(argv[i][0] == `-`) ? (
+			process(argv[i] << 1)
+		;
+			aliquot_classifier(argv[i]@to_Integer)
+		)
+	)
+);
+
+main(@argc,@argv);
+
+
+
+
