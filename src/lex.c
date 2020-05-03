@@ -148,18 +148,41 @@ restart_continue:
 			char32_t const ec    = (c == '(') ? ')' : (c == '[') ? ']' : '}';
 			char32_t const sc    = c;
 			size_t         depth = 1;
-			do {
-				c = *++cs;
+			while((c = utf8chr(cs, &cs))) {
 				if(c == sc) {
 					++depth;
 				} else if(c == ec) {
 					--depth;
 					if(depth == 0) {
-						c = *++cs;
+						break;
 					}
+				} else switch(c) {
+				default:
+					continue;
+				case '\n':
+					if(*cs == '\r') {
+						++cs;
+					}
+					*linep = cs;
+					++*linop;
+					continue;
+				case '\r':
+					if(*cs == '\n') {
+						++cs;
+					}
+					*linep = cs;
+					++*linop;
+					continue;
+				case '\f':
+				case '\v':
+				case 0x85:   // NEL
+				case 0x2028: // LS
+				case 0x2029: // PS
+					*linep = cs;
+					++*linop;
+					continue;
 				}
-			} while(c && (depth > 0))
-				;
+			}
 			goto restart;
 		}
 
