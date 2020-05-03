@@ -464,13 +464,15 @@ builtin_getenv(
 	if(ast_isnotSequence(arg)) {
 		arg = eval(env, arg);
 		if(ast_isString(arg)) {
+			size_t      len;
+			char const *cs = StringToCharLiteral(arg->m.sval, &len);
+			if(cs && (len > 0)) {
+				cs = getenv(cs);
+				String s = CharLiteralToString(cs, strlen(cs));
+				assert(s != NULL);
 
-			char const *cs = StringToCharLiteral(arg->m.sval, NULL);
-			cs = getenv(cs);
-			String s = CharLiteralToString(cs, strlen(cs));
-			assert(s != NULL);
-
-			return new_ast(sloc, NULL, AST_String, s);
+				return new_ast(sloc, NULL, AST_String, s);
+			}
 		}
 	}
 
