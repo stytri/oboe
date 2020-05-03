@@ -25,6 +25,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 #include "nobreak.h"
+#include "version.h"
 #include "ast.h"
 #include "parse.h"
 #include "builtins.h"
@@ -100,7 +101,7 @@ main(
 		"--noeval",
 #	endif
 #	if 0
-		"--graph", "debug.dot",
+		"--graph", "test.dot",
 #	endif
 #	if 0
 		"-x",
@@ -125,18 +126,17 @@ main(
 		{ 2, "-o, --output FILE",               "output to FILE" },
 		{ 3, "-e, --error FILE",                "errors to FILE" },
 
-		{ 9, "-g, --graph FILE",                "graphs to FILE" },
+		{ 8, "    --version",                   "output version" },
 
 		{10, "-q, --quiet",                     "suppress result output" },
-		{11, "-t, --trace",                     "enable trace output" },
+		{11, "-t, --trace",                     "enable basic trace output" },
 		{12, "-v, --verbose",                   "enable verbose trace output" },
 		{19, "-n, --noeval",                    "parse, but do not evaluate" },
+		{ 9, "-g, --graph FILE",                "output graphs of the AST to FILE in DOT format" },
 
-		{20, "-m, --math",                      "enable math functions" },
-
+		{20, "-m, --math",                      "enable math functions in the global namespace" },
 		{90, "-x, --evaluate EXPRESSION*",      "evaluates EXPRESSIONs up to -" },
 		{91, "-i, --import FILE",               "imports FILE" },
-
 		{ 0, "FILE",                            "executes FILE" }
 	};
 	static size_t const n_options = (sizeof(options) / sizeof(options[0]));
@@ -176,6 +176,13 @@ main(
 					exit_status = EXIT_FAILURE;
 					goto end;
 				}
+				break;
+
+			case 8:
+				unprocessed = false;
+				printf("oboe %.2d.%.2d.%.2d\n", VERSION/10000, (VERSION/100)%100, VERSION%100);
+				printf("Copyright (c) 20%.2d Tristan Styles\n", VERSION/10000);
+				printf("MIT License\n");
 				break;
 
 			case 9:
