@@ -609,7 +609,7 @@ builtin_time(
 		if(ok) {
 			tm.tm_year = ast->m.ival;
 
-			ast = eval_named(arg, sloc, "is DST");
+			ast = eval_named(arg, sloc, "is_DST");
 			ok  = ast_isInteger(ast);
 		}
 		if(ok) {
@@ -697,11 +697,11 @@ convert_time_to_env(
 		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_year);
 		addenv_named(env, sloc, "year", ast);
 		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_wday);
-		addenv_named(env, sloc, "week day", ast);
+		addenv_named(env, sloc, "week_day", ast);
 		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_yday);
-		addenv_named(env, sloc, "year day", ast);
+		addenv_named(env, sloc, "year_day", ast);
 		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_isdst);
-		addenv_named(env, sloc, "is DST", ast);
+		addenv_named(env, sloc, "is_DST", ast);
 
 		return env;
 	}

@@ -109,7 +109,7 @@ main(
 		"f:0.123456789;\n"
 		"s:'hello world!\\n';\n"
 		,
-#	elif 1
+#	elif 0
 		"test.oboe",
 #	endif
 		NULL
