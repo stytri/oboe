@@ -235,6 +235,16 @@ typedef String (*StrIntOp)(StringConst, uint64_t);
 		__VA_ARGS__; \
 	}
 
+typedef Array (*ArrIntOp)(Array, uint64_t);
+#define ARRINTOP(Name,...) \
+	Array \
+	array_##Name( \
+		Array    lval, \
+		uint64_t rval  \
+	) { \
+		__VA_ARGS__; \
+	}
+
 typedef uint64_t (*IntegerCmp)(uint64_t, uint64_t);
 #define INTEGERCMP(Name,...) \
 	uint64_t \
@@ -946,7 +956,8 @@ builtin_bitmove(
 	Ast       lexpr,
 	Ast       rexpr,
 	IntegerOp integerop,
-	StrIntOp  stringop
+	StrIntOp  stringop,
+	ArrIntOp  arrayop
 ) {
 	lexpr = eval(env, lexpr);
 	rexpr = eval(env, rexpr);
@@ -967,6 +978,10 @@ builtin_bitmove(
 		return new_ast(sloc, NULL, AST_String , stringop(lexpr->m.sval, rexpr->m.ival));
 	case TYPE(AST_String, AST_Float):
 		return new_ast(sloc, NULL, AST_String , stringop(lexpr->m.sval, (uint64_t)rexpr->m.fval));
+	case TYPE(AST_Environment, AST_Integer):
+		return new_ast(sloc, NULL, AST_Environment, arrayop(lexpr->m.env, rexpr->m.ival), ZEN);
+	case TYPE(AST_Environment, AST_Float):
+		return new_ast(sloc, NULL, AST_Environment, arrayop(lexpr->m.env, (uint64_t)rexpr->m.fval), ZEN);
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
 		return new_ast(sloc, NULL, AST_Integer, integerop(lexpr->m.ival, 0));
@@ -1005,7 +1020,7 @@ builtin_##Name( \
 	Ast    lexpr, \
 	Ast    rexpr  \
 ) { \
-	return builtin_bitmove(env, sloc, lexpr, rexpr, integer_##Name, string_##Name); \
+	return builtin_bitmove(env, sloc, lexpr, rexpr, integer_##Name, string_##Name, array_##Name); \
 }
 
 static INTEGEROP(shl, rval &= 63; return lval << rval)
@@ -1050,6 +1065,103 @@ static STRINTOP (ror,
 	char const *cs = StringToCharLiteral(lval, &n);
 	rval = reversecodepointoffset(cs, n, rval);
 	return CharLiteralsToString(cs + rval, n - rval, cs, rval);
+)
+
+static inline Array
+arrintop_alloc(
+	void
+) {
+	Array arr = gc_malloc(sizeof(*arr), env_gc_mark, env_gc_sweep);
+	assert(arr != NULL);
+	return arr;
+}
+static inline void
+arrintop_resize(
+	Array arr,
+	size_t n
+) {
+	bool   expanded = array_expand(arr, sizeof(Ast), n);
+	assert(expanded);
+	arr->length = n;
+	return;
+}
+static inline void
+arrintop_copy(
+	Array  t,
+	size_t ti,
+	Array  s,
+	size_t si,
+	size_t n
+) {
+	memcpy(array_ptr(t, Ast, ti), array_ptr(s, Ast, si), (sizeof(Ast) * n));
+	return;
+}
+static ARRINTOP (shl,
+	Array arr = arrintop_alloc();
+	if(array_length(lval) > rval) {
+		size_t n = (array_length(lval) - rval);
+		arrintop_resize(arr, n);
+		arrintop_copy(arr, 0, lval, rval, n);
+	}
+	return arr;
+)
+static ARRINTOP (shr,
+	Array arr = arrintop_alloc();
+	if(array_length(lval) > rval) {
+		size_t n = (array_length(lval) - rval);
+		arrintop_resize(arr, n);
+		arrintop_copy(arr, 0, lval, 0, n);
+	}
+	return arr;
+)
+static ARRINTOP (exl,
+	Array arr = arrintop_alloc();
+	if(rval > array_length(lval)) {
+		rval = array_length(lval);
+	}
+	if(array_length(lval) >= rval) {
+		arrintop_resize(arr, rval);
+		arrintop_copy(arr, 0, lval, 0, rval);
+	}
+	return arr;
+)
+static ARRINTOP (exr,
+	Array arr = arrintop_alloc();
+	if(rval > array_length(lval)) {
+		rval = array_length(lval);
+	}
+	if(array_length(lval) >= rval) {
+		size_t n = (array_length(lval) - rval);
+		arrintop_resize(arr, rval);
+		arrintop_copy(arr, 0, lval, n, rval);
+	}
+	return arr;
+)
+static ARRINTOP (rol,
+	Array arr = arrintop_alloc();
+	if(array_length(lval) > 0) {
+		rval = rval % array_length(lval);
+	}
+	if(array_length(lval) > rval) {
+		size_t n = (array_length(lval) - rval);
+		arrintop_resize(arr, array_length(lval));
+		arrintop_copy(arr, 0, lval, rval, n);
+		arrintop_copy(arr, n, lval, 0, rval);
+	}
+	return arr;
+)
+static ARRINTOP (ror,
+	Array arr = arrintop_alloc();
+	if(array_length(lval) > 0) {
+		rval = rval % array_length(lval);
+	}
+	if(array_length(lval) > rval) {
+		size_t n = (array_length(lval) - rval);
+		arrintop_resize(arr, array_length(lval));
+		arrintop_copy(arr, 0, lval, n, rval);
+		arrintop_copy(arr, rval, lval, 0, n);
+	}
+	return arr;
 )
 
 static BUILTIN_BITMOVE(shl)

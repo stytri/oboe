@@ -163,6 +163,17 @@ getops(
 
 //------------------------------------------------------------------------------
 
+extern void
+env_gc_mark(
+	void const *p,
+	void      (*mark)(void const *)
+);
+
+extern void
+env_gc_sweep(
+	void const *p
+);
+
 struct env_stats {
 	size_t live;
 	size_t dead;

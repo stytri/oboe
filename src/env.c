@@ -28,6 +28,7 @@ SOFTWARE.
 #include "strlib.h"
 #include "assert.h"
 #include "gc.h"
+#include "env.h"
 #include <stdlib.h>
 #include <stdarg.h>
 
@@ -37,7 +38,7 @@ struct env_stats env_stats;
 
 //------------------------------------------------------------------------------
 
-static void
+void
 env_gc_mark(
 	void const *p,
 	void      (*mark)(void const *)
@@ -48,7 +49,7 @@ env_gc_mark(
 	return;
 }
 
-static void
+void
 env_gc_sweep(
 	void const *p
 ) {
