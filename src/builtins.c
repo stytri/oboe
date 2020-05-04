@@ -1272,7 +1272,6 @@ builtin_assign_op(
 		Ast    rexpr
 	)
 ) {
-	lexpr = subeval(env, lexpr);
 	rexpr = builtin(env, sloc, lexpr, rexpr);
 
 	return builtin_assign(env, sloc, lexpr, rexpr);
