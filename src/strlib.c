@@ -270,3 +270,24 @@ reversecodepointoffset(
 	return ~m ? utf8off(cs, NULL, (r < m) ? (m - r) : 0) : 0;
 }
 
+//------------------------------------------------------------------------------
+
+int
+is_absolutepath(
+	char const *cs
+) {
+	return (*cs == '/')
+		|| (isalpha(*cs) && (*(cs+1) == ':'))
+	;
+}
+
+int
+is_relativepath(
+	char const *cs
+) {
+	return (*cs == '.')
+		&& ((*(cs+1) == '/')
+			|| ((*(cs+1) == '.') && (*(cs+2) == '/')))
+	;
+}
+

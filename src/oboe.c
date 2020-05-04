@@ -29,6 +29,7 @@ SOFTWARE.
 #include "ast.h"
 #include "parse.h"
 #include "builtins.h"
+#include "searchpaths.h"
 #include "sources.h"
 #include "system.h"
 #include "optget.h"
@@ -70,18 +71,13 @@ static void
 initialise(
 	bool has_math
 ) {
-	static bool initialised = false;
-
-	if(!initialised) {
-		initialised = true;
-
-		initialise_ast();
-		initialise_env();
-		initialise_sources();
-		initialise_builtins(has_math);
-		initialise_system_environment();
-		initialise_system_stdio();
-	}
+	initialise_ast();
+	initialise_env();
+	initialise_sources();
+	initialise_searchpaths();
+	initialise_builtins(has_math);
+	initialise_system_environment();
+	initialise_system_stdio();
 }
 
 //------------------------------------------------------------------------------
@@ -136,6 +132,7 @@ main(
 
 		{20, "-m, --math",                      "enable math functions in the global namespace" },
 		{90, "-x, --evaluate EXPRESSION*",      "evaluates EXPRESSIONs up to -" },
+		{92, "-I, --import-path PATH",          "add search PATH for import" },
 		{91, "-i, --import FILE",               "imports FILE" },
 		{ 0, "FILE",                            "executes FILE" }
 	};
@@ -245,30 +242,43 @@ main(
 
 				unprocessed = false;
 				nobreak;
-			case 91:
+			case 91: {
 				initialise(has_math);
 
+				size_t ts   = gc_topof_stack();
 				size_t n    = strlen(argv[argi]);
 				String file = CharLiteralToString(argv[argi], n);
 				assert(file != NULL);
-
-				String s = mapoboefile(file);
+				String s = mapoboefile(gc_push(file));
 				if(s) {
 					args = StringToCharLiteral(s, NULL);
 					line = 1;
 
 					unsigned source = add_source(0, file);
 					exit_status = process(args, source, &line, true, doeval, argv[argi], gfile);
+
 					StringDelete(s);
 				} else {
 					exit_status = EXIT_FAILURE;
-					StringDelete(file);
 				}
+				gc_revert(ts);
+
 				if(!unprocessed || (exit_status != EXIT_SUCCESS)) {
 					goto end;
 				}
 				break;
+			}
+			case 92: {
+				initialise(has_math);
 
+				size_t ts   = gc_topof_stack();
+				size_t n    = strlen(argv[argi]);
+				String path = CharLiteralToString(argv[argi], n);
+				assert(path != NULL);
+				add_searchpath(0, gc_push(path));
+				gc_revert(ts);
+				break;
+			}
 			default:
 				if((params > 0) && (argi < argc)) {
 					errorf("invalid option: %s %s\n", args, argv[argi]);

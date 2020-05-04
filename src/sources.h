@@ -44,8 +44,7 @@ initialise_sources(
 extern size_t
 add_source(
 	sloc_t sloc,
-	String s,
-	...
+	String s
 );
 
 extern String

@@ -225,19 +225,25 @@ static int
 initialise_datatypes(
 	void
 ) {
-	builtin_file_type = add_odt("file",
-		builtin_file_type_new,
-		builtin_file_type_eval,
-		builtin_file_type_mark,
-		builtin_file_type_sweep
-	);
+	static bool initialise = true;
 
-	builtin_fpos_type = add_odt("fpos",
-		builtin_fpos_type_new,
-		builtin_fpos_type_eval,
-		builtin_fpos_type_mark,
-		builtin_fpos_type_sweep
-	);
+	if(initialise) {
+		initialise = false;
+
+		builtin_file_type = add_odt("file",
+			builtin_file_type_new,
+			builtin_file_type_eval,
+			builtin_file_type_mark,
+			builtin_file_type_sweep
+		);
+
+		builtin_fpos_type = add_odt("fpos",
+			builtin_fpos_type_new,
+			builtin_fpos_type_eval,
+			builtin_fpos_type_mark,
+			builtin_fpos_type_sweep
+		);
+	}
 
 	return EXIT_SUCCESS;
 }
@@ -859,8 +865,14 @@ initialise_system_stdio(
 	};
 	static size_t const n_builtinfn = sizeof(builtinfn) / sizeof(builtinfn[0]);
 
-	initialise_datatypes();
-	initialise_builtinfn(system_environment, builtinfn, n_builtinfn);
+	static bool initialise = true;
+
+	if(initialise) {
+		initialise = false;
+
+		initialise_datatypes();
+		initialise_builtinfn(system_environment, builtinfn, n_builtinfn);
+	}
 
 	return EXIT_SUCCESS;
 }

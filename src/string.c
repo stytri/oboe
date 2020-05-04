@@ -295,7 +295,7 @@ StringBuild(
 
 void
 StringDelete(
-	String s
+	StringConst s
 ) {
 	free(s);
 }

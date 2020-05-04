@@ -120,6 +120,18 @@ reversecodepointoffset(
 
 //------------------------------------------------------------------------------
 
+extern int
+is_absolutepath(
+	char const *cs
+);
+
+extern int
+is_relativepath(
+	char const *cs
+);
+
+//------------------------------------------------------------------------------
+
 #ifdef __cplusplus
 }
 #endif

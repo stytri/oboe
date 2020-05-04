@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include "builtins.h"
+#include "searchpaths.h"
 #include "mapfile.h"
 #include "strlib.h"
 #include "assert.h"
@@ -1515,7 +1516,15 @@ initialise_builtin_operators(
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 
-	return initialise_builtinop(operators, builtinop, n_builtinop);
+	static bool initialise = true;
+
+	if(initialise) {
+		initialise = false;
+
+		return initialise_builtinop(operators, builtinop, n_builtinop);
+	}
+
+	return EXIT_SUCCESS;
 }
 
 static int
@@ -1532,7 +1541,15 @@ initialise_builtin_math_functions(
 	};
 	static size_t const n_builtinfn = sizeof(builtinfn) / sizeof(builtinfn[0]);
 
-	return initialise_builtinfn(globals, builtinfn, n_builtinfn);
+	static bool initialise = true;
+
+	if(initialise) {
+		initialise = false;
+
+		return initialise_builtinfn(globals, builtinfn, n_builtinfn);
+	}
+
+	return EXIT_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -1559,26 +1576,61 @@ initialise_builtins(
 
 //------------------------------------------------------------------------------
 
+static String
+mapoboefilewithpath(
+	StringConst path,
+	StringConst file,
+	bool        ext
+) {
+	String filepath = StringConcatenate(path, file);
+	assert(filepath != NULL);
+
+	size_t      len;
+	char const *name = StringToCharLiteral(filepath, &len);
+	String      s    = mapfile(name);
+	if(!s && ext) {
+
+		String filepath_ext = StringAppendCharLiteral(filepath, ".oboe", 5);
+		assert(filepath_ext != NULL);
+		name = StringToCharLiteral(filepath_ext, &len);
+		s    = mapfile(name);
+
+		StringDelete(filepath_ext);
+	}
+
+	StringDelete(filepath);
+
+	return s;
+}
+
 String
 mapoboefile(
-	String file
+	StringConst file
 ) {
+	String s = NULL;
+
 	size_t      len;
-	char const *name = StringToCharLiteral(file, &len);
-	char const *ext  = strrchr(name, '.');
+	char const *name   = StringToCharLiteral(file, &len);
+	bool const  nopath = is_absolutepath(name) || is_relativepath(name);
+	char const *ext    = strrchr(name, '.');
 	if(ext && (strcmp(".oboe", ext) != 0)) {
 		ext = NULL;
 	}
-	String s = mapfile(name);
 
-	if(!s && !ext) {
-		file = CharLiteralsToString(name, len, ".oboe", 5);
-		assert(file != NULL);
+	size_t index = 0;
+	for(StringConst path = NullString();;) {
+		s = mapoboefilewithpath(path, file, !ext);
+		if(s) break;
 
-		name = StringToCharLiteral(file, &len);
-		s = mapfile(name);
+		if(nopath || (index >= num_searchpaths())) {
+			break;
+		}
 
-		StringDelete(file);
+		path = get_searchpath(index);
+		if(!path) {
+			break;
+		}
+		index++;
 	}
 
 	return s;

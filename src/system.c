@@ -129,20 +129,26 @@ initialise_errors(
 	};
 	static size_t const n_builtinerr = sizeof(builtinerr) / sizeof(builtinerr[0]);
 
-	size_t ts = gc_topof_stack();
+	static bool initialise = true;
 
-	for(size_t i = 0; i < n_builtinerr; ++i) {
-		char const *cs    = builtinerr[i].leme;
-		size_t      n     = strlen(cs);
-		uint64_t    hash  = memhash(cs, n, 0);
-		String      s     = CharLiteralToString(cs, n);
-		Ast         err   = new_ast(0, NULL, AST_Error, builtinerr[i].err);
-		Ast         def   = new_ast(0, NULL, AST_Reference, s, err);
-		size_t      index = define(system_environment, hash, def);
-		assert(~index != 0);
+	if(initialise) {
+		initialise = false;
+
+		size_t ts = gc_topof_stack();
+
+		for(size_t i = 0; i < n_builtinerr; ++i) {
+			char const *cs    = builtinerr[i].leme;
+			size_t      n     = strlen(cs);
+			uint64_t    hash  = memhash(cs, n, 0);
+			String      s     = CharLiteralToString(cs, n);
+			Ast         err   = new_ast(0, NULL, AST_Error, builtinerr[i].err);
+			Ast         def   = new_ast(0, NULL, AST_Reference, s, err);
+			size_t      index = define(system_environment, hash, def);
+			assert(~index != 0);
+		}
+
+		gc_revert(ts);
 	}
-
-	gc_revert(ts);
 
 	return EXIT_SUCCESS;
 }
@@ -762,7 +768,7 @@ builtin_utctime(
 //------------------------------------------------------------------------------
 
 static void
-initialize_rand(
+initialise_rand(
 	void
 ) {
 	int s = time(NULL);
@@ -976,19 +982,25 @@ initialise_system_environment(
 	};
 	static size_t const n_builtinfn = sizeof(builtinfn) / sizeof(builtinfn[0]);
 
-	system_environment = new_env(0, NULL);
+	static bool initialise = true;
 
-	Ast var;
-	var = new_ast(0, NULL, AST_Integer, (uint64_t)VERSION);
-	addenv_named(system_environment, 0, "VERSION", var);
-	var = new_ast(0, NULL, AST_Integer, (uint64_t)RAND_MAX);
-	addenv_named(system_environment, 0, "RAND_MAX", var);
+	if(initialise) {
+		initialise = false;
 
-	initialise_datatypes();
-	initialise_builtinfn(system_environment, builtinfn, n_builtinfn);
-	initialise_builtinop(operators         , builtinop, n_builtinop);
-	initialise_errors();
-	initialize_rand();
+		system_environment = new_env(0, NULL);
+
+		Ast var;
+		var = new_ast(0, NULL, AST_Integer, (uint64_t)VERSION);
+		addenv_named(system_environment, 0, "VERSION", var);
+		var = new_ast(0, NULL, AST_Integer, (uint64_t)RAND_MAX);
+		addenv_named(system_environment, 0, "RAND_MAX", var);
+
+		initialise_datatypes();
+		initialise_builtinfn(system_environment, builtinfn, n_builtinfn);
+		initialise_builtinop(operators         , builtinop, n_builtinop);
+		initialise_errors();
+		initialise_rand();
+	}
 
 	return EXIT_SUCCESS;
 

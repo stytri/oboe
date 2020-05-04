@@ -1,9 +1,9 @@
-#ifndef BUILTINS_H_INCLUDED
-#define BUILTINS_H_INCLUDED
+#ifndef SEARCHPATHS_H_INCLUDED
+#define SEARCHPATHS_H_INCLUDED
 /*
 MIT License
 
-Copyright (c) 2019 Tristan Styles
+Copyright (c) 2020 Tristan Styles
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@ SOFTWARE.
 */
 
 #include "ast.h"
-#include "parse.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,45 +32,29 @@ extern "C" {
 
 //------------------------------------------------------------------------------
 
-struct builtinop {
-	char const *leme;
-	BuiltinOp   func;
-	unsigned   *enup;
-	Precedence  prec;
-};
-extern int
-initialise_builtinop(
-	Ast                    env,
-	struct builtinop const builtinop[],
-	size_t                 n_builtinop
-);
-
-struct builtinfn {
-	char const *leme;
-	BuiltinFn   func;
-	unsigned   *enup;
-};
-extern int
-initialise_builtinfn(
-	Ast                    env,
-	struct builtinfn const builtinfn[],
-	size_t                 n_builtinfn
-);
-
-#define BUILTIN(Lexeme, Name, ...)  { Lexeme, builtin_##Name, &builtin_##Name##_enum, __VA_ARGS__ },
+extern Ast sources;
 
 //------------------------------------------------------------------------------
 
 extern int
-initialise_builtins(
-	bool has_math
+initialise_searchpaths(
+	void
 );
 
-//------------------------------------------------------------------------------
+extern size_t
+num_searchpaths(
+	void
+);
+
+extern size_t
+add_searchpath(
+	sloc_t sloc,
+	String s
+);
 
 extern String
-mapoboefile(
-	StringConst file
+get_searchpath(
+	size_t index
 );
 
 //------------------------------------------------------------------------------
@@ -80,4 +63,4 @@ mapoboefile(
 }
 #endif
 
-#endif//ndef BUILTINS_H_INCLUDED
+#endif//ndef SEARCHPATHS_H_INCLUDED

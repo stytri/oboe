@@ -85,7 +85,7 @@ StringBuild(
 
 extern void
 StringDelete(
-	String s
+	StringConst s
 );
 
 extern String

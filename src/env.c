@@ -359,9 +359,14 @@ int
 initialise_env(
 	void
 ) {
-	operators = new_env(0, NULL);
-	globals   = new_env(0, NULL);
+	static bool initialise = true;
 
+	if(initialise) {
+		initialise = false;
+
+		operators = new_env(0, NULL);
+		globals   = new_env(0, NULL);
+	}
 
 	return EXIT_SUCCESS;
 }
