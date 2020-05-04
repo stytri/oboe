@@ -5,10 +5,10 @@
 factorial(n:): (
     return:1,
     (; n > 0; n--) ?* (
-		return = return * n
+		return *= n
 	)
 );
- 
+
 lah(n:, k:): (
 	?: (
 		(k == 1):
@@ -24,9 +24,9 @@ lah(n:, k:): (
 		/ factorial(n - k))
 	)
 );
- 
+
 row:, i:;
- 
+
 "Unsigned Lah numbers: L(n, k):"@println;
 "n/k"@print;
 (i = 0; i < 13; i++) ?* (

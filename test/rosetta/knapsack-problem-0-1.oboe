@@ -80,8 +80,8 @@ total_value:0;
 (i:0; i < N_items; i++) ?* (
 	is_packed[i] ? (
 		print(items[i]name, items[i]weight, items[i]value),
-		total_weight = total_weight + items[i]weight,
-		total_value = total_value + items[i]value
+		total_weight += items[i]weight,
+		total_value += items[i]value
 	)
 );
 print("totals", total_weight, total_value);

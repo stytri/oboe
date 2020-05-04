@@ -7,7 +7,7 @@ proper_divisor_sum(n:): (
 
 	(i:1; i < n; i++) ?* (
 		(n // i) ! (
-			sum = sum + i
+			sum += i
 		)
 	),
 
