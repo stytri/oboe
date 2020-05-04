@@ -1073,6 +1073,7 @@ arrintop_alloc(
 ) {
 	Array arr = gc_malloc(sizeof(*arr), env_gc_mark, env_gc_sweep);
 	assert(arr != NULL);
+	*arr = ARRAY();
 	return arr;
 }
 static inline void
