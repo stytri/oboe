@@ -73,37 +73,53 @@ SOFTWARE.
 
 // Operators
 
-static unsigned builtin_applicate_enum = -1;
-static unsigned builtin_if_enum        = -1;
-static unsigned builtin_ifnot_enum     = -1;
-static unsigned builtin_case_enum      = -1;
-static unsigned builtin_while_enum     = -1;
-static unsigned builtin_until_enum     = -1;
-static unsigned builtin_land_enum      = -1;
-static unsigned builtin_lor_enum       = -1;
-static unsigned builtin_lt_enum        = -1;
-static unsigned builtin_lte_enum       = -1;
-static unsigned builtin_eq_enum        = -1;
-static unsigned builtin_neq_enum       = -1;
-static unsigned builtin_gte_enum       = -1;
-static unsigned builtin_gt_enum        = -1;
-static unsigned builtin_and_enum       = -1;
-static unsigned builtin_or_enum        = -1;
-static unsigned builtin_xor_enum       = -1;
-static unsigned builtin_add_enum       = -1;
-static unsigned builtin_sub_enum       = -1;
-static unsigned builtin_mul_enum       = -1;
-static unsigned builtin_div_enum       = -1;
-static unsigned builtin_mod_enum       = -1;
-static unsigned builtin_shl_enum       = -1;
-static unsigned builtin_shr_enum       = -1;
-static unsigned builtin_exl_enum       = -1;
-static unsigned builtin_exr_enum       = -1;
-static unsigned builtin_rol_enum       = -1;
-static unsigned builtin_ror_enum       = -1;
-static unsigned builtin_tag_enum       = -1;
-static unsigned builtin_assign_enum    = -1;
-static unsigned builtin_array_enum     = -1;
+static unsigned builtin_applicate_enum   = -1;
+static unsigned builtin_tag_enum         = -1;
+static unsigned builtin_assign_enum      = -1;
+static unsigned builtin_assign_land_enum = -1;
+static unsigned builtin_assign_lor_enum  = -1;
+static unsigned builtin_assign_and_enum  = -1;
+static unsigned builtin_assign_or_enum   = -1;
+static unsigned builtin_assign_xor_enum  = -1;
+static unsigned builtin_assign_add_enum  = -1;
+static unsigned builtin_assign_sub_enum  = -1;
+static unsigned builtin_assign_mul_enum  = -1;
+static unsigned builtin_assign_div_enum  = -1;
+static unsigned builtin_assign_mod_enum  = -1;
+static unsigned builtin_assign_shl_enum  = -1;
+static unsigned builtin_assign_shr_enum  = -1;
+static unsigned builtin_assign_exl_enum  = -1;
+static unsigned builtin_assign_exr_enum  = -1;
+static unsigned builtin_assign_rol_enum  = -1;
+static unsigned builtin_assign_ror_enum  = -1;
+static unsigned builtin_if_enum          = -1;
+static unsigned builtin_ifnot_enum       = -1;
+static unsigned builtin_case_enum        = -1;
+static unsigned builtin_while_enum       = -1;
+static unsigned builtin_until_enum       = -1;
+static unsigned builtin_land_enum        = -1;
+static unsigned builtin_lor_enum         = -1;
+static unsigned builtin_lt_enum          = -1;
+static unsigned builtin_lte_enum         = -1;
+static unsigned builtin_eq_enum          = -1;
+static unsigned builtin_neq_enum         = -1;
+static unsigned builtin_gte_enum         = -1;
+static unsigned builtin_gt_enum          = -1;
+static unsigned builtin_and_enum         = -1;
+static unsigned builtin_or_enum          = -1;
+static unsigned builtin_xor_enum         = -1;
+static unsigned builtin_add_enum         = -1;
+static unsigned builtin_sub_enum         = -1;
+static unsigned builtin_mul_enum         = -1;
+static unsigned builtin_div_enum         = -1;
+static unsigned builtin_mod_enum         = -1;
+static unsigned builtin_shl_enum         = -1;
+static unsigned builtin_shr_enum         = -1;
+static unsigned builtin_exl_enum         = -1;
+static unsigned builtin_exr_enum         = -1;
+static unsigned builtin_rol_enum         = -1;
+static unsigned builtin_ror_enum         = -1;
+static unsigned builtin_array_enum       = -1;
 
 // Intrinsic Functions
 
@@ -1243,6 +1259,52 @@ builtin_assign(
 	return lexpr;
 }
 
+static inline Ast
+builtin_assign_op(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr,
+	Ast  (*builtin)(
+		Ast    env,
+		sloc_t sloc,
+		Ast    lexpr,
+		Ast    rexpr
+	)
+) {
+	lexpr = subeval(env, lexpr);
+	rexpr = builtin(env, sloc, lexpr, rexpr);
+
+	return builtin_assign(env, sloc, lexpr, rexpr);
+}
+#define BUILTIN_ASSIGN(Name) \
+static Ast \
+builtin_assign_##Name( \
+	Ast    env,   \
+	sloc_t sloc,  \
+	Ast    lexpr, \
+	Ast    rexpr  \
+) { \
+	return builtin_assign_op(env, sloc, lexpr, rexpr, builtin_##Name); \
+}
+
+BUILTIN_ASSIGN(land)
+BUILTIN_ASSIGN(lor)
+BUILTIN_ASSIGN(and)
+BUILTIN_ASSIGN(or)
+BUILTIN_ASSIGN(xor)
+BUILTIN_ASSIGN(add)
+BUILTIN_ASSIGN(sub)
+BUILTIN_ASSIGN(mul)
+BUILTIN_ASSIGN(div)
+BUILTIN_ASSIGN(mod)
+BUILTIN_ASSIGN(shl)
+BUILTIN_ASSIGN(shr)
+BUILTIN_ASSIGN(exl)
+BUILTIN_ASSIGN(exr)
+BUILTIN_ASSIGN(rol)
+BUILTIN_ASSIGN(ror)
+
 //------------------------------------------------------------------------------
 
 static Ast
@@ -1482,37 +1544,53 @@ initialise_builtin_operators(
 	void
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN(   "", applicate, P_Binding)
-		BUILTIN(  ":", tag      , P_Declarative)
-		BUILTIN(  "=", assign   , P_Assigning)
-		BUILTIN(  "?", if       , P_Conditional)
-		BUILTIN(  "!", ifnot    , P_Conditional)
-		BUILTIN( "?:", case     , P_Conditional)
-		BUILTIN( "?*", while    , P_Conditional)
-		BUILTIN( "!*", until    , P_Conditional)
-		BUILTIN( "&&", land     , P_Logical)
-		BUILTIN( "||", lor      , P_Logical)
-		BUILTIN(  "<", lt       , P_Relational)
-		BUILTIN( "<=", lte      , P_Relational)
-		BUILTIN( "==", eq       , P_Relational)
-		BUILTIN( "<>", neq      , P_Relational)
-		BUILTIN( ">=", gte      , P_Relational)
-		BUILTIN(  ">", gt       , P_Relational)
-		BUILTIN(  "&", and      , P_Bitwise)
-		BUILTIN(  "|", or       , P_Bitwise)
-		BUILTIN(  "^", xor      , P_Bitwise)
-		BUILTIN(  "+", add      , P_Additive)
-		BUILTIN(  "-", sub      , P_Additive)
-		BUILTIN(  "*", mul      , P_Multiplicative)
-		BUILTIN(  "/", div      , P_Multiplicative)
-		BUILTIN( "//", mod      , P_Multiplicative)
-		BUILTIN( "<<", shl      , P_Exponential)
-		BUILTIN( ">>", shr      , P_Exponential)
-		BUILTIN("<<<", exl      , P_Exponential)
-		BUILTIN(">>>", exr      , P_Exponential)
-		BUILTIN("<<>", rol      , P_Exponential)
-		BUILTIN("<>>", ror      , P_Exponential)
-		BUILTIN( "[]", array    , P_Binding)
+		BUILTIN(    "", applicate  , P_Binding)
+		BUILTIN(   ":", tag        , P_Declarative)
+		BUILTIN(   "=", assign     , P_Assigning)
+		BUILTIN( "&&=", assign_land, P_Assigning)
+		BUILTIN( "||=", assign_lor , P_Assigning)
+		BUILTIN(  "&=", assign_and , P_Assigning)
+		BUILTIN(  "|=", assign_or  , P_Assigning)
+		BUILTIN(  "^=", assign_xor , P_Assigning)
+		BUILTIN(  "+=", assign_add , P_Assigning)
+		BUILTIN(  "-=", assign_sub , P_Assigning)
+		BUILTIN(  "*=", assign_mul , P_Assigning)
+		BUILTIN(  "/=", assign_div , P_Assigning)
+		BUILTIN( "//=", assign_mod , P_Assigning)
+		BUILTIN( "<<=", assign_shl , P_Assigning)
+		BUILTIN( ">>=", assign_shr , P_Assigning)
+		BUILTIN("<<<=", assign_exl , P_Assigning)
+		BUILTIN(">>>=", assign_exr , P_Assigning)
+		BUILTIN("<<>=", assign_rol , P_Assigning)
+		BUILTIN("<>>=", assign_ror , P_Assigning)
+		BUILTIN(   "?", if         , P_Conditional)
+		BUILTIN(   "!", ifnot      , P_Conditional)
+		BUILTIN(  "?:", case       , P_Conditional)
+		BUILTIN(  "?*", while      , P_Conditional)
+		BUILTIN(  "!*", until      , P_Conditional)
+		BUILTIN(  "&&", land       , P_Logical)
+		BUILTIN(  "||", lor        , P_Logical)
+		BUILTIN(   "<", lt         , P_Relational)
+		BUILTIN(  "<=", lte        , P_Relational)
+		BUILTIN(  "==", eq         , P_Relational)
+		BUILTIN(  "<>", neq        , P_Relational)
+		BUILTIN(  ">=", gte        , P_Relational)
+		BUILTIN(   ">", gt         , P_Relational)
+		BUILTIN(   "&", and        , P_Bitwise)
+		BUILTIN(   "|", or         , P_Bitwise)
+		BUILTIN(   "^", xor        , P_Bitwise)
+		BUILTIN(   "+", add        , P_Additive)
+		BUILTIN(   "-", sub        , P_Additive)
+		BUILTIN(   "*", mul        , P_Multiplicative)
+		BUILTIN(   "/", div        , P_Multiplicative)
+		BUILTIN(  "//", mod        , P_Multiplicative)
+		BUILTIN(  "<<", shl        , P_Exponential)
+		BUILTIN(  ">>", shr        , P_Exponential)
+		BUILTIN( "<<<", exl        , P_Exponential)
+		BUILTIN( ">>>", exr        , P_Exponential)
+		BUILTIN( "<<>", rol        , P_Exponential)
+		BUILTIN( "<>>", ror        , P_Exponential)
+		BUILTIN(  "[]", array      , P_Binding)
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 

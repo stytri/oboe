@@ -1,7 +1,7 @@
 # library of utility functions
 
-"++"(X):(X=X+1);
-"--"(X):(X=X-1);
+"++"(X):(X+=1);
+"--"(X):(X-=1);
 
 min(a:,b:): (
 	(a < b) ? (a ; b)
