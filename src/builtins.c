@@ -39,6 +39,24 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
+static inline size_t
+minz(
+	size_t const a,
+	size_t const b
+) {
+	return a < b ? a : b;
+}
+
+static inline size_t
+maxz(
+	size_t const a,
+	size_t const b
+) {
+	return a > b ? a : b;
+}
+
+//------------------------------------------------------------------------------
+
 #define DOUBLE_BUILTINS \
 	DOUBLE_MATH1_FN(ceil) \
 	DOUBLE_MATH1_FN(floor) \
@@ -586,8 +604,8 @@ static BUILTIN_LOGICAL(lor )
 
 //------------------------------------------------------------------------------
 
-static Ast
-builtin_compare(
+static int
+compare_delegate(
 	Ast        env,
 	sloc_t     sloc,
 	Ast        lexpr,
@@ -599,49 +617,99 @@ builtin_compare(
 	lexpr = eval(env, lexpr);
 	rexpr = eval(env, rexpr);
 
-	switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
+	if(ast_isEnvironment(lexpr) || ast_isEnvironment(rexpr)) {
+		if(ast_isEnvironment(lexpr) && ast_isEnvironment(rexpr)) {
+			size_t const n = minz(array_length(lexpr->m.env), array_length(rexpr->m.env));
+			int          r = 1;
+			for(size_t i = 0; r > 0 && i < n; i++) {
+				r = compare_delegate(env, sloc,
+						array_at(lexpr->m.env, Ast, i),
+						array_at(rexpr->m.env, Ast, i),
+						integercmp,
+						floatcmp,
+						stringcmp
+					);
+			}
+			return r;
+		} else if(ast_isEnvironment(lexpr)) {
+			size_t const n = array_length(lexpr->m.env);
+			int          r = 1;
+			for(size_t i = 0; r > 0 && i < n; i++) {
+				r = compare_delegate(env, sloc,
+						array_at(lexpr->m.env, Ast, i),
+						rexpr,
+						integercmp,
+						floatcmp,
+						stringcmp
+					);
+			}
+			return r;
+		} else {
+			size_t const n = array_length(rexpr->m.env);
+			int          r = 1;
+			for(size_t i = 0; r > 0 && i < n; i++) {
+				r = compare_delegate(env, sloc,
+						lexpr,
+						array_at(rexpr->m.env, Ast, i),
+						integercmp,
+						floatcmp,
+						stringcmp
+					);
+			}
+			return r;
+		}
+
+	} else switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
 	case TYPE(AST_Integer, AST_Integer):
 	case TYPE(AST_Integer, AST_Character):
 	case TYPE(AST_Character, AST_Integer):
 	case TYPE(AST_Character, AST_Character):
-		return new_ast(sloc, NULL, AST_Integer, integercmp(lexpr->m.ival, rexpr->m.ival));
+		return integercmp(lexpr->m.ival, rexpr->m.ival);
 	case TYPE(AST_Integer, AST_Float):
-		return new_ast(sloc, NULL, AST_Integer, floatcmp((double)lexpr->m.ival, rexpr->m.fval));
+		return floatcmp((double)lexpr->m.ival, rexpr->m.fval);
 	case TYPE(AST_Float, AST_Integer):
-		return new_ast(sloc, NULL, AST_Integer, floatcmp(lexpr->m.fval, (double)rexpr->m.ival));
+		return floatcmp(lexpr->m.fval, (double)rexpr->m.ival);
 	case TYPE(AST_Float, AST_Float):
-		return new_ast(sloc, NULL, AST_Integer, floatcmp(lexpr->m.fval, rexpr->m.fval));
+		return floatcmp(lexpr->m.fval, rexpr->m.fval);
 	case TYPE(AST_String, AST_String):
-		return new_ast(sloc, NULL, AST_Integer, stringcmp(lexpr->m.sval, rexpr->m.sval));
+		return stringcmp(lexpr->m.sval, rexpr->m.sval);
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
-		return new_ast(sloc, NULL, AST_Integer, integercmp(lexpr->m.ival, 0));
+		return integercmp(lexpr->m.ival, 0);
 	case TYPE(AST_Float, AST_Zen):
-		return new_ast(sloc, NULL, AST_Integer, floatcmp(lexpr->m.fval, 0.0));
+		return floatcmp(lexpr->m.fval, 0.0);
 	case TYPE(AST_String, AST_Zen):
-		return new_ast(sloc, NULL, AST_Integer, stringcmp(lexpr->m.sval, NullString()));
+		return stringcmp(lexpr->m.sval, NullString());
 	case TYPE(AST_Zen, AST_Integer):
 	case TYPE(AST_Zen, AST_Character):
-		return new_ast(sloc, NULL, AST_Integer, integercmp(0, rexpr->m.ival));
+		return integercmp(0, rexpr->m.ival);
 	case TYPE(AST_Zen, AST_Float):
-		return new_ast(sloc, NULL, AST_Integer, floatcmp(0.0, rexpr->m.fval));
+		return floatcmp(0.0, rexpr->m.fval);
 	case TYPE(AST_Zen, AST_String):
-		return new_ast(sloc, NULL, AST_Integer, stringcmp(NullString(), rexpr->m.sval));
+		return stringcmp(NullString(), rexpr->m.sval);
 	case TYPE(AST_Error, AST_Error):
-		return new_ast(sloc, NULL, AST_Integer, integercmp(lexpr->qual, rexpr->qual));
+		return integercmp(lexpr->qual, rexpr->qual);
 	default:
-		switch(ast_type(lexpr)) {
-		case AST_Zen: case AST_Integer: case AST_Character: case AST_Float: case AST_String: case AST_Error:
-			switch(ast_type(rexpr)) {
-			case AST_Zen: case AST_Integer: case AST_Character: case AST_Float: case AST_String: case AST_Error:
-				return oboerr(sloc, ERR_InvalidOperand);
-			default:
-				return oboerr(rexpr->sloc, ERR_InvalidOperand);
-			}
-		default:
-			return oboerr(lexpr->sloc, ERR_InvalidOperand);
-		}
+		return -1;
 	}
+}
+
+static Ast
+builtin_compare(
+	Ast        env,
+	sloc_t     sloc,
+	Ast        lexpr,
+	Ast        rexpr,
+	IntegerCmp integercmp,
+	FloatCmp   floatcmp,
+	StringCmp  stringcmp
+) {
+	int const r = compare_delegate(env, sloc, lexpr, rexpr, integercmp, floatcmp, stringcmp);
+	if(r >= 0) {
+		return new_ast(sloc, NULL, AST_Integer, r != 0);
+	}
+
+	return oboerr(sloc, ERR_InvalidOperand);
 }
 
 #define BUILTIN_COMPARE(Name) \
