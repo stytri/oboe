@@ -612,14 +612,17 @@ compare_delegate(
 	Ast        rexpr,
 	IntegerCmp integercmp,
 	FloatCmp   floatcmp,
-	StringCmp  stringcmp
+	StringCmp  stringcmp,
+	int        sense
 ) {
 	lexpr = eval(env, lexpr);
 	rexpr = eval(env, rexpr);
 
 	if(ast_isEnvironment(lexpr) || ast_isEnvironment(rexpr)) {
 		if(ast_isEnvironment(lexpr) && ast_isEnvironment(rexpr)) {
-			size_t const n = minz(array_length(lexpr->m.env), array_length(rexpr->m.env));
+			size_t const ln = array_length(lexpr->m.env);
+			size_t const rn = array_length(rexpr->m.env);
+			size_t const n = minz(ln, rn);
 			int          r = 1;
 			for(size_t i = 0; r > 0 && i < n; i++) {
 				r = compare_delegate(env, sloc,
@@ -627,7 +630,28 @@ compare_delegate(
 						array_at(rexpr->m.env, Ast, i),
 						integercmp,
 						floatcmp,
-						stringcmp
+						stringcmp,
+						sense
+					);
+			}
+			for(size_t i = n; r == sense && i < ln; i++) {
+				r = compare_delegate(env, sloc,
+						array_at(lexpr->m.env, Ast, i),
+						ZEN,
+						integercmp,
+						floatcmp,
+						stringcmp,
+						sense
+					);
+			}
+			for(size_t i = n; r == sense && i < rn; i++) {
+				r = compare_delegate(env, sloc,
+						ZEN,
+						array_at(rexpr->m.env, Ast, i),
+						integercmp,
+						floatcmp,
+						stringcmp,
+						sense
 					);
 			}
 			return r;
@@ -640,7 +664,8 @@ compare_delegate(
 						rexpr,
 						integercmp,
 						floatcmp,
-						stringcmp
+						stringcmp,
+						sense
 					);
 			}
 			return r;
@@ -653,7 +678,8 @@ compare_delegate(
 						array_at(rexpr->m.env, Ast, i),
 						integercmp,
 						floatcmp,
-						stringcmp
+						stringcmp,
+						sense
 					);
 			}
 			return r;
@@ -702,9 +728,14 @@ builtin_compare(
 	Ast        rexpr,
 	IntegerCmp integercmp,
 	FloatCmp   floatcmp,
-	StringCmp  stringcmp
+	StringCmp  stringcmp,
+	int        sense
 ) {
-	int const r = compare_delegate(env, sloc, lexpr, rexpr, integercmp, floatcmp, stringcmp);
+	int const r = compare_delegate(env, sloc,
+		lexpr, rexpr,
+		integercmp, floatcmp, stringcmp,
+		sense
+	);
 	if(r >= 0) {
 		return new_ast(sloc, NULL, AST_Integer, r != 0);
 	}
@@ -712,7 +743,7 @@ builtin_compare(
 	return oboerr(sloc, ERR_InvalidOperand);
 }
 
-#define BUILTIN_COMPARE(Name) \
+#define BUILTIN_COMPARE(Name, Sense) \
 Ast \
 builtin_##Name( \
 	Ast    env,   \
@@ -720,7 +751,7 @@ builtin_##Name( \
 	Ast    lexpr, \
 	Ast    rexpr  \
 ) { \
-	return builtin_compare(env, sloc, lexpr, rexpr, integer_##Name, float_##Name, string_##Name); \
+	return builtin_compare(env, sloc, lexpr, rexpr, integer_##Name, float_##Name, string_##Name, Sense); \
 }
 
 static INTEGERCMP(lt,  return lval <  rval)
@@ -744,12 +775,12 @@ static STRINGCMP(neq,  return StringNotEqual(lval, rval))
 static STRINGCMP(gte,  return (StringCompare(lval, rval) >= 0))
 static STRINGCMP(gt,   return (StringCompare(lval, rval) >  0))
 
-static BUILTIN_COMPARE(lt)
-static BUILTIN_COMPARE(lte)
-static BUILTIN_COMPARE(eq)
-static BUILTIN_COMPARE(neq)
-static BUILTIN_COMPARE(gte)
-static BUILTIN_COMPARE(gt)
+static BUILTIN_COMPARE(lt, 0)
+static BUILTIN_COMPARE(lte, 1)
+static BUILTIN_COMPARE(eq, 1)
+static BUILTIN_COMPARE(neq, 0)
+static BUILTIN_COMPARE(gte, 1)
+static BUILTIN_COMPARE(gt, 0)
 
 //------------------------------------------------------------------------------
 
