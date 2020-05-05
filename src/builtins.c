@@ -1428,8 +1428,12 @@ builtin_assign(
 				size_t const length = array_length(lexpr->m.env);
 				size_t const index  = iexpr->m.ival;
 				if(index < length) {
-					rexpr = evaluate_assignable(env, sloc, rexpr);
-					assign(sloc, array_ptr(lexpr->m.env, Ast, index), rexpr);
+					Ast *ent = array_ptr(lexpr->m.env, Ast, index);
+					rexpr    = evaluate_assignable(env, sloc, rexpr);
+					for(lexpr = *ent; ast_isReference(lexpr); lexpr = lexpr->m.rexpr) {
+						ent = &lexpr->m.rexpr;
+					}
+					assign(sloc, ent, rexpr);
 					return rexpr;
 				}
 				if(index == length) {
