@@ -1408,7 +1408,37 @@ builtin_array_push_back(
 	return oboerr(sloc, ERR_InvalidOperand);
 }
 
-//------------------------------------------------------------------------------
+static Ast
+builtin_array_assign_index(
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr,
+	size_t index
+) {
+	Ast *ent = array_ptr(lexpr->m.env, Ast, index);
+
+	lexpr = *ent;
+	if(ast_isReference(lexpr)) {
+		ent = &lexpr->m.rexpr;
+	}
+
+	assign(sloc, ent, rexpr);
+	return rexpr;
+}
+
+static Ast
+builtin_array_create_map(
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr,
+	Ast    iexpr
+) {
+	rexpr = addenv(lexpr, sloc, iexpr, rexpr);
+	if(ast_isnotZen(rexpr)) {
+		rexpr = rexpr->m.rexpr;
+	}
+	return rexpr;
+}
 
 static Ast
 builtin_assign(
@@ -1425,36 +1455,25 @@ builtin_assign(
 
 		switch(TYPE(ast_type(lexpr), ast_type(iexpr))) {
 		case TYPE(AST_Environment, AST_Integer): {
-				size_t const length = array_length(lexpr->m.env);
 				size_t const index  = iexpr->m.ival;
+				size_t const length = array_length(lexpr->m.env);
+				rexpr = evaluate_instance(env, sloc, rexpr);
 				if(index < length) {
-					Ast *ent = array_ptr(lexpr->m.env, Ast, index);
-					rexpr    = evaluate_assignable(env, sloc, rexpr);
-					for(lexpr = *ent; ast_isReference(lexpr); lexpr = lexpr->m.rexpr) {
-						ent = &lexpr->m.rexpr;
-					}
-					assign(sloc, ent, rexpr);
-					return rexpr;
+					return builtin_array_assign_index(sloc, lexpr, rexpr, index);
 				}
 				if(index == length) {
-					rexpr = evaluate_instance(env, sloc, rexpr);
 					return builtin_array_push_back(env, sloc, lexpr, rexpr);
 				}
 			}
 			return oboerr(sloc, ERR_InvalidOperand);
 		case TYPE(AST_Environment, AST_String): {
-				Ast def = inenv(lexpr, iexpr);
-				if(ast_isnotZen(def)) {
-					rexpr = evaluate_assignable(env, sloc, rexpr);
-					assign(sloc, &def->m.rexpr, rexpr);
-				} else {
-					rexpr = evaluate_instance(env, sloc, rexpr);
-					rexpr = addenv(lexpr, sloc, iexpr, rexpr);
-					if(ast_isnotZen(rexpr)) {
-						rexpr = rexpr->m.rexpr;
-					}
+				size_t const index  = atenv(lexpr, iexpr);
+				size_t const length = array_length(lexpr->m.env);
+				rexpr = evaluate_instance(env, sloc, rexpr);
+				if(index < length) {
+					return builtin_array_assign_index(sloc, lexpr, rexpr, index);
 				}
-				return rexpr;
+				return builtin_array_create_map(sloc, lexpr, rexpr, iexpr);
 			}
 		default:
 			return oboerr(sloc, ERR_InvalidReferent);

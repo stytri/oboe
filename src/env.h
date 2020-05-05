@@ -83,6 +83,12 @@ define(
 
 //------------------------------------------------------------------------------
 
+extern size_t
+atenv(
+	Ast env,
+	Ast ident
+);
+
 extern Ast
 inenv(
 	Ast env,

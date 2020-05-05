@@ -162,6 +162,18 @@ define(
 
 //------------------------------------------------------------------------------
 
+size_t
+atenv(
+	Ast env,
+	Ast ident
+) {
+	size_t      n;
+	uint64_t    hash = ident->m.hash;
+	char const *cs   = StringToCharLiteral(ident->m.sval, &n);
+
+	return locate(env, hash, cs, n);
+}
+
 Ast
 inenv(
 	Ast env,
