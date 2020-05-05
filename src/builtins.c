@@ -1445,6 +1445,28 @@ builtin_array_create_map(
 }
 
 static Ast
+builtin_referent_assign(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	for(;
+		ast_isReference(lexpr->m.rexpr);
+		lexpr = lexpr->m.rexpr
+	);
+	if(ast_isnotZen(lexpr->m.rexpr)) {
+		rexpr = evaluate_assignable(env, sloc, rexpr);
+		assign(sloc, &lexpr->m.rexpr, rexpr);
+	} else {
+		rexpr = evaluate_instance(env, sloc, rexpr);
+		lexpr->m.rexpr = rexpr;
+	}
+
+	return rexpr;
+}
+
+static Ast
 builtin_assign(
 	Ast    env,
 	sloc_t sloc,
@@ -1486,19 +1508,7 @@ builtin_assign(
 		lexpr = subeval(env, lexpr);
 
 		if(ast_isReference(lexpr)) {
-			for(;
-				ast_isReference(lexpr->m.rexpr);
-				lexpr = lexpr->m.rexpr
-			);
-			if(ast_isnotZen(lexpr->m.rexpr)) {
-				rexpr = evaluate_assignable(env, sloc, rexpr);
-				assign(sloc, &lexpr->m.rexpr, rexpr);
-			} else {
-				rexpr = evaluate_instance(env, sloc, rexpr);
-				lexpr->m.rexpr = rexpr;
-			}
-			lexpr = lexpr->m.rexpr;
-			return lexpr;
+			return builtin_referent_assign(env, sloc, lexpr, rexpr);
 		}
 
 		return oboerr(sloc, ERR_InvalidReferent);
