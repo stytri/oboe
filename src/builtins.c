@@ -1410,6 +1410,7 @@ builtin_array_push_back(
 
 static Ast
 builtin_array_assign_index(
+	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
@@ -1417,6 +1418,7 @@ builtin_array_assign_index(
 ) {
 	Ast *ent = array_ptr(lexpr->m.env, Ast, index);
 
+	rexpr = evaluate_instance(env, sloc, rexpr);
 	lexpr = *ent;
 	if(ast_isReference(lexpr)) {
 		ent = &lexpr->m.rexpr;
@@ -1428,11 +1430,13 @@ builtin_array_assign_index(
 
 static Ast
 builtin_array_create_map(
+	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
 	Ast    iexpr
 ) {
+	rexpr = evaluate_instance(env, sloc, rexpr);
 	rexpr = addenv(lexpr, sloc, iexpr, rexpr);
 	if(ast_isnotZen(rexpr)) {
 		rexpr = rexpr->m.rexpr;
@@ -1457,9 +1461,8 @@ builtin_assign(
 		case TYPE(AST_Environment, AST_Integer): {
 				size_t const index  = iexpr->m.ival;
 				size_t const length = array_length(lexpr->m.env);
-				rexpr = evaluate_instance(env, sloc, rexpr);
 				if(index < length) {
-					return builtin_array_assign_index(sloc, lexpr, rexpr, index);
+					return builtin_array_assign_index(env, sloc, lexpr, rexpr, index);
 				}
 				if(index == length) {
 					return builtin_array_push_back(env, sloc, lexpr, rexpr);
@@ -1469,11 +1472,10 @@ builtin_assign(
 		case TYPE(AST_Environment, AST_String): {
 				size_t const index  = atenv(lexpr, iexpr);
 				size_t const length = array_length(lexpr->m.env);
-				rexpr = evaluate_instance(env, sloc, rexpr);
 				if(index < length) {
-					return builtin_array_assign_index(sloc, lexpr, rexpr, index);
+					return builtin_array_assign_index(env, sloc, lexpr, rexpr, index);
 				}
-				return builtin_array_create_map(sloc, lexpr, rexpr, iexpr);
+				return builtin_array_create_map(env, sloc, lexpr, rexpr, iexpr);
 			}
 		default:
 			return oboerr(sloc, ERR_InvalidReferent);
