@@ -47,9 +47,7 @@ shuffle(a): (
 		i = select(n),
 		n--,
 		(n <> i) ? (
-			t    = a[n],
-			a[n] = a[i],
-			a[i] = t
+			a[n] >< a[i]
 		)
 	),
 

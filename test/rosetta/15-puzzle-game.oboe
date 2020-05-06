@@ -45,11 +45,10 @@ update(move): (
 		c = dc[move](column),
 
 		(r <> row || c <> column) ? (
-			cells[row][column] = cells[r][c],
+			cells[row][column] >< cells[r][c],
 
-			cells[r][c] = 0,
-			row         = r,
-			column      = c
+			row    = r,
+			column = c
 		)
 	)
 );

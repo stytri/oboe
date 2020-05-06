@@ -110,6 +110,7 @@ static unsigned builtin_assign_exl_enum  = -1;
 static unsigned builtin_assign_exr_enum  = -1;
 static unsigned builtin_assign_rol_enum  = -1;
 static unsigned builtin_assign_ror_enum  = -1;
+static unsigned builtin_exchange_enum    = -1;
 static unsigned builtin_if_enum          = -1;
 static unsigned builtin_ifnot_enum       = -1;
 static unsigned builtin_case_enum        = -1;
@@ -1566,6 +1567,90 @@ BUILTIN_ASSIGN(ror)
 //------------------------------------------------------------------------------
 
 static Ast
+builtin_exchange_evaluate(
+	Ast    env,
+	sloc_t sloc,
+	Ast    ast
+) {
+	ast = unquote(ast);
+
+	if(ast_isArray(ast)) {
+		Ast iexpr = eval(env, ast->m.rexpr);
+		ast       = eval(env, ast->m.lexpr);
+
+		switch(TYPE(ast_type(ast), ast_type(iexpr))) {
+		case TYPE(AST_Environment, AST_Integer): {
+				size_t const index  = iexpr->m.ival;
+				size_t const length = array_length(ast->m.env);
+				if(index < length) {
+					ast = array_at(ast->m.env, Ast, index);
+					for(; ast_isReference(ast); ast = ast->m.rexpr)
+						;
+					return ast;
+				}
+			}
+			return oboerr(sloc, ERR_InvalidReferent);
+		case TYPE(AST_Environment, AST_String): {
+				size_t const index  = atenv(ast, iexpr);
+				size_t const length = array_length(ast->m.env);
+				if(index < length) {
+					ast = array_at(ast->m.env, Ast, index);
+					for(; ast_isReference(ast); ast = ast->m.rexpr)
+						;
+					return ast;
+				}
+			}
+			return oboerr(sloc, ERR_InvalidReferent);
+		default:
+			return oboerr(sloc, ERR_InvalidReferent);
+		}
+	}
+
+	if(ast_isnotZen(ast)) {
+		ast = subeval(env, ast);
+
+		if(ast_isReference(ast)) {
+			for(; ast_isReference(ast); ast = ast->m.rexpr)
+				;
+			return ast;
+		}
+	}
+
+	return oboerr(sloc, ERR_InvalidReferent);
+}
+
+static Ast
+builtin_exchange(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	lexpr = builtin_exchange_evaluate(env, sloc, lexpr);
+	if(ast_isError(lexpr)) {
+		return lexpr;
+	}
+	rexpr = builtin_exchange_evaluate(env, sloc, rexpr);
+	if(ast_isError(rexpr)) {
+		return rexpr;
+	}
+
+	if(ast_isnotZen(lexpr) && ast_isnotZen(rexpr)) {
+		struct ast temp;
+
+		memcpy(&temp, lexpr, sizeof(temp));
+		memcpy(lexpr, rexpr, sizeof(temp));
+		memcpy(rexpr, &temp, sizeof(temp));
+
+		return lexpr;
+	}
+
+	return oboerr(sloc, ERR_InvalidReferent);
+}
+
+//------------------------------------------------------------------------------
+
+static Ast
 builtin_array(
 	Ast    env,
 	sloc_t sloc,
@@ -1821,6 +1906,7 @@ initialise_builtin_operators(
 		BUILTIN(">>>=", assign_exr , P_Assigning)
 		BUILTIN("<<>=", assign_rol , P_Assigning)
 		BUILTIN("<>>=", assign_ror , P_Assigning)
+		BUILTIN(  "><", exchange   , P_Assigning)
 		BUILTIN(   "?", if         , P_Conditional)
 		BUILTIN(   "!", ifnot      , P_Conditional)
 		BUILTIN(  "?:", case       , P_Conditional)
