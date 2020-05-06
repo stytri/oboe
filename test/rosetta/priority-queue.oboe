@@ -1,0 +1,70 @@
+# https://rosettacode.org/wiki/Priority_queue
+
+"rosetta/libutil"@import;
+
+node(p, d): [
+	priority: p,
+	data    : d
+];
+
+heap(): [
+	length: 0,
+	nodes : [
+		node(0,"")
+	]
+];
+
+push(h,p,d): (
+	i: h length + 1,
+	h(
+		(j: i / 2; i > 1 && nodes[j] priority > p; j /= 2) ?* (
+			nodes[i] = nodes[j],
+			i = j
+		),
+		nodes[i] = node(p, d),
+		length++
+	),
+);
+
+pop(h): (
+	return:(),
+
+	n: h length,
+	(n > 0) ? h(
+		return = nodes[1]data,
+
+		nodes[1] = nodes[n],
+		length--,
+
+		(i:1, j:, k:; i <> n) ?* (
+			k = n,
+			j = 2 * i,
+			h(
+				(j <= length && nodes[j]priority < nodes[k]priority) ? (
+					k = j
+				),
+				j++,
+				(j <= length && nodes[j]priority < nodes[k]priority) ? (
+					k = j
+				),
+				nodes[i] = nodes[k]
+			),
+			i = k
+		)
+	),
+
+	return
+);
+
+h: heap();
+
+push(h, 3, "Clear drains");
+push(h, 4, "Feed cat");
+push(h, 5, "Make tea");
+push(h, 1, "Solve RC tasks");
+push(h, 2, "Tax return");
+
+(n:h length, i:0; i < n; i++) ?* (
+	pop(h)@println
+);
+
