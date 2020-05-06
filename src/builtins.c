@@ -1636,11 +1636,13 @@ builtin_exchange(
 	}
 
 	if(ast_isnotZen(lexpr) && ast_isnotZen(rexpr)) {
-		struct ast temp;
+		if(lexpr != rexpr) {
+			struct ast temp;
 
-		memcpy(&temp, lexpr, sizeof(temp));
-		memcpy(lexpr, rexpr, sizeof(temp));
-		memcpy(rexpr, &temp, sizeof(temp));
+			memcpy(&temp, lexpr, sizeof(temp));
+			memcpy(lexpr, rexpr, sizeof(temp));
+			memcpy(rexpr, &temp, sizeof(temp));
+		}
 
 		return lexpr;
 	}
