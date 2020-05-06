@@ -39,7 +39,7 @@ new_env(
 );
 
 extern Ast
-dup_env(
+link_env(
 	sloc_t sloc,
 	Ast    ast,
 	Ast    outer

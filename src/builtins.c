@@ -1684,7 +1684,7 @@ builtin_applicate(
 			}
 			return oboerr(sloc, ERR_InvalidIdentifier);
 		}
-		env = dup_env(sloc, lexpr, env);
+		env = link_env(sloc, lexpr, env);
 		return refeval(env, rexpr);
 	case AST_BuiltinFunction:
 		return lexpr->m.bfn(env, sloc, rexpr);
