@@ -1,0 +1,56 @@
+# https://rosettacode.org/wiki/Gaussian_elimination
+
+"rosetta/libutil"@import;
+
+abs(x): (
+	(x < 0) ? -x : x
+);
+gauss_eliminate(a, b, x, n): (
+	i:, j:, r:, col:, row:, max_row:, dia:, max:, tmp:,
+
+	(dia = 0; dia < n; dia++) ?* (
+		max_row = dia, max = a[dia][dia],
+
+		(row = dia + 1; row < n; row++) ?* (
+			((tmp = abs(a[row][dia])) > max) ? (
+				max_row = row, max = tmp
+			)
+		),
+
+		a[dia] >< a[max_row],
+		b[dia] >< b[max_row],
+
+		(row = dia + 1; row < n; row++) ?* (
+			tmp = a[row][dia] / a[dia][dia],
+			(col = dia+1; col < n; col++) ?* (
+				a[row][col] -= tmp * a[dia][col]
+			),
+			a[row][dia] = 0,
+			b[row] -= tmp * b[dia];
+		)
+	),
+
+	(row = n - 1; -row >= row; row--) ?* (
+		tmp = b[row],
+		(j = n - 1; j > row; j--) ?* (
+			tmp -= x[j] * a[row][j]
+		),
+		x[row] = tmp / a[row][row]
+	)
+);
+
+a:[
+	[1.00, 0.00, 0.00,  0.00,  0.00, 0.00  ],
+	[1.00, 0.63, 0.39,  0.25,  0.16, 0.10  ],
+	[1.00, 1.26, 1.58,  1.98,  2.49, 3.13  ],
+	[1.00, 1.88, 3.55,  6.70, 12.62, 23.80 ],
+	[1.00, 2.51, 6.32, 15.88, 39.90, 100.28],
+	[1.00, 3.14, 9.87, 31.01, 97.41, 306.02]
+];
+b:[ -0.01, 0.61, 0.91, 0.99, 0.60, 0.02 ];
+x:[  0,    0,    0,    0,    0,    0    ];
+
+gauss_eliminate(a, b, x, 6);
+
+(i:0; i < x@length; i++) ?*
+	x[i]@println;
