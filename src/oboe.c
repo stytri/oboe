@@ -177,8 +177,8 @@ main(
 
 			case 8:
 				unprocessed = false;
-				printf("oboe %.2d.%.2d.%.2d\n", VERSION/10000, (VERSION/100)%100, VERSION%100);
-				printf("Copyright (c) 20%.2d Tristan Styles\n", VERSION/10000);
+				printf("oboe %.2d.%.2d.%.3d\n", VERSION/100000, (VERSION/1000)%100, VERSION%1000);
+				printf("Copyright (c) 20%.2d Tristan Styles\n", VERSION/100000);
 				printf("MIT License\n");
 				break;
 
