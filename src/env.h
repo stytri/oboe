@@ -46,11 +46,6 @@ dup_env(
 );
 
 extern void
-env_dup(
-	Ast ast
-);
-
-extern void
 del_env(
 	Ast env
 );
