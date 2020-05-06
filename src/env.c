@@ -111,12 +111,7 @@ link_env(
 	Ast    ast,
 	Ast    outer
 ) {
-	Ast dup = dup_ast(sloc, ast);
-	if(outer != ast) {
-		dup->m.rexpr = outer;
-	}
-
-	return dup;
+	return new_ast(sloc, NULL, AST_Environment, ast->m.env, outer);
 }
 
 //------------------------------------------------------------------------------
