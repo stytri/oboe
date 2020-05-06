@@ -30,7 +30,7 @@ setup(): (
 		)
 	),
 
-	hole row = 0, hole column = 0,
+	hole(row = 0, column = 0),
 
 	(i:0; i < 127; i++) ?* (
 		update(select(4))
@@ -38,15 +38,19 @@ setup(): (
 );
 
 update(move): (
-	r: dr[move](hole row),
-	c: dc[move](hole column),
+	r:, c:,
 
-	(r <> hole row || c <> hole column) ? (
-		cells[hole row][hole column] = cells[r][c],
+	hole(
+		r = dr[move](row),
+		c = dc[move](column),
 
-		cells[r][c] = 0,
-		hole row    = r,
-		hole column = c
+		(r <> row || c <> column) ? (
+			cells[row][column] = cells[r][c],
+
+			cells[r][c] = 0,
+			row         = r,
+			column      = c
+		)
 	)
 );
 
