@@ -45,11 +45,6 @@ link_env(
 	Ast    outer
 );
 
-extern void
-del_env(
-	Ast env
-);
-
 //------------------------------------------------------------------------------
 
 extern size_t
