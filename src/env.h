@@ -38,6 +38,12 @@ new_env(
 	Ast    outer
 );
 
+extern Array
+dup_env(
+	sloc_t sloc,
+	Array  env
+);
+
 extern Ast
 link_env(
 	sloc_t sloc,

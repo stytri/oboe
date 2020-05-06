@@ -1094,20 +1094,19 @@ arrintop_copy(
 	size_t si,
 	size_t n
 ) {
-	memcpy(array_ptr(t, Ast, ti), array_ptr(s, Ast, si), (sizeof(Ast) * n));
-	if(s->map != 0) {
-		for(; n-- > 0; si++, ti++) {
-			Ast st = array_at(s, Ast, si);
-			if(ast_isReference(st)) {
-				size_t      len;
-				char const *cs = StringToCharLiteral(st->m.sval, &len);
-				assert(cs != NULL);
-				uint64_t h = memhash(cs, len, 0);
-				size_t   i = array_map_index(t, h, ti);
-				assert(i == ti);
-			}
+	for(; n-- > 0; si++, ti++) {
+		Ast st = array_at(s, Ast, si);
+		st     = dup_ast(st->sloc, st);
+		array_at(t, Ast, ti) = st;
+		if(ast_isReference(st)) {
+			size_t      len;
+			char const *cs = StringToCharLiteral(st->m.sval, &len);
+			uint64_t    h  = memhash(cs, len, 0);
+			size_t      x  = array_map_index(t, h, ti);
+			assert(x == ti);
 		}
 	}
+
 	return;
 }
 static ARRINTOP (shl,

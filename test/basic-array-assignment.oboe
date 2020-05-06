@@ -1,0 +1,25 @@
+a:[1,2,3,x:4,y:5,z:6];
+b:a;
+c:,d:;
+print(): (
+	("A ", a)@println,
+	("B ", b)@println,
+	("C ", c)@println,
+	("D ", d)@println,
+);
+c=a;
+d=(=a);
+print();
+rotbyreference(a):(a<<>=1),
+(i:0; i < 10; i+=1) ?* ("A ", rotbyreference(a))@println;
+rotbyvalue(a:):(a<<>=1),
+(i:0; i < 10; i+=1) ?* ("A ", rotbyvalue(a))@println;
+a[1]=12, print();
+b y =15, print();
+c[0]=13, print();
+d z =16, print();
+d=a<< 3, print();
+d z =26, print();
+print();
+
+

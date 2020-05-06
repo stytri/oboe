@@ -206,6 +206,9 @@ ENUM(Reference)
 		ast->m.sval  = gc_link(va_arg(va, String));
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
 	)
+	DUP(
+		ast->m.rexpr = dup_ast(sloc, ast->m.rexpr);
+	)
 	EVAL(
 		RETURN();
 	)
@@ -338,6 +341,9 @@ ENUM(Environment)
 		ast->m.env   = gc_link(va_arg(va, Array));
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
 		ast->attr   |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign);
+	)
+	DUP(
+		ast->m.env = dup_env(sloc, ast->m.env);
 	)
 	EVAL(
 		RETURN();

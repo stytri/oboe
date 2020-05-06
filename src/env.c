@@ -28,7 +28,7 @@ SOFTWARE.
 #include "strlib.h"
 #include "assert.h"
 #include "gc.h"
-#include "env.h"
+#include "hash.h"
 #include <stdlib.h>
 #include <stdarg.h>
 
@@ -73,6 +73,36 @@ new_env(
 
 	Ast ast = new_ast(sloc, NULL, AST_Environment, env, outer);
 	return ast;
+}
+
+Array
+dup_env(
+	sloc_t sloc,
+	Array  env
+) {
+	Array new_env = gc_malloc(sizeof(*env), env_gc_mark, env_gc_sweep);
+	assert(new_env != NULL);
+	*new_env = ARRAY();
+
+	size_t n        = array_length(env);
+	bool   expanded = array_expand(new_env, sizeof(Ast), n);
+	assert(expanded);
+	new_env->length = n;
+
+	for(size_t i = 0; i < n; i++) {
+		Ast ent = array_at(env, Ast, i);
+		ent     = dup_ast(sloc, ent);
+		array_at(new_env, Ast, i) = ent;
+		if(ast_isReference(ent)) {
+			size_t      len;
+			char const *cs = StringToCharLiteral(ent->m.sval, &len);
+			uint64_t    h  = memhash(cs, len, 0);
+			size_t      x  = array_map_index(new_env, h, i);
+			assert(x == i);
+		}
+	}
+
+	return new_env;
 }
 
 Ast
