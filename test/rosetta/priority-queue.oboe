@@ -14,24 +14,24 @@ heap(): [
 	]
 ];
 
-push(h,p,d): (
+push(h, d, cmp): (
 	i: h length + 1,
 	h(
-		(j: i / 2; i > 1 && nodes[j] priority > p; j /= 2) ?* (
+		(j: i / 2; i > 1 && cmp(nodes[j], d); j /= 2) ?* (
 			nodes[i] = nodes[j],
 			i = j
 		),
-		nodes[i] = node(p, d),
+		nodes[i] = d,
 		length++
 	),
 );
 
-pop(h): (
+pop(h, cmp): (
 	return:(),
 
 	n: h length,
 	(n > 0) ? h(
-		return = nodes[1]data,
+		return = nodes[1],
 
 		nodes[1] = nodes[n],
 		length--,
@@ -40,11 +40,11 @@ pop(h): (
 			k = n,
 			j = 2 * i,
 			h(
-				(j <= length && nodes[j]priority < nodes[k]priority) ? (
+				(j <= length && cmp(nodes[k], nodes[j])) ? (
 					k = j
 				),
 				j++,
-				(j <= length && nodes[j]priority < nodes[k]priority) ? (
+				(j <= length && cmp(nodes[k], nodes[j])) ? (
 					k = j
 				),
 				nodes[i] = nodes[k]
@@ -58,13 +58,15 @@ pop(h): (
 
 h: heap();
 
-push(h, 3, "Clear drains");
-push(h, 4, "Feed cat");
-push(h, 5, "Make tea");
-push(h, 1, "Solve RC tasks");
-push(h, 2, "Tax return");
+gt(l,r): (l priority > r priority);
 
-(n:h length, i:0; i < n; i++) ?* (
-	pop(h)@println
+push(h, node(3, "Clear drains"), gt);
+push(h, node(4, "Feed cat"), gt);
+push(h, node(5, "Make tea"), gt);
+push(h, node(1, "Solve RC tasks"), gt);
+push(h, node(2, "Tax return"), gt);
+
+(d:, n:h length, i:0; i < n; i++) ?* (
+	pop(h, gt)data@println
 );
 
