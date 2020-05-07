@@ -93,6 +93,7 @@ Can contain an escape sequence.
 
 Initiated by `\`, followed by:
 
+- `0` inserts a nul character.
 - `n` inserts a new-line character.
 - `t` inserts a horizontal-tab character.
 - `U` or `u` followed by up to 8 hexadecimal digits specifying  a Unicode code-point.
