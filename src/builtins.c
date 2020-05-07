@@ -1480,7 +1480,8 @@ builtin_assign(
 		lexpr     = eval(env, lexpr->m.lexpr);
 
 		switch(TYPE(ast_type(lexpr), ast_type(iexpr))) {
-		case TYPE(AST_Environment, AST_Integer): {
+		case TYPE(AST_Environment, AST_Integer):
+		case TYPE(AST_Environment, AST_Character): {
 				size_t const index  = iexpr->m.ival;
 				size_t const length = array_length(lexpr->m.env);
 				if(index < length) {
@@ -1579,7 +1580,8 @@ builtin_exchange_evaluate(
 		ast       = eval(env, ast->m.lexpr);
 
 		switch(TYPE(ast_type(ast), ast_type(iexpr))) {
-		case TYPE(AST_Environment, AST_Integer): {
+		case TYPE(AST_Environment, AST_Integer):
+		case TYPE(AST_Environment, AST_Character): {
 				size_t const index  = iexpr->m.ival;
 				size_t const length = array_length(ast->m.env);
 				if(index < length) {
@@ -1664,7 +1666,8 @@ builtin_array(
 		rexpr = eval(env, rexpr);
 
 		switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
-		case TYPE(AST_Environment, AST_Integer): {
+		case TYPE(AST_Environment, AST_Integer):
+		case TYPE(AST_Environment, AST_Character): {
 				size_t const index = rexpr->m.ival;
 				if(index < array_length(lexpr->m.env)) {
 					return array_at(lexpr->m.env, Ast, index);
@@ -1674,7 +1677,8 @@ builtin_array(
 		case TYPE(AST_Environment, AST_String):
 			rexpr = inenv(lexpr, rexpr);
 			return rexpr;
-		case TYPE(AST_String, AST_Integer): {
+		case TYPE(AST_String, AST_Integer):
+		case TYPE(AST_String, AST_Character): {
 				char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
 				utf8off(cs, &cs, rexpr->m.ival);
 				int  const  c = utf8chr(cs, NULL);
