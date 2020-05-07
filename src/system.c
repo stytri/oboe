@@ -57,6 +57,7 @@ static unsigned builtin_typename_enum      = -1;
 static unsigned builtin_length_enum        = -1;
 static unsigned builtin_to_String_enum     = -1;
 static unsigned builtin_to_Literal_enum    = -1;
+static unsigned builtin_to_Character_enum  = -1;
 static unsigned builtin_to_Integer_enum    = -1;
 static unsigned builtin_to_Float_enum      = -1;
 static unsigned builtin_assert_enum        = -1;
@@ -330,6 +331,29 @@ builtin_to_Literal(
 	String s = tostr(arg, true);
 	assert(s != NULL);
 	return new_ast(sloc, NULL, AST_String, s);
+}
+
+static Ast
+builtin_to_Character(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	arg = eval(env, arg);
+	switch(ast_type(arg)) {
+	case AST_Zen:
+		return new_ast(sloc, NULL, AST_Character, (int)'\0');
+	case AST_Integer:
+		return new_ast(sloc, NULL, AST_Character, (int)arg->m.ival);
+	case AST_Character:
+		return arg;
+	case AST_Float:
+		return new_ast(sloc, NULL, AST_Character, (int)arg->m.fval);
+	default:
+		break;
+	}
+
+	return ZEN;
 }
 
 static Ast
@@ -957,28 +981,29 @@ initialise_system_environment(
 		ENUM(Applicate)
 		ENUM(Array)
 #		include "oboe.enum"
-		BUILTIN("type"      , type)
-		BUILTIN("typename"  , typename)
-		BUILTIN("length"    , length)
-		BUILTIN("to_String" , to_String)
-		BUILTIN("to_Literal", to_Literal)
-		BUILTIN("to_Integer", to_Integer)
-		BUILTIN("to_Float"  , to_Float)
-		BUILTIN("assert"    , assert)
-		BUILTIN("getenv"    , getenv)
-		BUILTIN("setlocale" , setlocale)
-		BUILTIN("clock"     , clock)
-		BUILTIN("time"      , time)
-		BUILTIN("difftime"  , difftime)
-		BUILTIN("localtime" , localtime)
-		BUILTIN("utctime"   , utctime)
-		BUILTIN("rand"      , rand)
-		BUILTIN("randf"     , randf)
-		BUILTIN("eval"      , eval)
-		BUILTIN("parse"     , parse)
-		BUILTIN("load"      , load)
-		BUILTIN("import"    , import)
-		BUILTIN("exit"      , exit)
+		BUILTIN("type"        , type)
+		BUILTIN("typename"    , typename)
+		BUILTIN("length"      , length)
+		BUILTIN("to_String"   , to_String)
+		BUILTIN("to_Character", to_Character)
+		BUILTIN("to_Literal"  , to_Literal)
+		BUILTIN("to_Integer"  , to_Integer)
+		BUILTIN("to_Float"    , to_Float)
+		BUILTIN("assert"      , assert)
+		BUILTIN("getenv"      , getenv)
+		BUILTIN("setlocale"   , setlocale)
+		BUILTIN("clock"       , clock)
+		BUILTIN("time"        , time)
+		BUILTIN("difftime"    , difftime)
+		BUILTIN("localtime"   , localtime)
+		BUILTIN("utctime"     , utctime)
+		BUILTIN("rand"        , rand)
+		BUILTIN("randf"       , randf)
+		BUILTIN("eval"        , eval)
+		BUILTIN("parse"       , parse)
+		BUILTIN("load"        , load)
+		BUILTIN("import"      , import)
+		BUILTIN("exit"        , exit)
 	};
 	static size_t const n_builtinfn = sizeof(builtinfn) / sizeof(builtinfn[0]);
 
