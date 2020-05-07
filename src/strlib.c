@@ -55,6 +55,7 @@ esctoc(
 
 	switch(c) {
 	default :           ++cs; break;
+	case '0': c = '\0'; ++cs; break;
 	case 'n': c = '\n'; ++cs; break;
 	case 't': c = '\t'; ++cs; break;
 	case 'U': case 'u':
