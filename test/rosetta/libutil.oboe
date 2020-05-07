@@ -99,16 +99,16 @@ pqpop(h, cmp): (
 		(i:1, j:, k:; i <> n) ?* (
 			k = n,
 			j = 2 * i,
-			h(
-				(j <= length && cmp(nodes[k], nodes[j])) ? (
-					k = j
-				),
-				j++,
-				(j <= length && cmp(nodes[k], nodes[j])) ? (
-					k = j
-				),
-				nodes[i] = nodes[k]
+
+			(j <= length && cmp(nodes[k], nodes[j])) ? (
+				k = j
 			),
+			j++,
+			(j <= length && cmp(nodes[k], nodes[j])) ? (
+				k = j
+			),
+			nodes[i] = nodes[k],
+
 			i = k
 		)
 	),
