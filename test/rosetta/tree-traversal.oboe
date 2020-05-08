@@ -29,7 +29,6 @@ postorder(t, fn): t(
 levelorder(t, fn): (
 	q:[
 		front:0,
-		index:0,
 		back :0,
 		node :[]
 	],
@@ -38,13 +37,14 @@ levelorder(t, fn): (
 		back++
 	),
 	dequeue(q): q(
-		index = front,
-		front++,
-		node[index]
+		[index:front](
+			front++,
+			node[index]
+		)
 	),
 
 	enqueue(q, t),
-	(q front < q back) ?* dequeue(q)(
+	q(front < back) ?* dequeue(q)(
 		left@is_Zen  ! enqueue(q, left),
 		right@is_Zen ! enqueue(q, right),
 		fn(value)
