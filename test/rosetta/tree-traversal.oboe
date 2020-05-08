@@ -1,0 +1,76 @@
+# https://rosettacode.org/wiki/Tree_traversal
+
+"rosetta/libutil"@import;
+
+node(v, l, r): [
+	value:v,
+	left :l,
+	right:r
+];
+
+preorder(t, fn): t(
+	fn(value),
+	left@is_Zen  ! preorder(left, fn),
+	right@is_Zen ! preorder(right, fn)
+);
+
+inorder(t, fn): t(
+	left@is_Zen  ! inorder(left, fn),
+	fn(value),
+	right@is_Zen ! inorder(right, fn)
+);
+
+postorder(t, fn): t(
+	left@is_Zen  ! inorder(left, fn),
+	right@is_Zen ! inorder(right, fn),
+	fn(value)
+);
+
+levelorder(t, fn): (
+	q:[
+		front:0,
+		index:0,
+		back :0,
+		node :[]
+	],
+	enqueue(q, n): q(
+		node[back] = n,
+		back++
+	),
+	dequeue(q): q(
+		index = front,
+		front++,
+		node[index]
+	),
+
+	enqueue(q, t),
+	(q front < q back) ?* dequeue(q)(
+		left@is_Zen  ! enqueue(q, left),
+		right@is_Zen ! enqueue(q, right),
+		fn(value)
+	)
+);
+
+tree:
+	node(1,
+		node(2,
+			node(4,
+				node(7)
+			),
+			node(5)
+		),
+		node(3,
+			node(6,
+				node(8),
+				node(9)
+			)
+		)
+	);
+
+print(v): (v, ` `)@print;
+
+print "preorder  :", preorder  (tree, print), ``@println;
+print "inorder   :", inorder   (tree, print), ``@println;
+print "postorder :", postorder (tree, print), ``@println;
+print "levelorder:", levelorder(tree, print), ``@println;
+
