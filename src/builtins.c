@@ -187,16 +187,6 @@ typedef uint64_t (*IntegerOp)(uint64_t, uint64_t);
 		__VA_ARGS__; \
 	}
 
-typedef uint64_t (*LogicalOp)(bool, bool);
-#define LOGICALOP(Name,...) \
-	uint64_t \
-	logical_##Name( \
-		bool lval, \
-		bool rval  \
-	) { \
-		__VA_ARGS__; \
-	}
-
 typedef double (*FloatFn)(double);
 #define FLOATFN(Name,...) \
 	double \
@@ -584,34 +574,42 @@ builtin_until(
 //------------------------------------------------------------------------------
 
 static Ast
-builtin_logical(
-	Ast       env,
-	sloc_t    sloc,
-	Ast       lexpr,
-	Ast       rexpr,
-	LogicalOp logicalop
+builtin_land(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
 ) {
-	lexpr = eval(env, lexpr);
-	rexpr = eval(env, rexpr);
+	uint64_t result;
 
-	return new_ast(sloc, NULL, AST_Integer, logicalop(ast_toBool(lexpr), ast_toBool(rexpr)));
-}
-#define BUILTIN_LOGICAL(Name) \
-Ast \
-builtin_##Name( \
-	Ast    env,   \
-	sloc_t sloc,  \
-	Ast    lexpr, \
-	Ast    rexpr  \
-) { \
-	return builtin_logical(env, sloc, lexpr, rexpr, logical_##Name); \
+	lexpr  = eval(env, lexpr);
+	result = ast_toBool(lexpr);
+	if(result) {
+		rexpr  = eval(env, rexpr);
+		result = ast_toBool(rexpr);
+	}
+
+	return new_ast(sloc, NULL, AST_Integer, result);
 }
 
-static LOGICALOP(land, return lval && rval)
-static LOGICALOP(lor , return lval || rval)
+static Ast
+builtin_lor(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	uint64_t result;
 
-static BUILTIN_LOGICAL(land)
-static BUILTIN_LOGICAL(lor )
+	lexpr  = eval(env, lexpr);
+	result = ast_toBool(lexpr);
+	if(!result) {
+		rexpr  = eval(env, rexpr);
+		result = ast_toBool(rexpr);
+	}
+
+	return new_ast(sloc, NULL, AST_Integer, result);
+}
 
 //------------------------------------------------------------------------------
 
