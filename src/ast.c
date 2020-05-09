@@ -405,3 +405,20 @@ dup_ast(
 	return ast;
 }
 
+Ast
+dup_ref(
+	sloc_t sloc,
+	Ast    ast
+) {
+	if(ast_isReference(ast)) {
+		Ast dup = alloc_ast();
+
+		memcpy(dup, ast, sizeof(*ast));
+
+		return gc_push(dup);
+	}
+
+	return ast;
+	(void)sloc;
+}
+

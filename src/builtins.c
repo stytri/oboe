@@ -93,7 +93,9 @@ maxz(
 
 static unsigned builtin_applicate_enum   = -1;
 static unsigned builtin_tag_enum         = -1;
+static unsigned builtin_tag_ref_enum     = -1;
 static unsigned builtin_assign_enum      = -1;
+static unsigned builtin_assign_ref_enum  = -1;
 static unsigned builtin_assign_land_enum = -1;
 static unsigned builtin_assign_lor_enum  = -1;
 static unsigned builtin_assign_and_enum  = -1;
@@ -1273,22 +1275,37 @@ DOUBLE_BUILTINS
 
 //------------------------------------------------------------------------------
 
+typedef enum {
+	BY_Value,
+	BY_Ref
+} By;
+
 static inline Ast
 evaluate_instance(
 	Ast    env,
 	sloc_t sloc,
-	Ast    expr
+	Ast    expr,
+	By     by
 ) {
-	return dup_ast(sloc, refeval(env, expr));
+	return (by == BY_Value) ?
+		dup_ast(sloc, refeval(env, expr))
+	:
+		dup_ref(sloc, subeval(env, expr))
+	;
 }
 
 static inline Ast
 evaluate_assignable(
 	Ast    env,
 	sloc_t sloc,
-	Ast    expr
+	Ast    expr,
+	By     by
 ) {
-	return refeval(env, expr);
+	return (by == BY_Value) ?
+		refeval(env, expr)
+	:
+		subeval(env, expr)
+	;
 	(void)sloc;
 }
 
@@ -1363,7 +1380,7 @@ builtin_tag(
 			rexpr
 		);
 	case AST_Identifier:
-		rexpr = evaluate_instance(env, sloc, rexpr);
+		rexpr = evaluate_instance(env, sloc, rexpr, BY_Value);
 		addenv(env, sloc, lexpr, rexpr);
 		return rexpr;
 	case AST_String: // for OperatorAlias
@@ -1381,6 +1398,28 @@ builtin_tag(
 	}
 }
 
+static Ast
+builtin_tag_ref(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	lexpr = unquote(lexpr);
+
+	switch(ast_type(lexpr)) {
+	case AST_Identifier:
+		rexpr = subeval(env, rexpr);
+		if(ast_isReference(rexpr)) {
+			addenv(env, sloc, lexpr, rexpr);
+			return rexpr;
+		}
+		nobreak;
+	default:
+		return oboerr(sloc, ERR_InvalidOperand);
+	}
+}
+
 //------------------------------------------------------------------------------
 
 static Ast
@@ -1388,16 +1427,17 @@ builtin_array_push_back(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
-	Ast    rexpr
+	Ast    rexpr,
+	By     by
 ) {
 	if(ast_isTag(rexpr)) {
 		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
-			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr);
+			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr, by);
 			addenv(lexpr, sloc, rexpr->m.lexpr, def);
 			return lexpr;
 		}
 	} else {
-		rexpr = evaluate_instance(env, sloc, rexpr);
+		rexpr = evaluate_instance(env, sloc, rexpr, by);
 		bool appended = array_push_back(lexpr->m.env, Ast, rexpr);
 		assert(appended);
 		return lexpr;
@@ -1412,11 +1452,12 @@ builtin_array_assign_index(
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
-	size_t index
+	size_t index,
+	By     by
 ) {
 	Ast *ent = array_ptr(lexpr->m.env, Ast, index);
 
-	rexpr = evaluate_instance(env, sloc, rexpr);
+	rexpr = evaluate_instance(env, sloc, rexpr, by);
 	lexpr = *ent;
 	if(ast_isReference(lexpr)) {
 		ent = &lexpr->m.rexpr;
@@ -1432,9 +1473,10 @@ builtin_array_create_map(
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
-	Ast    iexpr
+	Ast    iexpr,
+	By     by
 ) {
-	rexpr = evaluate_instance(env, sloc, rexpr);
+	rexpr = evaluate_instance(env, sloc, rexpr, by);
 	rexpr = addenv(lexpr, sloc, iexpr, rexpr);
 	if(ast_isnotZen(rexpr)) {
 		rexpr = rexpr->m.rexpr;
@@ -1447,17 +1489,18 @@ builtin_referent_assign(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
-	Ast    rexpr
+	Ast    rexpr,
+	By     by
 ) {
 	for(;
 		ast_isReference(lexpr->m.rexpr);
 		lexpr = lexpr->m.rexpr
 	);
 	if(ast_isnotZen(lexpr->m.rexpr)) {
-		rexpr = evaluate_assignable(env, sloc, rexpr);
+		rexpr = evaluate_assignable(env, sloc, rexpr, by);
 		assign(sloc, &lexpr->m.rexpr, rexpr);
 	} else {
-		rexpr = evaluate_instance(env, sloc, rexpr);
+		rexpr = evaluate_instance(env, sloc, rexpr, by);
 		lexpr->m.rexpr = rexpr;
 	}
 
@@ -1465,11 +1508,12 @@ builtin_referent_assign(
 }
 
 static Ast
-builtin_assign(
+builtin_assign_by(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
-	Ast    rexpr
+	Ast    rexpr,
+	By     by
 ) {
 	lexpr = unquote(lexpr);
 
@@ -1483,10 +1527,10 @@ builtin_assign(
 				size_t const index  = iexpr->m.ival;
 				size_t const length = array_length(lexpr->m.env);
 				if(index < length) {
-					return builtin_array_assign_index(env, sloc, lexpr, rexpr, index);
+					return builtin_array_assign_index(env, sloc, lexpr, rexpr, index, by);
 				}
 				if(index == length) {
-					return builtin_array_push_back(env, sloc, lexpr, rexpr);
+					return builtin_array_push_back(env, sloc, lexpr, rexpr, by);
 				}
 			}
 			return oboerr(sloc, ERR_InvalidOperand);
@@ -1494,9 +1538,9 @@ builtin_assign(
 				size_t const index  = atenv(lexpr, iexpr);
 				size_t const length = array_length(lexpr->m.env);
 				if(index < length) {
-					return builtin_array_assign_index(env, sloc, lexpr, rexpr, index);
+					return builtin_array_assign_index(env, sloc, lexpr, rexpr, index, by);
 				}
-				return builtin_array_create_map(env, sloc, lexpr, rexpr, iexpr);
+				return builtin_array_create_map(env, sloc, lexpr, rexpr, iexpr, by);
 			}
 		default:
 			return oboerr(sloc, ERR_InvalidReferent);
@@ -1507,15 +1551,45 @@ builtin_assign(
 		lexpr = subeval(env, lexpr);
 
 		if(ast_isReference(lexpr)) {
-			return builtin_referent_assign(env, sloc, lexpr, rexpr);
+			return builtin_referent_assign(env, sloc, lexpr, rexpr, by);
 		}
 
 		return oboerr(sloc, ERR_InvalidReferent);
 	}
 
-	rexpr = eval(env, rexpr);
-	lexpr = dup_ast(sloc, rexpr);
-	return lexpr;
+	if(by == BY_Value) {
+		rexpr = eval(env, rexpr);
+		lexpr = dup_ast(sloc, rexpr);
+		return lexpr;
+	}
+
+	rexpr = subeval(env, rexpr);
+	if(ast_isReference(rexpr)) {
+		lexpr = dup_ref(sloc, rexpr);
+		return lexpr;
+	}
+
+	return oboerr(sloc, ERR_InvalidReferent);
+}
+
+static Ast
+builtin_assign_ref(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_assign_by(env, sloc, lexpr, rexpr, BY_Ref);
+}
+
+static Ast
+builtin_assign(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_assign_by(env, sloc, lexpr, rexpr, BY_Value);
 }
 
 static inline Ast
@@ -1697,12 +1771,12 @@ builtin_array(
 		rexpr = rexpr->m.rexpr
 	) {
 		if(ast_isnotZen(rexpr->m.lexpr)) {
-			builtin_array_push_back(env, sloc, lexpr, rexpr->m.lexpr);
+			builtin_array_push_back(env, sloc, lexpr, rexpr->m.lexpr, BY_Value);
 		}
 	}
 
 	if(ast_isnotZen(rexpr)) {
-		builtin_array_push_back(env, sloc, lexpr, rexpr);
+		builtin_array_push_back(env, sloc, lexpr, rexpr, BY_Value);
 	}
 
 	return lexpr;
@@ -1893,7 +1967,9 @@ initialise_builtin_operators(
 	static struct builtinop const builtinop[] = {
 		BUILTIN(    "", applicate  , P_Binding)
 		BUILTIN(   ":", tag        , P_Declarative)
+		BUILTIN(  ":^", tag_ref    , P_Declarative)
 		BUILTIN(   "=", assign     , P_Assigning)
+		BUILTIN(  "=^", assign_ref , P_Assigning)
 		BUILTIN( "&&=", assign_land, P_Assigning)
 		BUILTIN( "||=", assign_lor , P_Assigning)
 		BUILTIN(  "&=", assign_and , P_Assigning)

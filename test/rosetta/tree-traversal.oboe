@@ -33,7 +33,7 @@ levelorder(t, fn): (
 		node :[]
 	],
 	enqueue(q, n): q(
-		node[back] = n,
+		node[back] =^ n,
 		back++
 	),
 	dequeue(q): q(

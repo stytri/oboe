@@ -276,6 +276,12 @@ dup_ast(
 	Ast    ast
 );
 
+extern Ast
+dup_ref(
+	sloc_t sloc,
+	Ast    ast
+);
+
 extern void
 run_gc(
 	void
