@@ -178,7 +178,7 @@ _referent_ `:` _operand_
 
 or:
 
-_referent_ `:` `[` `]`
+_referent_ `:^` _reference_
 
 or:
 
@@ -194,7 +194,13 @@ _operator-string_ `:` _operator-string_
 
 ##### assignment
 
+either:
+
 _reference_ `=` _operand_
+
+or:
+
+_reference_ `=^` _reference_
 
 ##### conditional
 
@@ -282,7 +288,7 @@ _left-operand_ _operator_ _right-operand_
 
 `|`	bitwise OR
 
-`^`	bitwise XOR
+`~`	bitwise XOR
 
 `+`	add
 
