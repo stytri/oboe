@@ -1,6 +1,6 @@
 @println (18   & 11);
 @println (18   | 11);
-@println (18   ^ 11);
+@println (18   ~ 11);
 @println (18  <<  1);
 @println (18  >>  1);
 @println (18 >>>  2);
