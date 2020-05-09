@@ -315,12 +315,8 @@ addenv_operands(
 	Ast    lexpr,
 	Ast    rexpr
 ) {
-	if(ast_isIdentifier(lexpr)) {
-		lexpr = subeval(env, lexpr);
-	}
-	if(ast_isIdentifier(rexpr)) {
-		rexpr = subeval(env, rexpr);
-	}
+	lexpr = subeval(env, lexpr);
+	rexpr = subeval(env, rexpr);
 
 	if(ast_isSequence(idents)) {
 		addenv(to, sloc, idents->m.lexpr, lexpr);
