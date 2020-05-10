@@ -1288,12 +1288,8 @@ byrefeval(
 	expr = subeval(env, expr);
 
 	if(ast_isReference(expr)) {
-		for(Ast rexpr = subeval(env, expr->m.rexpr);
-			ast_isReference(rexpr);
-			rexpr = subeval(env, expr->m.rexpr)
-		) {
-			expr = rexpr;
-		}
+		for(; ast_isReference(expr->m.rexpr); expr = expr->m.rexpr)
+			;
 	}
 
 	return expr;
