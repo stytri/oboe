@@ -24,6 +24,7 @@ SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "nobreak.h"
 #include "version.h"
 #include "ast.h"
@@ -46,6 +47,7 @@ SOFTWARE.
 static int
 interactive(
 	unsigned *linop,
+	bool      timed,
 	bool      quiet,
 	bool      doeval,
 	FILE     *gfile
@@ -56,6 +58,7 @@ process(
 	char const *cs,
 	unsigned    source,
 	unsigned   *linop,
+	bool        timed,
 	bool        quiet,
 	bool        doeval,
 	char const *gtitle,
@@ -129,6 +132,7 @@ main(
 		{12, "-v, --verbose",                   "enable verbose trace output" },
 		{19, "-n, --noeval",                    "parse, but do not evaluate" },
 		{ 9, "-g, --graph FILE",                "output graphs of the AST to FILE in DOT format" },
+		{18, "-T, --timed",                     "timed execution" },
 
 		{20, "-m, --math",                      "enable math functions in the global namespace" },
 		{90, "-x, --evaluate EXPRESSION*",      "evaluates EXPRESSIONs up to -" },
@@ -142,6 +146,7 @@ main(
 
 	unsigned line        = 1;
 	bool     has_math    = false;
+	bool     timed       = false;
 	bool     quiet       = false;
 	bool     doeval      = true;
 	FILE    *gfile       = NULL;
@@ -210,6 +215,10 @@ main(
 				trace_verbose = true;
 				break;
 
+			case 18:
+				timed = true;
+				break;
+
 			case 19:
 				doeval = false;
 				break;
@@ -227,7 +236,7 @@ main(
 					(argi < argc) && (strcmp(argv[argi], "-") != 0);
 					++argi
 				) {
-					exit_status = process(argv[argi], 0, &line, quiet, doeval, argv[argi], gfile);
+					exit_status = process(argv[argi], 0, &line, timed, quiet, doeval, argv[argi], gfile);
 					if(exit_status != EXIT_SUCCESS) {
 						goto end;
 					}
@@ -255,7 +264,7 @@ main(
 					line = 1;
 
 					unsigned source = add_source(0, file);
-					exit_status = process(args, source, &line, true, doeval, argv[argi], gfile);
+					exit_status = process(args, source, &line, timed, true, doeval, argv[argi], gfile);
 
 					StringDelete(s);
 				} else {
@@ -299,7 +308,7 @@ main(
 	if(unprocessed) {
 		initialise(has_math);
 
-		exit_status = interactive(&line, quiet, doeval, gfile);
+		exit_status = interactive(&line, timed, quiet, doeval, gfile);
 	}
 end:
 	if(gfile) {
@@ -342,6 +351,7 @@ is_command(
 static int
 interactive(
 	unsigned *linop,
+	bool      timed,
 	bool      quiet,
 	bool      doeval,
 	FILE     *gfile
@@ -367,7 +377,7 @@ interactive(
 		} else if(is_command(args, "sources")) {
 			print(sources);
 		} else {
-			process(args, 0, linop, quiet, doeval, args, gfile);
+			process(args, 0, linop, timed, quiet, doeval, args, gfile);
 		}
 	}
 
@@ -379,11 +389,17 @@ process(
 	char const *args,
 	unsigned    source,
 	unsigned   *linop,
+	bool        timed,
 	bool        quiet,
 	bool        doeval,
 	char const *gtitle,
 	FILE       *gfile
 ) {
+	clock_t t1;
+	if(timed) {
+		t1 = clock();
+	}
+
 	while(*args) {
 		size_t ts = gc_topof_stack();
 
@@ -400,6 +416,43 @@ process(
 
 		gc_revert(ts);
 		run_gc();
+	}
+
+	if(timed) {
+		clock_t     t2     = clock();
+		double      tx     = (double)(t2 - t1) / CLOCKS_PER_SEC;
+		char const *prefix = "";
+		char const *units  = "seconds";
+		if(tx >= 300) {
+			tx /= 60;
+			units = "minutes";
+			if(tx >= 180) {
+				tx /= 60;
+				units = "hours";
+				if(tx >= 48) {
+					tx /= 24;
+					units = "days";
+				}
+			}
+		} else {
+			if(tx < 1) {
+				tx    *= 1000;
+				prefix = "milli";
+			}
+			if(tx < 1) {
+				tx    *= 1000;
+				prefix = "micro";
+			}
+			if(tx < 1) {
+				tx    *= 1000;
+				prefix = "nano";
+			}
+			if(tx < 1) {
+				tx    *= 1000;
+				prefix = "pico";
+			}
+		}
+		printf("\nexecution time: %g %s%s\n", tx, prefix, units);
 	}
 
 	return EXIT_SUCCESS;
