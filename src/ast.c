@@ -418,7 +418,6 @@ dup_ref(
 		return gc_push(dup);
 	}
 
-	return ast;
-	(void)sloc;
+	return dup_ast(sloc, ast);
 }
 

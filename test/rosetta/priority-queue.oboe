@@ -18,10 +18,10 @@ push(h, d, cmp): (
 	i: h length + 1,
 	h(
 		(j: i / 2; i > 1 && cmp(nodes[j], d); j /= 2) ?* (
-			nodes[i] = nodes[j],
+			nodes[i] =^ nodes[j],
 			i = j
 		),
-		nodes[i] = d,
+		nodes[i] =^ d,
 		length++
 	),
 );
@@ -31,9 +31,9 @@ pop(h, cmp): (
 
 	n: h length,
 	(n > 0) ? h(
-		return = nodes[1],
+		return =^ nodes[1],
 
-		nodes[1] = nodes[n],
+		nodes[1] =^ nodes[n],
 		length--,
 
 		(i:1, j:, k:; i <> n) ?* (
@@ -47,7 +47,7 @@ pop(h, cmp): (
 				(j <= length && cmp(nodes[k], nodes[j])) ? (
 					k = j
 				),
-				nodes[i] = nodes[k]
+				nodes[i] =^ nodes[k]
 			),
 			i = k
 		)

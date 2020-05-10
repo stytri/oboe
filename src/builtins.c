@@ -1281,6 +1281,25 @@ typedef enum {
 } By;
 
 static inline Ast
+byrefeval(
+	Ast env,
+	Ast expr
+) {
+	expr = subeval(env, expr);
+
+	if(ast_isReference(expr)) {
+		for(Ast rexpr = subeval(env, expr->m.rexpr);
+			ast_isReference(rexpr);
+			rexpr = subeval(env, expr->m.rexpr)
+		) {
+			expr = rexpr;
+		}
+	}
+
+	return expr;
+}
+
+static inline Ast
 evaluate_instance(
 	Ast    env,
 	sloc_t sloc,
@@ -1290,7 +1309,7 @@ evaluate_instance(
 	return (by == BY_Value) ?
 		dup_ast(sloc, refeval(env, expr))
 	:
-		dup_ref(sloc, subeval(env, expr))
+		dup_ref(sloc, byrefeval(env, expr))
 	;
 }
 
@@ -1304,7 +1323,7 @@ evaluate_assignable(
 	return (by == BY_Value) ?
 		refeval(env, expr)
 	:
-		subeval(env, expr)
+		byrefeval(env, expr)
 	;
 	(void)sloc;
 }
@@ -1563,7 +1582,7 @@ builtin_assign_by(
 		return lexpr;
 	}
 
-	rexpr = subeval(env, rexpr);
+	rexpr = byrefeval(env, rexpr);
 	if(ast_isReference(rexpr)) {
 		lexpr = dup_ref(sloc, rexpr);
 		return lexpr;

@@ -39,7 +39,7 @@ levelorder(t, fn): (
 	dequeue(q): q(
 		[index:front](
 			front++,
-			node[index]
+			=^node[index]
 		)
 	),
 
