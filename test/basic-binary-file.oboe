@@ -1,0 +1,43 @@
+write(file): (
+	s:'hello world!\n',
+	i:0xFEDCBA9876543210,
+	f:0xFEDCBA98765432p1,
+	w:(@open(file, "w")),
+	@wr_str(w, s),
+	@wr_u8 (w, i),
+	@wr_u16(w, i),
+	@wr_u32(w, i),
+	@wr_u64(w, i),
+	@wr_f32(w, f),
+	@wr_f64(w, f),
+	@wr_u32(w, i),
+	w@close
+);
+
+print_array(a): (
+	(i:0; i < a@length; i+=1) ?* (
+		a[i]@to_Literal@println
+	)
+);
+
+read(file): (
+	s:,
+	i:[],
+	f:[],
+	r:(@open(file)),
+	s    = r@rd_str,
+	i[0] = r@rd_u8,
+	i[1] = r@rd_u16,
+	i[2] = r@rd_u32,
+	i[3] = r@rd_u64,
+	f[0] = r@rd_f32,
+	f[1] = r@rd_f64,
+	s@to_Literal@println,
+	print_array(i),
+	print_array(f),
+	r@close
+);
+
+file:"./out/test.bin";
+write(file);
+read(file);

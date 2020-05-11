@@ -32,6 +32,7 @@ SOFTWARE.
 #include "env.h"
 #include "odt.h"
 #include "gc.h"
+#include "nobreak.h"
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -55,6 +56,20 @@ static unsigned builtin_setpos_enum    = -1;
 static unsigned builtin_ferror_enum    = -1;
 static unsigned builtin_fclear_enum    = -1;
 static unsigned builtin_eof_enum       = -1;
+static unsigned builtin_wr_u8_enum     = -1;
+static unsigned builtin_wr_u16_enum    = -1;
+static unsigned builtin_wr_u32_enum    = -1;
+static unsigned builtin_wr_u64_enum    = -1;
+static unsigned builtin_wr_f32_enum    = -1;
+static unsigned builtin_wr_f64_enum    = -1;
+static unsigned builtin_wr_str_enum    = -1;
+static unsigned builtin_rd_u8_enum     = -1;
+static unsigned builtin_rd_u16_enum    = -1;
+static unsigned builtin_rd_u32_enum    = -1;
+static unsigned builtin_rd_u64_enum    = -1;
+static unsigned builtin_rd_f32_enum    = -1;
+static unsigned builtin_rd_f64_enum    = -1;
+static unsigned builtin_rd_str_enum    = -1;
 static unsigned builtin_write_enum     = -1;
 static unsigned builtin_read_enum      = -1;
 static unsigned builtin_fprint_enum    = -1;
@@ -64,6 +79,17 @@ static unsigned builtin_print_enum     = -1;
 static unsigned builtin_println_enum   = -1;
 static unsigned builtin_printerr_enum  = -1;
 static unsigned builtin_getln_enum     = -1;
+
+//------------------------------------------------------------------------------
+
+union btypes {
+	uint8_t  u8;
+	uint16_t u16;
+	uint32_t u32;
+	uint64_t u64;
+	float    f32;
+	double   f64;
+};
 
 //------------------------------------------------------------------------------
 
@@ -543,6 +569,490 @@ builtin_eof(
 
 //------------------------------------------------------------------------------
 
+#define WR1(Type,Value) {\
+	bval.Type = Value; \
+	res = fwrite(&bval.Type, sizeof(bval.Type), 1, file->m.lptr); \
+}
+
+static Ast
+builtin_wr_u_1(
+	Ast    file,
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg,
+	int    bits
+) {
+	size_t res = 0;
+
+	arg = eval(env, arg);
+	switch(arg->type) {
+		union btypes bval;
+	case AST_Zen:
+	case AST_Integer:
+	case AST_Character:
+		switch(bits) {
+		case 8 : WR1(u8 , arg->m.ival); break;
+		case 16: WR1(u16, arg->m.ival); break;
+		case 32: WR1(u32, arg->m.ival); break;
+		default:
+		case 64: WR1(u64, arg->m.ival); break;
+		}
+		break;
+	case AST_Float:
+		switch(bits) {
+		case 8 : WR1(u8 , arg->m.fval); break;
+		case 16: WR1(u16, arg->m.fval); break;
+		case 32: WR1(u32, arg->m.fval); break;
+		default:
+		case 64: WR1(u64, arg->m.fval); break;
+		}
+		break;
+	default:
+		return error_or(sloc, arg, ERR_InvalidOperand);
+	}
+
+	if(res > 0) {
+		return ZEN;
+	}
+
+	return oboerr(sloc, ERR_FailedOperation);
+}
+
+static Ast
+builtin_wr_f_1(
+	Ast    file,
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg,
+	int    bits
+) {
+	size_t res = 0;
+
+	arg = eval(env, arg);
+	switch(arg->type) {
+		union btypes bval;
+	case AST_Zen:
+	case AST_Integer:
+	case AST_Character:
+		switch(bits) {
+		case 32: WR1(f32, arg->m.ival); break;
+		default:
+		case 64: WR1(f64, arg->m.ival); break;
+		}
+		break;
+	case AST_Float:
+		switch(bits) {
+		case 32: WR1(f32, arg->m.fval); break;
+		default:
+		case 64: WR1(f64, arg->m.fval); break;
+		}
+		break;
+	default:
+		return error_or(sloc, arg, ERR_InvalidOperand);
+	}
+
+	if(res > 0) {
+		return ZEN;
+	}
+
+	return oboerr(sloc, ERR_FailedOperation);
+}
+
+static Ast
+builtin_wr_s_1(
+	Ast    file,
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg,
+	int    bits
+) {
+	size_t res = 0;
+	bool   local_string = false;
+
+	arg = eval(env, arg);
+	switch(arg->type) {
+		union btypes bval;
+		StringConst s;
+		size_t      len;
+		char const *cs;
+	case AST_Zen:
+	case AST_Integer:
+	case AST_Character:
+	case AST_Float:
+		s = tostr(arg, false);
+		assert(s != NULL);
+		local_string = true;
+		nobreak;
+	case AST_String:
+		if(!local_string) {
+			s = arg->m.sval;
+		}
+		cs = StringToCharLiteral(s, &len);
+		WR1(u32, (uint32_t)len);
+		if(res > 0 && len > 0) {
+			int res1 = res;
+			res = fwrite(cs, sizeof(*cs), len, file->m.lptr);
+			if(res > 0) {
+				res += res1;
+			}
+		}
+		if(local_string) {
+			StringDelete(s);
+		}
+		break;
+	default:
+		return error_or(sloc, arg, ERR_InvalidOperand);
+	}
+
+	if(res > 0) {
+		return ZEN;
+	}
+
+	return oboerr(sloc, ERR_FailedOperation);
+	(void)bits;
+}
+
+static Ast
+builtin_wr_all(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg,
+	int    bits,
+	Ast  (*wr1)(
+		Ast    file,
+		Ast    env,
+		sloc_t sloc,
+		Ast    arg,
+		int    bits
+	)
+) {
+	if(ast_isSequence(arg)) {
+		Ast file = eval_file(env, arg->m.lexpr);
+		if(ast_isFileType(file) && (file->m.lptr != NULL)) {
+
+			for(arg = arg->m.rexpr;
+				ast_isSequence(arg);
+				arg = arg->m.rexpr
+			) {
+				Ast res = wr1(file, env, sloc, arg->m.lexpr, bits);
+				if(ast_isnotZen(res)) {
+					return res;
+				}
+			}
+
+			return wr1(file, env, sloc, arg, bits);
+		}
+	}
+
+	return error_or(sloc, arg, ERR_InvalidOperand);
+}
+
+static Ast
+builtin_wr_u8(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_wr_all(env, sloc, arg, 8, builtin_wr_u_1);
+}
+static Ast
+builtin_wr_u16(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_wr_all(env, sloc, arg, 16, builtin_wr_u_1);
+}
+static Ast
+builtin_wr_u32(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_wr_all(env, sloc, arg, 32, builtin_wr_u_1);
+}
+static Ast
+builtin_wr_u64(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_wr_all(env, sloc, arg, 64, builtin_wr_u_1);
+}
+
+static Ast
+builtin_wr_f32(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_wr_all(env, sloc, arg, 32, builtin_wr_f_1);
+}
+static Ast
+builtin_wr_f64(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_wr_all(env, sloc, arg, 64, builtin_wr_f_1);
+}
+
+static Ast
+builtin_wr_str(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_wr_all(env, sloc, arg, 64, builtin_wr_s_1);
+}
+
+#undef WR1
+
+//------------------------------------------------------------------------------
+
+#define RD1(Type,Value) {\
+	res = fread(&bval.Type, sizeof(bval.Type), 1, file->m.lptr); \
+	Value = bval.Type; \
+}
+
+static Ast
+builtin_rd_u_1(
+	Ast    file,
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg,
+	int    bits
+) {
+	size_t       res = 0;
+	union btypes bval;
+
+	switch(bits) {
+	case 8 : RD1(u8 , bval.u64); break;
+	case 16: RD1(u16, bval.u64); break;
+	case 32: RD1(u32, bval.u64); break;
+	default:
+	case 64: RD1(u64, bval.u64); break;
+	}
+
+	if(res > 0) {
+		if(ast_isZen(arg)) {
+			return new_ast(sloc, NULL, AST_Integer, bval.u64);
+		}
+
+		Ast ast = subeval(env, arg);
+		if(ast_isReference(ast)) {
+			arg = new_ast(sloc, NULL, AST_Integer, bval.u64);
+
+			for(;
+				ast_isReference(ast->m.rexpr);
+				ast = ast->m.rexpr
+			);
+			return assign(sloc, &ast->m.rexpr, arg);
+		}
+
+		return error_or(sloc, arg, ERR_InvalidReferent);
+	}
+
+	return oboerr(sloc, ERR_FailedOperation);
+}
+
+static Ast
+builtin_rd_f_1(
+	Ast    file,
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg,
+	int    bits
+) {
+	size_t       res = 0;
+	union btypes bval;
+
+	switch(bits) {
+	case 32: RD1(f32, bval.f64); break;
+	default:
+	case 64: RD1(f64, bval.f64); break;
+	}
+
+	if(res > 0) {
+		if(ast_isZen(arg)) {
+			return new_ast(sloc, NULL, AST_Float, bval.f64);
+		}
+
+		Ast ast = subeval(env, arg);
+		if(ast_isReference(ast)) {
+			arg = new_ast(sloc, NULL, AST_Float, bval.f64);
+
+			for(;
+				ast_isReference(ast->m.rexpr);
+				ast = ast->m.rexpr
+			);
+			return assign(sloc, &ast->m.rexpr, arg);
+		}
+
+		return error_or(sloc, arg, ERR_InvalidReferent);
+	}
+
+	return oboerr(sloc, ERR_FailedOperation);
+}
+
+static Ast
+builtin_rd_s_1(
+	Ast    file,
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg,
+	int    bits
+) {
+	size_t       res = 0;
+	union btypes bval;
+	size_t       len;
+	String       s;
+
+	RD1(u32, len);
+	if(res > 0) {
+		s = StringReserve(len);
+		assert(s != NULL);
+
+		if(len > 0) {
+			char *cs   = (char *)StringToCharLiteral(s, &len);
+			int   res1 = res;
+			res = fread(cs, sizeof(*cs), len, file->m.lptr);
+			if(res > 0) {
+				res += res1;
+			}
+		}
+	}
+	if(res > 0) {
+		if(ast_isZen(arg)) {
+			return new_ast(sloc, NULL, AST_String, s);
+		}
+
+		Ast ast = subeval(env, arg);
+		if(ast_isReference(ast)) {
+			arg = new_ast(sloc, NULL, AST_String, s);
+
+			for(;
+				ast_isReference(ast->m.rexpr);
+				ast = ast->m.rexpr
+			);
+			return assign(sloc, &ast->m.rexpr, arg);
+		}
+
+		return error_or(sloc, arg, ERR_InvalidReferent);
+	}
+
+	return oboerr(sloc, ERR_FailedOperation);
+	(void)bits;
+}
+
+static Ast
+builtin_rd_all(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg,
+	int    bits,
+	Ast  (*rd1)(
+		Ast    file,
+		Ast    env,
+		sloc_t sloc,
+		Ast    arg,
+		int    bits
+	)
+) {
+	if(ast_isSequence(arg)) {
+		Ast file = eval_file(env, arg->m.lexpr);
+		if(ast_isFileType(file) && (file->m.lptr != NULL)) {
+
+			for(arg = arg->m.rexpr;
+				ast_isSequence(arg);
+				arg = arg->m.rexpr
+			) {
+				Ast ast = rd1(file, env, sloc, arg->m.lexpr, bits);
+				if(ast_isError(ast)) {
+					return ast;
+				}
+			}
+
+			return rd1(file, env, sloc, arg, bits);
+		}
+
+		return error_or(sloc, file, ERR_InvalidOperand);
+
+	} else {
+		Ast file = eval_file(env, arg);
+		if(ast_isFileType(file) && (file->m.lptr != NULL)) {
+			return rd1(file, env, sloc, ZEN, bits);
+		}
+
+		return error_or(sloc, file, ERR_InvalidOperand);
+	}
+
+	return error_or(sloc, arg, ERR_InvalidOperand);
+}
+
+static Ast
+builtin_rd_u8(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_rd_all(env, sloc, arg, 8, builtin_rd_u_1);
+}
+static Ast
+builtin_rd_u16(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_rd_all(env, sloc, arg, 16, builtin_rd_u_1);
+}
+static Ast
+builtin_rd_u32(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_rd_all(env, sloc, arg, 32, builtin_rd_u_1);
+}
+static Ast
+builtin_rd_u64(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_rd_all(env, sloc, arg, 64, builtin_rd_u_1);
+}
+
+static Ast
+builtin_rd_f32(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_rd_all(env, sloc, arg, 32, builtin_rd_f_1);
+}
+static Ast
+builtin_rd_f64(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_rd_all(env, sloc, arg, 64, builtin_rd_f_1);
+}
+
+static Ast
+builtin_rd_str(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_rd_all(env, sloc, arg, 64, builtin_rd_s_1);
+}
+
+#undef RD1
+
+//------------------------------------------------------------------------------
+
 static void
 builtin_write_1(
 	Ast    file,
@@ -853,6 +1363,20 @@ initialise_system_stdio(
 		BUILTIN("ferror"  , ferror)
 		BUILTIN("fclear"  , fclear)
 		BUILTIN("eof"     , eof)
+		BUILTIN("wr_u8"   , wr_u8)
+		BUILTIN("wr_u16"  , wr_u16)
+		BUILTIN("wr_u32"  , wr_u32)
+		BUILTIN("wr_u64"  , wr_u64)
+		BUILTIN("wr_f32"  , wr_f32)
+		BUILTIN("wr_f64"  , wr_f64)
+		BUILTIN("wr_str"  , wr_str)
+		BUILTIN("rd_u8"   , rd_u8)
+		BUILTIN("rd_u16"  , rd_u16)
+		BUILTIN("rd_u32"  , rd_u32)
+		BUILTIN("rd_u64"  , rd_u64)
+		BUILTIN("rd_f32"  , rd_f32)
+		BUILTIN("rd_f64"  , rd_f64)
+		BUILTIN("rd_str"  , rd_str)
 		BUILTIN("write"   , write)
 		BUILTIN("read"    , read)
 		BUILTIN("fprint"  , fprint)
