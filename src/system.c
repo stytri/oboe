@@ -991,7 +991,9 @@ initialise_system_environment(
 		BUILTIN("to_Float"    , to_Float)
 		BUILTIN("assert"      , assert)
 		BUILTIN("getenv"      , getenv)
+#if 0
 		BUILTIN("setlocale"   , setlocale)
+#endif
 		BUILTIN("clock"       , clock)
 		BUILTIN("time"        , time)
 		BUILTIN("difftime"    , difftime)
