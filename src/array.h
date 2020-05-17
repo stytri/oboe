@@ -119,6 +119,13 @@ array_get_index(
 	size_t      n
 );
 
+extern int
+array_foreach(
+	Array arr,
+	int (*callback)(void *, size_t, uint64_t),
+	void *context
+);
+
 //------------------------------------------------------------------------------
 
 #define array_ptr(Arr,Type,Index)  ( \

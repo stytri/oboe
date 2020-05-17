@@ -346,3 +346,51 @@ array_get_index(
 	return ~(size_t)0;
 }
 
+static int
+array_foreach_node(
+	uintptr_t map,
+	int     (*callback)(void *, size_t, uint64_t),
+	void     *context
+) {
+	int res = 0;
+
+	bool               is_leaf = node_is_leaf(map);
+	struct node const *node    = untag_pointer(map);
+
+	if(is_leaf) {
+		for(int i = 0; i < LEAF_MAX_SIZE; ++i) {
+			size_t   const index = to_index(node->ptr[i]);
+			uint64_t const hash  = node->map;
+
+			res = callback(context, index, hash);
+
+			if(res != 0 || is_leaf_last_entry(node->ptr[i])) {
+				break;
+			}
+		}
+
+	} else {
+		int const n = popcount64(node->map);
+
+		for(int i = 0; res == 0 && i < n; ++i) {
+			res = array_foreach_node(node->ptr[i], callback, context);
+		}
+	}
+
+	return res;
+}
+
+int
+array_foreach(
+	Array arr,
+	int (*callback)(void *, size_t, uint64_t),
+	void *context
+) {
+	int res = 0;
+
+	if(arr->map != (uintptr_t)NULL) {
+		res = array_foreach_node(arr->map, callback, context);
+	}
+
+	return res;
+}
