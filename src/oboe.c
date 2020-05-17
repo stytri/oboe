@@ -70,9 +70,37 @@ readline(
 	FILE *stream
 );
 
+static int
+print_entry(
+	void    *context,
+	size_t   index,
+	uint64_t hash
+) {
+	Ast env = context;
+	Ast ast = array_at(env->m.env, Ast, index);
+
+	switch(ast->type) {
+		size_t      len;
+		char const *cs;
+	case AST_Reference:
+	case AST_BuiltinOperator:
+	case AST_BuiltinFunction:
+		cs = StringToCharLiteral(ast->m.sval, &len);
+		puts(cs);
+		break;
+	default:
+		break;
+	}
+
+
+	return 0;
+	(void)hash;
+}
+
 static void
 initialise(
-	bool has_math
+	bool has_math,
+	bool list_builtins
 ) {
 	initialise_ast();
 	initialise_env();
@@ -81,6 +109,12 @@ initialise(
 	initialise_builtins(has_math);
 	initialise_system_environment();
 	initialise_system_stdio();
+
+	if(list_builtins) {
+		array_foreach(operators->m.env         , print_entry, operators);
+		array_foreach(globals->m.env           , print_entry, globals);
+		array_foreach(system_environment->m.env, print_entry, system_environment);
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -130,6 +164,7 @@ main(
 		{10, "-q, --quiet",                     "suppress result output" },
 		{11, "-t, --trace",                     "enable basic trace output" },
 		{12, "-v, --verbose",                   "enable verbose trace output" },
+		{13, "    --list-builtins",             "output names of all builtins" },
 		{19, "-n, --noeval",                    "parse, but do not evaluate" },
 		{ 9, "-g, --graph FILE",                "output graphs of the AST to FILE in DOT format" },
 		{18, "-T, --timed",                     "timed execution" },
@@ -144,13 +179,14 @@ main(
 
 	int exit_status = EXIT_SUCCESS;
 
-	unsigned line        = 1;
-	bool     has_math    = false;
-	bool     timed       = false;
-	bool     quiet       = false;
-	bool     doeval      = true;
-	FILE    *gfile       = NULL;
-	bool     unprocessed = true;
+	unsigned line          = 1;
+	bool     has_math      = false;
+	bool     list_builtins = false;
+	bool     timed         = false;
+	bool     quiet         = false;
+	bool     doeval        = true;
+	FILE    *gfile         = NULL;
+	bool     unprocessed   = true;
 
 	for(int argi = 1; argi < argc;) {
 		char const *args = argv[argi++];
@@ -215,6 +251,10 @@ main(
 				trace_verbose = true;
 				break;
 
+			case 13:
+				list_builtins = true;
+				break;
+
 			case 18:
 				timed = true;
 				break;
@@ -230,7 +270,7 @@ main(
 			case 90:
 				unprocessed = false;
 
-				initialise(has_math);
+				initialise(has_math, list_builtins);
 
 				for(;
 					(argi < argc) && (strcmp(argv[argi], "-") != 0);
@@ -244,7 +284,7 @@ main(
 				break;
 
 			case 0:
-				initialise(has_math);
+				initialise(has_math, list_builtins);
 
 				--argi;
 				addenv_argv(system_environment, 0, argc - argi, &argv[argi]);
@@ -252,7 +292,7 @@ main(
 				unprocessed = false;
 				nobreak;
 			case 91: {
-				initialise(has_math);
+				initialise(has_math, list_builtins);
 
 				size_t ts   = gc_topof_stack();
 				size_t n    = strlen(argv[argi]);
@@ -278,7 +318,7 @@ main(
 				break;
 			}
 			case 92: {
-				initialise(has_math);
+				initialise(has_math, list_builtins);
 
 				size_t ts   = gc_topof_stack();
 				size_t n    = strlen(argv[argi]);
@@ -306,7 +346,7 @@ main(
 	}
 
 	if(unprocessed) {
-		initialise(has_math);
+		initialise(has_math, list_builtins);
 
 		exit_status = interactive(&line, timed, quiet, doeval, gfile);
 	}
