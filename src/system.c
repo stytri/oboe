@@ -986,7 +986,7 @@ initialise_system_environment(
 		BUILTIN("to_Literal"  , to_Literal)
 		BUILTIN("to_Integer"  , to_Integer)
 		BUILTIN("to_Float"    , to_Float)
-#if 0
+#if 1
 		BUILTIN("assert"      , assert)
 		BUILTIN("setlocale"   , setlocale)
 #endif
