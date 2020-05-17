@@ -1288,8 +1288,7 @@ byrefeval(
 	expr = subeval(env, expr);
 
 	if(ast_isReference(expr)) {
-		for(; ast_isReference(expr->m.rexpr); expr = expr->m.rexpr)
-			;
+		expr = unwrapref(expr);
 	}
 
 	return expr;
@@ -1507,10 +1506,8 @@ builtin_referent_assign(
 	Ast    rexpr,
 	By     by
 ) {
-	for(;
-		ast_isReference(lexpr->m.rexpr);
-		lexpr = lexpr->m.rexpr
-	);
+	lexpr = unwrapref(lexpr);
+
 	if(ast_isnotZen(lexpr->m.rexpr)) {
 		rexpr = evaluate_assignable(env, sloc, rexpr, by);
 		assign(sloc, &lexpr->m.rexpr, rexpr);
@@ -1673,8 +1670,7 @@ builtin_exchange_evaluate(
 				size_t const length = array_length(ast->m.env);
 				if(index < length) {
 					ast = array_at(ast->m.env, Ast, index);
-					for(; ast_isReference(ast); ast = ast->m.rexpr)
-						;
+					ast = deref(ast);
 					return ast;
 				}
 			}
@@ -1684,8 +1680,7 @@ builtin_exchange_evaluate(
 				size_t const length = array_length(ast->m.env);
 				if(index < length) {
 					ast = array_at(ast->m.env, Ast, index);
-					for(; ast_isReference(ast); ast = ast->m.rexpr)
-						;
+					ast = deref(ast);
 					return ast;
 				}
 			}
@@ -1699,8 +1694,7 @@ builtin_exchange_evaluate(
 		ast = subeval(env, ast);
 
 		if(ast_isReference(ast)) {
-			for(; ast_isReference(ast); ast = ast->m.rexpr)
-				;
+			ast = deref(ast);
 			return ast;
 		}
 	}

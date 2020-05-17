@@ -842,11 +842,8 @@ builtin_rd_u_1(
 		Ast ast = subeval(env, arg);
 		if(ast_isReference(ast)) {
 			arg = new_ast(sloc, NULL, AST_Integer, bval.u64);
+			ast = unwrapref(ast);
 
-			for(;
-				ast_isReference(ast->m.rexpr);
-				ast = ast->m.rexpr
-			);
 			return assign(sloc, &ast->m.rexpr, arg);
 		}
 
@@ -881,11 +878,8 @@ builtin_rd_f_1(
 		Ast ast = subeval(env, arg);
 		if(ast_isReference(ast)) {
 			arg = new_ast(sloc, NULL, AST_Float, bval.f64);
+			ast = unwrapref(ast);
 
-			for(;
-				ast_isReference(ast->m.rexpr);
-				ast = ast->m.rexpr
-			);
 			return assign(sloc, &ast->m.rexpr, arg);
 		}
 
@@ -930,11 +924,8 @@ builtin_rd_s_1(
 		Ast ast = subeval(env, arg);
 		if(ast_isReference(ast)) {
 			arg = new_ast(sloc, NULL, AST_String, s);
+			ast = unwrapref(ast);
 
-			for(;
-				ast_isReference(ast->m.rexpr);
-				ast = ast->m.rexpr
-			);
 			return assign(sloc, &ast->m.rexpr, arg);
 		}
 
@@ -1162,10 +1153,8 @@ builtin_read_1(
 	);
 
 	if(ast_isReference(ast)) {
-		for(;
-			ast_isReference(ast->m.rexpr);
-			ast = ast->m.rexpr
-		);
+		ast = unwrapref(ast);
+
 		return assign(sloc, &ast->m.rexpr, arg);
 	}
 	if(ast_isZen(ast)) {

@@ -34,23 +34,6 @@ extern "C" {
 //------------------------------------------------------------------------------
 
 extern Ast
-unquote(
-	Ast ast
-);
-
-extern Ast
-undefer(
-	Ast env,
-	Ast ast
-);
-
-extern Ast
-dereference(
-	Ast env,
-	Ast arg
-);
-
-extern Ast
 assign(
 	sloc_t sloc,
 	Ast   *past,
@@ -90,6 +73,67 @@ eval_named(
 	sloc_t      sloc,
 	char const *name
 );
+
+//------------------------------------------------------------------------------
+
+static inline Ast
+unwrapref(
+	Ast arg
+) {
+	for(;
+		ast_isReference(arg->m.rexpr);
+		arg = arg->m.rexpr
+	);
+	return arg;
+}
+
+static inline Ast
+deref(
+	Ast arg
+) {
+	for(;
+		ast_isReference(arg);
+		arg = arg->m.rexpr
+	);
+	return arg;
+}
+
+static inline Ast
+dereference(
+	Ast env,
+	Ast arg
+) {
+	if(ast_isIdentifier(arg)) {
+		arg = subeval(env, arg);
+		arg = deref(arg);
+	}
+	return arg;
+}
+
+static inline Ast
+undefer(
+	Ast env,
+	Ast ast
+) {
+	if(ast_isIdentifier(ast)) {
+		for(ast = subeval(env, ast);
+			ast_isDeferred(ast);
+			ast = ast->m.rexpr
+		);
+	}
+	return ast;
+}
+
+static inline Ast
+unquote(
+	Ast ast
+) {
+	for(;
+		ast_isQuoted(ast);
+		ast = ast->m.rexpr
+	);
+	return ast;
+}
 
 //------------------------------------------------------------------------------
 

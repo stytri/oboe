@@ -49,45 +49,6 @@ getref(
 //------------------------------------------------------------------------------
 
 Ast
-dereference(
-	Ast env,
-	Ast arg
-) {
-	if(ast_isIdentifier(arg)) {
-		for(arg = subeval(env, arg);
-			ast_isReference(arg);
-			arg = arg->m.rexpr
-		);
-	}
-	return arg;
-}
-
-Ast
-undefer(
-	Ast env,
-	Ast ast
-) {
-	if(ast_isIdentifier(ast)) {
-		for(ast = subeval(env, ast);
-			ast_isDeferred(ast);
-			ast = ast->m.rexpr
-		);
-	}
-	return ast;
-}
-
-Ast
-unquote(
-	Ast ast
-) {
-	for(;
-		ast_isQuoted(ast);
-		ast = ast->m.rexpr
-	);
-	return ast;
-}
-
-Ast
 assign(
 	sloc_t sloc,
 	Ast   *past,

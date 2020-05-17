@@ -173,13 +173,10 @@ builtin_sigil(
 	Ast    rexpr
 ) {
 	if(ast_isIdentifier(rexpr) || ast_isString(rexpr)) {
-		for(rexpr = inenv(system_environment, rexpr);
-			ast_isReference(rexpr);
-			rexpr = rexpr->m.rexpr
-		);
+		rexpr = inenv(system_environment, rexpr);
+		rexpr = deref(rexpr);
 
 		if(ast_isBuiltinFunction(rexpr)) {
-
 			if(ast_isnotZen(lexpr)) {
 				return rexpr->m.bfn(env, sloc, lexpr);
 			}
