@@ -61,7 +61,7 @@ play(is_random): (
 
 play_game(number_of_prisoners, games, verbose, is_random): (
 	won:0,
-
+	t1:(@clock()),
 	(once:0, i:0; i < games; i++) ?* (
 		initialize(number_of_prisoners),
 
@@ -75,8 +75,9 @@ play_game(number_of_prisoners, games, verbose, is_random): (
 			)
 		)
 	),
-
+	t2:(@clock()),
 	(games, " games played, ", won, " games won : ", ((100.0*won)/games), "%")@println,
+	(timing(t1, t2), " : ", timing(0, (t2 - t1) / games@to_Float), " per game")@println
 );
 
 run(number_of_prisoners, games, verbose): (

@@ -116,3 +116,39 @@ pqpop(h, cmp): (
 	return
 );
 
+timing(t1,t2): (
+	tx:(t2 - t1) / @CLOCKS_PER_SEC,
+	prefix:"",
+	units:"seconds",
+	(tx >= 300) ? ((
+		tx /= 60,
+		units = "minutes",
+		(tx >= 180) ? (
+			tx /= 60,
+			units = "hours",
+			(tx >= 48) ? (
+				tx /= 24,
+				units = "days"
+			)
+		)
+	) ; (
+		(tx < 1) ? (
+			tx    *= 1000,
+			prefix = "milli"
+		)
+		(tx < 1) ? (
+			tx    *= 1000,
+			prefix = "micro"
+		)
+		(tx < 1) ? (
+			tx    *= 1000,
+			prefix = "nano"
+		)
+		(tx < 1) ? (
+			tx    *= 1000,
+			prefix = "pico"
+		)
+	)),
+	(tx@to_String) ` ` prefix units
+);
+
