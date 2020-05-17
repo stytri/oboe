@@ -986,11 +986,11 @@ initialise_system_environment(
 		BUILTIN("to_Literal"  , to_Literal)
 		BUILTIN("to_Integer"  , to_Integer)
 		BUILTIN("to_Float"    , to_Float)
-		BUILTIN("assert"      , assert)
-		BUILTIN("getenv"      , getenv)
 #if 0
+		BUILTIN("assert"      , assert)
 		BUILTIN("setlocale"   , setlocale)
 #endif
+		BUILTIN("getenv"      , getenv)
 		BUILTIN("clock"       , clock)
 		BUILTIN("time"        , time)
 		BUILTIN("difftime"    , difftime)
@@ -1018,6 +1018,8 @@ initialise_system_environment(
 		addenv_named(system_environment, 0, "VERSION", var);
 		var = new_ast(0, NULL, AST_Integer, (uint64_t)RAND_MAX);
 		addenv_named(system_environment, 0, "RAND_MAX", var);
+		var = new_ast(0, NULL, AST_Float, (double)CLOCKS_PER_SEC);
+		addenv_named(system_environment, 0, "CLOCKS_PER_SEC", var);
 
 		initialise_datatypes();
 		initialise_builtinfn(system_environment, builtinfn, n_builtinfn);
