@@ -37,9 +37,10 @@ int main(
 ) {
 	struct array arr = ARRAY();
 
-	bool index = false;
-	bool quiet = false;
-	bool hash  = false;
+	bool verbose = false;
+	bool index   = false;
+	bool quiet   = false;
+	bool hash    = false;
 
 	for(int i = 1; i < argc; ++i) {
 		if(!strcmp(argv[i], "--alpha")) {
@@ -52,6 +53,10 @@ int main(
 		}
 		if(!strcmp(argv[i], "--graph")) {
 			is_ctype = isgraph;
+			continue;
+		}
+		if(!strcmp(argv[i], "--verbose")) {
+			verbose = true;
 			continue;
 		}
 		if(!strcmp(argv[i], "--index")) {
@@ -84,7 +89,7 @@ int main(
 		char const *start;
 		char const *end;
 
-		if(!quiet) {
+		if(verbose) {
 			puts("Initializing...");
 		}
 		for(start = cs; *start; start = end) {
@@ -105,7 +110,7 @@ int main(
 			}
 		}
 
-		if(!quiet) {
+		if(verbose) {
 			puts("Testing...");
 		}
 		for(start = cs; *start; start = end) {
@@ -132,6 +137,10 @@ int main(
 				}
 				printf("%*.*s\n", (int)n, (int)n, array_at(&arr, char const *, x));
 			}
+		}
+
+		if(verbose) {
+			puts("..Finished");
 		}
 	}
 }
