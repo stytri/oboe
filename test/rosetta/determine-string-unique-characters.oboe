@@ -35,9 +35,9 @@ process(s): (
 	unique:1,
 	diff1:"",
 
-	(cs:, uniq:, i:0; i < len; i++) ?* (
-		cs = s[i]@to_String,
-		uniq = is_unique(cs, i),
+	(i:0; i < len; i++) ?* (
+		cs :s[i]@to_String,
+		uniq:is_unique(cs, i),
 		(!uniq && unique) ? (
 			unique = 0,
 			diff1 = cs
@@ -48,9 +48,9 @@ process(s): (
 );
 
 main(argc, argv): (
-	(len:, nd:, i:1; i < argc; i++) ?* (
-		len = argv[i]@length,
-		nd = ndigits(len),
+	(i:1; i < argc; i++) ?* (
+		len:argv[i]@length,
+		nd:ndigits(len),
 		(length_digits < nd) ? (
 			length_digits = nd
 		),

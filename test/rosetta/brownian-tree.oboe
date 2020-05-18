@@ -27,11 +27,13 @@ main(argc, argv): (
 	W:bitmap(SIDE, SIDE),
 	W[SIDE/2][SIDE/2] = 1,
 
-	(do_over:, while:, y:, x:, i:0; i < NPARTICLES; i++) ?* (
-		(do_over = 1; do_over) ?* (
+	(i:0; i < NPARTICLES; i++) ?* (
+		y:, x:,
+
+		(do_over:1; do_over) ?* (
 			do_over = 0,
 
-			(while = 1; while) ?* (
+			(while:1; while) ?* (
 				x = select(SIDE - 2) + 1,
 				y = select(SIDE - 2) + 1,
 				while = W[y][x]

@@ -527,9 +527,12 @@ builtin_loop_1(
 
 	size_t ts     = gc_topof_stack();
 	Ast    result = ZEN;
+	Ast    outer  = env;
 
 	if(ast_isnotZen(iexpr)) {
 		while(cond) {
+			env = new_env(sloc, outer);
+
 			result = refeval(env, rexpr);
 
 			eval(env, iexpr);
@@ -540,6 +543,8 @@ builtin_loop_1(
 		}
 	} else {
 		while(cond) {
+			env = new_env(sloc, outer);
+
 			result = refeval(env, rexpr);
 
 			cond = ast_toBool(eval(env, lexpr)) ^ inverted;

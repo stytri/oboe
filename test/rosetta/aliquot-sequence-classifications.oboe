@@ -23,8 +23,10 @@ aliquot_classifier(K:): (
 	continue:1,
 	i:1,
 
-	(ti:,t1:; continue && i < 16; i++) ?* (
-		term[i] = (ti = proper_divisor_sum(t1 = term[i-1])),
+	(; continue && i < 16; i++) ?* (
+		t1:term[i-1],
+		ti:proper_divisor_sum(t1),
+		term[i] = ti,
 
 		?: (
 		(ti == 0): (

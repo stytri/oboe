@@ -43,8 +43,8 @@ select(N): (
 );
 
 shuffle(a): (
-	(t:, i:, n:a@length; n > 0) ?* (
-		i = select(n),
+	(n:a@length; n > 0) ?* (
+		i:select(n),
 		n--,
 		(n <> i) ? (
 			a[n] >< a[i]
@@ -96,9 +96,9 @@ pqpop(h, cmp): (
 		nodes[1] =^ nodes[n],
 		length--,
 
-		(i:1, j:, k:; i <> n) ?* (
-			k = n,
-			j = 2 * i,
+		(i:1; i <> n) ?* (
+			k:n,
+			j:2 * i,
 
 			(j <= length && cmp(nodes[k], nodes[j])) ? (
 				k = j

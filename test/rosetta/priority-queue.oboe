@@ -36,9 +36,9 @@ pop(h, cmp): (
 		nodes[1] =^ nodes[n],
 		length--,
 
-		(i:1, j:, k:; i <> n) ?* (
-			k = n,
-			j = 2 * i,
+		(i:1,; i <> n) ?* (
+			k:n,
+			j:2 * i,
 			h(
 				(j <= length && cmp(nodes[k], nodes[j])) ? (
 					k = j
@@ -66,7 +66,7 @@ push(h, node(5, "Make tea"), gt);
 push(h, node(1, "Solve RC tasks"), gt);
 push(h, node(2, "Tax return"), gt);
 
-(d:, n:h length, i:0; i < n; i++) ?* (
+(n:h length, i:0; i < n; i++) ?* (
 	pop(h, gt)data@println
 );
 

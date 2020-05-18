@@ -6,13 +6,11 @@ abs(x): (
 	(x < 0) ? -x : x
 );
 gauss_eliminate(a, b, x, n): (
-	i:, j:, r:, col:, row:, max_row:, dia:, max:, tmp:,
+	(dia:0; dia < n; dia++) ?* (
+		max_row:dia, max:a[dia][dia],
 
-	(dia = 0; dia < n; dia++) ?* (
-		max_row = dia, max = a[dia][dia],
-
-		(row = dia + 1; row < n; row++) ?* (
-			((tmp = abs(a[row][dia])) > max) ? (
+		(row:dia + 1; row < n; row++) ?* (
+			((tmp:abs(a[row][dia])) > max) ? (
 				max_row = row, max = tmp
 			)
 		),
@@ -20,9 +18,9 @@ gauss_eliminate(a, b, x, n): (
 		a[dia] >< a[max_row],
 		b[dia] >< b[max_row],
 
-		(row = dia + 1; row < n; row++) ?* (
-			tmp = a[row][dia] / a[dia][dia],
-			(col = dia+1; col < n; col++) ?* (
+		(row:dia + 1; row < n; row++) ?* (
+			tmp:a[row][dia] / a[dia][dia],
+			(col:dia+1; col < n; col++) ?* (
 				a[row][col] -= tmp * a[dia][col]
 			),
 			a[row][dia] = 0,
@@ -30,9 +28,9 @@ gauss_eliminate(a, b, x, n): (
 		)
 	),
 
-	(row = n - 1; -row >= row; row--) ?* (
-		tmp = b[row],
-		(j = n - 1; j > row; j--) ?* (
+	(row:n - 1; -row >= row; row--) ?* (
+		tmp:b[row],
+		(j:n - 1; j > row; j--) ?* (
 			tmp -= x[j] * a[row][j]
 		),
 		x[row] = tmp / a[row][row]

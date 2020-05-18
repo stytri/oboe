@@ -35,8 +35,8 @@ row:, i:;
 ""@println;
 (row = 0; row < 13; row++) ?* (
 	itos(-3, row)@print,
-	(l:, i = 0; i < row + 1; i++) ?* (
-		l = lah(row, i),
+	(i = 0; i < row + 1; i++) ?* (
+		l:lah(row, i),
 		itos(11, l)@print
 	),
 	""@println

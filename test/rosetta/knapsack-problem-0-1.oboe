@@ -43,12 +43,12 @@ knapsack(items, n:, w:): (
 	m:[calloc(w + 1)],
 	(i:1; i <= n; i++) ?* (
         m[i] = calloc(w + 1),
-        (a:, b:, j:0; j <= w; j++) ?* (
+        (j:0; j <= w; j++) ?* (
 			(items[i - 1]weight > j) ? ((
 				m[i][j] = m[i - 1][j]
 			) ; (
-				a = m[i - 1][j],
-				b = m[i - 1][j - items[i - 1]weight] + items[i - 1]value,
+				a:m[i - 1][j],
+				b: m[i - 1][j - items[i - 1]weight] + items[i - 1]value,
 				m[i][j] = max(a, b)
 			))
 		)
