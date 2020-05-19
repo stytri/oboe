@@ -31,6 +31,33 @@ static int cmp(
 	return 0;
 }
 
+static int
+map_print(
+	void    *context,
+	size_t   index,
+	uint64_t hash
+) {
+	static uint64_t last_hash = 0;
+
+	if(last_hash != hash) {
+		last_hash = hash;
+		printf("#%16.16llx", hash);
+	} else {
+		printf("+%16.16s", "");
+	}
+	printf("[%zu]\n", index);
+
+	return 0;
+	(void)context;
+}
+
+static void
+map(
+	Array arr
+) {
+	array_foreach(arr, map_print, arr);
+}
+
 int main(
 	int   argc,
 	char *argv[]
@@ -69,6 +96,10 @@ int main(
 		}
 		if(!strcmp(argv[i], "--hash")) {
 			hash = true;
+			continue;
+		}
+		if(!strcmp(argv[i], "--map")) {
+			map(&arr);
 			continue;
 		}
 
