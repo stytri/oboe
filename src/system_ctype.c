@@ -41,6 +41,8 @@ SOFTWARE.
 //------------------------------------------------------------------------------
 
 #define ENUM(Name,...)  static unsigned builtin_##Name##_enum = -1;
+	ENUM(to_Uppercase)
+	ENUM(to_Lowercase)
 #include "system_ctype.enum"
 
 //------------------------------------------------------------------------------
@@ -95,12 +97,60 @@ builtin_##Name( \
 
 //------------------------------------------------------------------------------
 
+typedef char32_t (*to_CType)(char32_t);
+
+static Ast
+builtin_convert_ctype(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       arg,
+	to_CType  to_ctype
+) {
+	arg = eval(env, arg);
+
+	switch(arg->type) {
+	case AST_Zen:
+	case AST_Integer:
+	case AST_Character:
+		return new_ast(sloc, NULL, AST_Character, (int)to_ctype((char32_t)arg->m.ival));
+	default:
+		switch(ast_type(arg)) {
+		case AST_Error:
+			return arg;
+		default:
+			return oboerr(sloc, ERR_InvalidOperand);
+		}
+	}
+}
+
+static Ast
+builtin_to_Uppercase(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_convert_ctype(env, sloc, arg, to_Uppercase);
+}
+
+static Ast
+builtin_to_Lowercase(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	return builtin_convert_ctype(env, sloc, arg, to_Lowercase);
+}
+
+//------------------------------------------------------------------------------
+
 int
 initialise_system_ctype(
 	void
 ) {
 	static struct builtinfn const builtinfn[] = {
 #	define ENUM(Name,...) BUILTIN(#Name, Name)
+		ENUM(to_Uppercase)
+		ENUM(to_Lowercase)
 #	include "system_ctype.enum"
 	};
 	static size_t const n_builtinfn = sizeof(builtinfn) / sizeof(builtinfn[0]);
