@@ -113,6 +113,24 @@ builtin_convert_ctype(
 	case AST_Integer:
 	case AST_Character:
 		return new_ast(sloc, NULL, AST_Character, (int)to_ctype((char32_t)arg->m.ival));
+	case AST_String: {
+		String s = StringCreate();
+		assert(s != NULL);
+		size_t      len;
+		char const *cs = StringToCharLiteral(arg->m.sval, &len);
+		if(len > 0) do {
+			char     uc[4];
+			char32_t c = utf8chr(cs, &cs);
+			len = utf8encode(uc, NULL, to_ctype(c));
+			if(len) {
+				String t = StringAppendCharLiteral(s, uc, len);
+				assert(t != NULL);
+				s = t;
+			}
+		} while(*cs)
+			;
+		return new_ast(sloc, NULL, AST_String, s);
+	}
 	default:
 		switch(ast_type(arg)) {
 		case AST_Error:
