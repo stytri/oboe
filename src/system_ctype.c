@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Tristan Styles
+Copyright (c) 2020 Tristan Styles
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ SOFTWARE.
 #include "odt.h"
 #include "gc.h"
 #include "lex.h"
+#include "utf8.h"
 #include "nobreak.h"
 #include <stdlib.h>
 #include <stdarg.h>
@@ -60,6 +61,17 @@ builtin_is_ctype(
 	case AST_Integer:
 	case AST_Character:
 		return new_ast(sloc, NULL, AST_Integer, (uint64_t)is_ctype((char32_t)arg->m.ival));
+	case AST_String: {
+		int         res = 1;
+		size_t      len;
+		char const *cs = StringToCharLiteral(arg->m.sval, &len);
+		do {
+			char32_t c = utf8chr(cs, &cs);
+			res = is_ctype(c);
+		} while(res && *cs)
+			;
+		return new_ast(sloc, NULL, AST_Integer, (uint64_t)res);
+	}
 	default:
 		switch(ast_type(arg)) {
 		case AST_Error:
