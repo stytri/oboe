@@ -129,6 +129,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/system.h" />
+		<Unit filename="src/system_ctype.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/system_ctype.enum" />
 		<Unit filename="src/system_stdio.c">
 			<Option compilerVar="CC" />
 		</Unit>

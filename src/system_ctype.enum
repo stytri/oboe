@@ -1,9 +1,7 @@
-#ifndef SYSTEM_H_INCLUDED
-#define SYSTEM_H_INCLUDED
 /*
 MIT License
 
-Copyright (c) 2019 Tristan Styles
+Copyright (c) 2020 Tristan Styles
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,67 +22,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "ast.h"
-
-#ifdef __cplusplus
-extern "C" {
+#ifndef ENUM
+#	define ENUM(...)
 #endif
 
 //------------------------------------------------------------------------------
 
-extern Ast system_environment;
-
-extern int
-initialise_system_environment(
-	void
-);
-
-extern int
-initialise_system_stdio(
-	void
-);
-
-extern int
-initialise_system_ctype(
-	void
-);
-
-//------------------------------------------------------------------------------
-
-extern Ast
-error_or(
-	sloc_t sloc,
-	Ast    ast,
-	Error  err
-);
-
-extern Ast
-sequential_evaluation(
-	Ast  (*evaluator)(
-		Ast    env,
-		sloc_t sloc,
-		Ast    arg
-	),
-	Ast    env,
-	sloc_t sloc,
-	Ast    arg
-);
-
-//------------------------------------------------------------------------------
-
-// system_stdio
-
-extern Ast
-builtin_printerr(
-	Ast    env,
-	sloc_t sloc,
-	Ast    arg
-);
+ENUM(is_EOL)
+ENUM(is_Space)
+ENUM(is_Digit)
+ENUM(is_XDigit)
+ENUM(is_ID_Start)
+ENUM(is_ID_Continue)
+ENUM(is_UCS_Letter_uppercase)
+ENUM(is_UCS_Letter_lowercase)
+ENUM(is_UCS_Letter_titlecase)
+ENUM(is_UCS_Letter_cased)
+ENUM(is_UCS_Letter_modifier)
+ENUM(is_UCS_Letter_other)
+ENUM(is_UCS_Letter)
+ENUM(is_UCS_Mark_nonspacing)
+ENUM(is_UCS_Mark_spacing)
+ENUM(is_UCS_Mark_enclosing)
+ENUM(is_UCS_Mark)
+ENUM(is_UCS_Number_decimal)
+ENUM(is_UCS_Number_letter)
+ENUM(is_UCS_Number_other)
+ENUM(is_UCS_Number)
+ENUM(is_UCS_Punctuation_connector)
+ENUM(is_UCS_Punctuation_dash)
+ENUM(is_UCS_Punctuation_open)
+ENUM(is_UCS_Punctuation_close)
+ENUM(is_UCS_Punctuation_initial)
+ENUM(is_UCS_Punctuation_final)
+ENUM(is_UCS_Punctuation_other)
+ENUM(is_UCS_Punctuation)
+ENUM(is_UCS_Symbol_math)
+ENUM(is_UCS_Symbol_currency)
+ENUM(is_UCS_Symbol_modifier)
+ENUM(is_UCS_Symbol)
+ENUM(is_UCS_Separator_space)
+ENUM(is_UCS_Separator_line)
+ENUM(is_UCS_Separator_paragraph)
+ENUM(is_UCS_Separator)
 
 //------------------------------------------------------------------------------
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif//ndef SYSTEM_H_INCLUDED
+#undef ENUM
