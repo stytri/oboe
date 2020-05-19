@@ -2,12 +2,16 @@
 
 "rosetta/libutil"@import;
 
-sum(i, lo:, hi:, term) : (
+sum(x, lo:, hi:, term) : (
 	return:0.0,
-	(i = lo; i <= hi; i++) ?* (
+	(x = lo; x <= hi; x++) ?* (
 		return += term
 	)
 );
 
-i:;
-sum(i, 1, 100, :(1.0/i))@println;
+main(): (
+	i:;
+	sum(i, 1, 100, :(1.0/i))@println;
+);
+
+main();
