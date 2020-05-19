@@ -263,10 +263,17 @@ initialise_ast(
 );
 
 extern Ast
-new_ast(
+new_ast_from_lexeme(
 	sloc_t      sloc,
 	char const *leme,
 	size_t      len,
+	...
+);
+
+extern Ast
+new_ast(
+	sloc_t      sloc,
+	Type        type,
 	...
 );
 

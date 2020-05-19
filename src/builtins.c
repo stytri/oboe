@@ -354,7 +354,7 @@ builtin_if_1(
 ) {
 	if(ast_isZen(lexpr) || ast_isZen(rexpr)) {
 		uint64_t cond = ast_toBool(eval(env, ast_isnotZen(lexpr) ? lexpr : rexpr)) ^ inverted;
-		return new_ast(sloc, NULL, AST_Integer, cond);
+		return new_ast(sloc, AST_Integer, cond);
 	}
 
 	env = new_env(sloc, env);
@@ -596,7 +596,7 @@ builtin_land(
 		result = ast_toBool(rexpr);
 	}
 
-	return new_ast(sloc, NULL, AST_Integer, result);
+	return new_ast(sloc, AST_Integer, result);
 }
 
 static Ast
@@ -615,7 +615,7 @@ builtin_lor(
 		result = ast_toBool(rexpr);
 	}
 
-	return new_ast(sloc, NULL, AST_Integer, result);
+	return new_ast(sloc, AST_Integer, result);
 }
 
 //------------------------------------------------------------------------------
@@ -753,7 +753,7 @@ builtin_compare(
 		sense
 	);
 	if(r >= 0) {
-		return new_ast(sloc, NULL, AST_Integer, r != 0);
+		return new_ast(sloc, AST_Integer, r != 0);
 	}
 
 	return oboerr(sloc, ERR_InvalidOperand);
@@ -816,23 +816,23 @@ builtin_bitwise(
 	case TYPE(AST_Integer, AST_Character):
 	case TYPE(AST_Character, AST_Integer):
 	case TYPE(AST_Character, AST_Character):
-		return new_ast(sloc, NULL, AST_Integer, integerop(lexpr->m.ival, rexpr->m.ival));
+		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, rexpr->m.ival));
 	case TYPE(AST_Integer, AST_Float):
-		return new_ast(sloc, NULL, AST_Integer, integerop(lexpr->m.ival, double_to_uint64_t(rexpr->m.fval)));
+		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, double_to_uint64_t(rexpr->m.fval)));
 	case TYPE(AST_Float, AST_Integer):
-		return new_ast(sloc, NULL, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), rexpr->m.ival));
+		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), rexpr->m.ival));
 	case TYPE(AST_Float, AST_Float):
-		return new_ast(sloc, NULL, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), double_to_uint64_t(rexpr->m.fval)));
+		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), double_to_uint64_t(rexpr->m.fval)));
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
-		return new_ast(sloc, NULL, AST_Integer, integerop(lexpr->m.ival, 0));
+		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, 0));
 	case TYPE(AST_Float, AST_Zen):
-		return new_ast(sloc, NULL, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), 0));
+		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), 0));
 	case TYPE(AST_Zen, AST_Integer):
 	case TYPE(AST_Zen, AST_Character):
-		return new_ast(sloc, NULL, AST_Integer, integerop(0, rexpr->m.ival));
+		return new_ast(sloc, AST_Integer, integerop(0, rexpr->m.ival));
 	case TYPE(AST_Zen, AST_Float):
-		return new_ast(sloc, NULL, AST_Integer, integerop(0, double_to_uint64_t(rexpr->m.fval)));
+		return new_ast(sloc, AST_Integer, integerop(0, double_to_uint64_t(rexpr->m.fval)));
 	default:
 		switch(ast_type(lexpr)) {
 		case AST_Error:
@@ -889,23 +889,23 @@ builtin_arithmetic(
 	case TYPE(AST_Integer, AST_Character):
 	case TYPE(AST_Character, AST_Integer):
 	case TYPE(AST_Character, AST_Character):
-		return new_ast(sloc, NULL, AST_Integer, integerop(lexpr->m.ival, rexpr->m.ival));
+		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, rexpr->m.ival));
 	case TYPE(AST_Integer, AST_Float):
-		return new_ast(sloc, NULL, AST_Float, floatop((double)lexpr->m.ival, rexpr->m.fval));
+		return new_ast(sloc, AST_Float, floatop((double)lexpr->m.ival, rexpr->m.fval));
 	case TYPE(AST_Float, AST_Integer):
-		return new_ast(sloc, NULL, AST_Float, floatop(lexpr->m.fval, (double)rexpr->m.ival));
+		return new_ast(sloc, AST_Float, floatop(lexpr->m.fval, (double)rexpr->m.ival));
 	case TYPE(AST_Float, AST_Float):
-		return new_ast(sloc, NULL, AST_Float, floatop(lexpr->m.fval, rexpr->m.fval));
+		return new_ast(sloc, AST_Float, floatop(lexpr->m.fval, rexpr->m.fval));
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
-		return new_ast(sloc, NULL, AST_Integer, integerop(lexpr->m.ival, 0));
+		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, 0));
 	case TYPE(AST_Float, AST_Zen):
-		return new_ast(sloc, NULL, AST_Float, floatop(lexpr->m.fval, 0.0));
+		return new_ast(sloc, AST_Float, floatop(lexpr->m.fval, 0.0));
 	case TYPE(AST_Zen, AST_Integer):
 	case TYPE(AST_Zen, AST_Character):
-		return new_ast(sloc, NULL, AST_Integer, integerop(0, rexpr->m.ival));
+		return new_ast(sloc, AST_Integer, integerop(0, rexpr->m.ival));
 	case TYPE(AST_Zen, AST_Float):
-		return new_ast(sloc, NULL, AST_Float, floatop(0.0, rexpr->m.fval));
+		return new_ast(sloc, AST_Float, floatop(0.0, rexpr->m.fval));
 	default:
 		switch(ast_type(lexpr)) {
 		case AST_Error:
@@ -973,33 +973,33 @@ builtin_bitmove(
 	case TYPE(AST_Integer, AST_Character):
 	case TYPE(AST_Character, AST_Integer):
 	case TYPE(AST_Character, AST_Character):
-		return new_ast(sloc, NULL, AST_Integer, integerop(lexpr->m.ival, rexpr->m.ival));
+		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, rexpr->m.ival));
 	case TYPE(AST_Integer, AST_Float):
-		return new_ast(sloc, NULL, AST_Integer, integerop(lexpr->m.ival, (uint64_t)rexpr->m.fval));
+		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, (uint64_t)rexpr->m.fval));
 	case TYPE(AST_Float, AST_Integer):
-		return new_ast(sloc, NULL, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), rexpr->m.ival));
+		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), rexpr->m.ival));
 	case TYPE(AST_Float, AST_Float):
-		return new_ast(sloc, NULL, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), (uint64_t)rexpr->m.fval));
+		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), (uint64_t)rexpr->m.fval));
 	case TYPE(AST_String, AST_Integer):
-		return new_ast(sloc, NULL, AST_String , stringop(lexpr->m.sval, rexpr->m.ival));
+		return new_ast(sloc, AST_String , stringop(lexpr->m.sval, rexpr->m.ival));
 	case TYPE(AST_String, AST_Float):
-		return new_ast(sloc, NULL, AST_String , stringop(lexpr->m.sval, (uint64_t)rexpr->m.fval));
+		return new_ast(sloc, AST_String , stringop(lexpr->m.sval, (uint64_t)rexpr->m.fval));
 	case TYPE(AST_Environment, AST_Integer):
-		return new_ast(sloc, NULL, AST_Environment, arrayop(lexpr->m.env, rexpr->m.ival), ZEN);
+		return new_ast(sloc, AST_Environment, arrayop(lexpr->m.env, rexpr->m.ival), ZEN);
 	case TYPE(AST_Environment, AST_Float):
-		return new_ast(sloc, NULL, AST_Environment, arrayop(lexpr->m.env, (uint64_t)rexpr->m.fval), ZEN);
+		return new_ast(sloc, AST_Environment, arrayop(lexpr->m.env, (uint64_t)rexpr->m.fval), ZEN);
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
-		return new_ast(sloc, NULL, AST_Integer, integerop(lexpr->m.ival, 0));
+		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, 0));
 	case TYPE(AST_Float, AST_Zen):
-		return new_ast(sloc, NULL, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), 0));
+		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), 0));
 	case TYPE(AST_String, AST_Zen):
-		return new_ast(sloc, NULL, AST_String , stringop(lexpr->m.sval, 0));
+		return new_ast(sloc, AST_String , stringop(lexpr->m.sval, 0));
 	case TYPE(AST_Zen, AST_Integer):
 	case TYPE(AST_Zen, AST_Character):
-		return new_ast(sloc, NULL, AST_Integer, integerop(0, rexpr->m.ival));
+		return new_ast(sloc, AST_Integer, integerop(0, rexpr->m.ival));
 	case TYPE(AST_Zen, AST_Float):
-		return new_ast(sloc, NULL, AST_Integer, integerop(0, (uint64_t)rexpr->m.fval));
+		return new_ast(sloc, AST_Integer, integerop(0, (uint64_t)rexpr->m.fval));
 	default:
 		switch(ast_type(lexpr)) {
 		case AST_Error:
@@ -1203,9 +1203,9 @@ builtin_math1(
 
 	switch(ast_type(arg)) {
 	case AST_Integer:
-		return new_ast(sloc, NULL, AST_Float, floatfn((double)arg->m.ival));
+		return new_ast(sloc, AST_Float, floatfn((double)arg->m.ival));
 	case AST_Float:
-		return new_ast(sloc, NULL, AST_Float, floatfn(arg->m.fval));
+		return new_ast(sloc, AST_Float, floatfn(arg->m.fval));
 	case AST_Zen:
 		return oboerr(sloc, ERR_InvalidOperand);
 	case AST_Error:
@@ -1228,13 +1228,13 @@ builtin_math2(
 
 		switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
 		case TYPE(AST_Integer, AST_Integer):
-			return new_ast(sloc, NULL, AST_Float, floatop((double)lexpr->m.ival, (double)rexpr->m.ival));
+			return new_ast(sloc, AST_Float, floatop((double)lexpr->m.ival, (double)rexpr->m.ival));
 		case TYPE(AST_Integer, AST_Float):
-			return new_ast(sloc, NULL, AST_Float, floatop((double)lexpr->m.ival, rexpr->m.fval));
+			return new_ast(sloc, AST_Float, floatop((double)lexpr->m.ival, rexpr->m.fval));
 		case TYPE(AST_Float, AST_Integer):
-			return new_ast(sloc, NULL, AST_Float, floatop(lexpr->m.fval, (double)rexpr->m.ival));
+			return new_ast(sloc, AST_Float, floatop(lexpr->m.fval, (double)rexpr->m.ival));
 		case TYPE(AST_Float, AST_Float):
-			return new_ast(sloc, NULL, AST_Float, floatop(lexpr->m.fval, rexpr->m.fval));
+			return new_ast(sloc, AST_Float, floatop(lexpr->m.fval, rexpr->m.fval));
 		default: switch(ast_type(lexpr)) {
 		case AST_Error:
 			return lexpr;
@@ -1373,7 +1373,7 @@ builtin_tag(
 		if(ast_isIdentifier(lexpr->m.lexpr)
 			&& ast_isParameters(lexpr->m.rexpr)
 		) {
-			rexpr = new_ast(sloc, NULL, AST_Function, lexpr->m.rexpr, rexpr);
+			rexpr = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
 			addenv(env, sloc, lexpr->m.lexpr, rexpr);
 			return rexpr;
 		}
@@ -1382,8 +1382,8 @@ builtin_tag(
 		) {
 			String      s     = lexpr->m.lexpr->m.sval;
 			uint64_t    hash  = lexpr->m.lexpr->m.hash;
-			rexpr             = new_ast(sloc, NULL, AST_Function, lexpr->m.rexpr, rexpr);
-			rexpr             = new_ast(sloc, NULL, AST_OperatorFunction, s, rexpr);
+			rexpr             = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
+			rexpr             = new_ast(sloc, AST_OperatorFunction, s, rexpr);
 			size_t      index = define(operators, hash, rexpr);
 			assert(~index != 0);
 			return rexpr;
@@ -1394,7 +1394,7 @@ builtin_tag(
 	switch(ast_type(lexpr)) {
 	case AST_Zen:
 		return ast_isnotQuoted(rexpr) ? (
-			new_ast(sloc, NULL, AST_Quoted, rexpr)
+			new_ast(sloc, AST_Quoted, rexpr)
 		) : (
 			rexpr
 		);
@@ -1406,7 +1406,7 @@ builtin_tag(
 		if(ast_isString(rexpr)) {
 			String      s     = lexpr->m.sval;
 			uint64_t    hash  = lexpr->m.hash;
-			rexpr             = new_ast(sloc, NULL, AST_OperatorAlias, s, rexpr->m.sval);
+			rexpr             = new_ast(sloc, AST_OperatorAlias, s, rexpr->m.sval);
 			size_t      index = define(operators, hash, rexpr);
 			assert(~index != 0);
 			return rexpr;
@@ -1769,7 +1769,7 @@ builtin_array(
 				utf8off(cs, &cs, rexpr->m.ival);
 				int  const  c = utf8chr(cs, NULL);
 				if(~c) {
-					return new_ast(rexpr->sloc, NULL, AST_Character, c);
+					return new_ast(rexpr->sloc, AST_Character, c);
 				}
 			}
 			return oboerr(sloc, ERR_InvalidOperand);
@@ -1817,12 +1817,12 @@ builtin_applicate(
 		case AST_Character: {
 				String s = RepeatedCharToString(rexpr->m.ival, lexpr->m.ival);
 				assert(s != NULL);
-				return new_ast(sloc, NULL, AST_String, s);
+				return new_ast(sloc, AST_String, s);
 			}
 		case AST_String: {
 				String s = RepeatedString(rexpr->m.sval, lexpr->m.ival);
 				assert(s != NULL);
-				return new_ast(sloc, NULL, AST_String, s);
+				return new_ast(sloc, AST_String, s);
 			}
 		case AST_Function: {
 				Ast locals = new_env(sloc, env);
@@ -1870,17 +1870,17 @@ builtin_applicate(
 		case AST_Integer: {
 				String s = RepeatedCharToString(lexpr->m.ival, rexpr->m.ival);
 				assert(s != NULL);
-				return new_ast(sloc, NULL, AST_String, s);
+				return new_ast(sloc, AST_String, s);
 			}
 		case AST_Character: {
 				String s = CharsToString(lexpr->m.ival, rexpr->m.ival);
 				assert(s != NULL);
-				return new_ast(sloc, NULL, AST_String, s);
+				return new_ast(sloc, AST_String, s);
 			}
 		case AST_String: {
 				String s = StringConcatenate(CharToString(lexpr->m.ival), rexpr->m.sval);
 				assert(s != NULL);
-				return new_ast(sloc, NULL, AST_String, s);
+				return new_ast(sloc, AST_String, s);
 			}
 		default:
 			break;
@@ -1893,17 +1893,17 @@ builtin_applicate(
 			case AST_Integer: {
 					String s = RepeatedString(lexpr->m.sval, rexpr->m.ival);
 					assert(s != NULL);
-					return new_ast(sloc, NULL, AST_String, s);
+					return new_ast(sloc, AST_String, s);
 				}
 			case AST_Character: {
 				String s = StringConcatenate(lexpr->m.sval, CharToString(rexpr->m.ival));
 				assert(s != NULL);
-				return new_ast(sloc, NULL, AST_String, s);
+				return new_ast(sloc, AST_String, s);
 			}
 			case AST_String: {
 					String s = StringConcatenate(lexpr->m.sval, rexpr->m.sval);
 					assert(s != NULL);
-					return new_ast(sloc, NULL, AST_String, s);
+					return new_ast(sloc, AST_String, s);
 				}
 			default:
 				break;
@@ -1937,7 +1937,7 @@ initialise_builtinop(
 		size_t      n     = strlen(cs);
 		uint64_t    hash  = memhash(cs, n, 0);
 		String      s     = CharLiteralToString(cs, n);
-		Ast         oper  = new_ast(0, NULL, AST_BuiltinOperator, s, builtinop[i].func, builtinop[i].prec);
+		Ast         oper  = new_ast(0, AST_BuiltinOperator, s, builtinop[i].func, builtinop[i].prec);
 		size_t      index = define(env, hash, oper);
 		assert(~index != 0);
 		*builtinop[i].enup = index;
@@ -1961,7 +1961,7 @@ initialise_builtinfn(
 		size_t      n     = strlen(cs);
 		uint64_t    hash  = memhash(cs, n, 0);
 		String      s     = CharLiteralToString(cs, n);
-		Ast         oper  = new_ast(0, NULL, AST_BuiltinFunction, s, builtinfn[i].func);
+		Ast         oper  = new_ast(0, AST_BuiltinFunction, s, builtinfn[i].func);
 		size_t      index = define(env, hash, oper);
 		assert(~index != 0);
 		*builtinfn[i].enup = index;

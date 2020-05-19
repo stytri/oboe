@@ -71,7 +71,7 @@ new_env(
 	assert(env != NULL);
 	*env = ARRAY();
 
-	Ast ast = new_ast(sloc, NULL, AST_Environment, env, outer);
+	Ast ast = new_ast(sloc, AST_Environment, env, outer);
 	return ast;
 }
 
@@ -111,7 +111,7 @@ link_env(
 	Ast    ast,
 	Ast    outer
 ) {
-	return new_ast(sloc, NULL, AST_Environment, ast->m.env, outer);
+	return new_ast(sloc, AST_Environment, ast->m.env, outer);
 }
 
 //------------------------------------------------------------------------------
@@ -219,7 +219,7 @@ named_inenv(
 ) {
 	String s = CharLiteralToString(name, strlen(name));
 	assert(s != NULL);
-	Ast    a = new_ast(sloc, NULL, AST_Identifier, s);
+	Ast    a = new_ast(sloc, AST_Identifier, s);
 
 	return inenv(env, a);
 }
@@ -237,7 +237,7 @@ addenv(
 		char const *cs   = StringToCharLiteral(ident->m.sval, &n);
 		n                = locate(env, hash, cs, n);
 		if(~n == 0) {
-			def = new_ast(sloc, NULL, AST_Reference, ident->m.sval, def);
+			def = new_ast(sloc, AST_Reference, ident->m.sval, def);
 			n   = define(env, hash, def);
 			assert(~n != 0);
 			return def;
@@ -357,12 +357,12 @@ addenv_argv(
 	for(int argi = 0; argi < argc; ++argi) {
 		String s = CharLiteralToString(argv[argi], strlen(argv[argi]));
 		assert(s != NULL);
-		Ast    a = new_ast(sloc, NULL, AST_String, s);
+		Ast    a = new_ast(sloc, AST_String, s);
 		bool   appended = array_push_back(d->m.env, Ast, a);
 		assert(appended);
 	}
 
-	d = new_ast(sloc, NULL, AST_Integer, (uint64_t)argc);
+	d = new_ast(sloc, AST_Integer, (uint64_t)argc);
 	addenv_named(to, sloc, "argc", d);
 }
 
@@ -375,7 +375,7 @@ addenv_named(
 ) {
 	String s = CharLiteralToString(name, strlen(name));
 	assert(s != NULL);
-	Ast    a = new_ast(sloc, NULL, AST_Identifier, s);
+	Ast    a = new_ast(sloc, AST_Identifier, s);
 
 	addenv(to, 0, a, ast);
 }

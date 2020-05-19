@@ -276,7 +276,7 @@ initialise_ast(
 }
 
 Ast
-new_ast(
+new_ast_from_lexeme(
 	sloc_t      sloc,
 	char const *leme,
 	size_t      n,
@@ -290,58 +290,49 @@ new_ast(
 	Type     type;
 	char32_t c ='\0';
 
-	if(leme) {
-		char const *cs;
-		c = utf8chr(leme, &cs);
+	char const *cs;
+	c = utf8chr(leme, &cs);
 
-		if(is_Digit(c)) {
-			type = is_float(leme, n) ? AST_Float : AST_Integer;
+	if(is_Digit(c)) {
+		type = is_float(leme, n) ? AST_Float : AST_Integer;
 
-		} else if(is_ID_Start(c)) {
-			type = AST_Identifier;
+	} else if(is_ID_Start(c)) {
+		type = AST_Identifier;
 
-		} else switch(c) {
-		case '\0': {
-				va_list vc;
-				va_copy(vc, va);
-				Ast lexpr = va_arg(vc, Ast);
-				Ast rexpr = va_arg(vc, Ast);
-				va_end(vc);
-				if(ast_isArray(rexpr)) {
-					if(ast_isZen(rexpr->m.lexpr)) {
-						rexpr->m.lexpr = lexpr;
-						va_end(va);
-						return rexpr;
-					}
-				}
-				if(ast_isOperator(lexpr)) {
-					if(ast_isZen(lexpr->m.rexpr)) {
-						lexpr->m.rexpr = rexpr;
-						va_end(va);
-						return lexpr;
-					}
+	} else switch(c) {
+	case '\0': {
+			va_list vc;
+			va_copy(vc, va);
+			Ast lexpr = va_arg(vc, Ast);
+			Ast rexpr = va_arg(vc, Ast);
+			va_end(vc);
+			if(ast_isArray(rexpr)) {
+				if(ast_isZen(rexpr->m.lexpr)) {
+					rexpr->m.lexpr = lexpr;
+					va_end(va);
+					return rexpr;
 				}
 			}
-			nobreak;
-		case '[' :
-		case '{' :
-		default  : type = AST_Operator;   break;
-		case ',' : type = AST_Sequence;   break;
-		case ';' : type = AST_Assemblage; break;
-		case '"' : type = AST_String;     break;
-		case '\'': type = AST_String;     break;
-		case '`' : type = AST_Character;  break;
-		case '(' :
-			va_end(va);
-			return ZEN;
+			if(ast_isOperator(lexpr)) {
+				if(ast_isZen(lexpr->m.rexpr)) {
+					lexpr->m.rexpr = rexpr;
+					va_end(va);
+					return lexpr;
+				}
+			}
 		}
-
-	} else {
-		if(n == AST_Zen) {
-			va_end(va);
-			return ZEN;
-		}
-		type = n;
+		nobreak;
+	case '[' :
+	case '{' :
+	default  : type = AST_Operator;   break;
+	case ',' : type = AST_Sequence;   break;
+	case ';' : type = AST_Assemblage; break;
+	case '"' : type = AST_String;     break;
+	case '\'': type = AST_String;     break;
+	case '`' : type = AST_Character;  break;
+	case '(' :
+		va_end(va);
+		return ZEN;
 	}
 
 	ast = alloc_ast();
@@ -354,12 +345,59 @@ new_ast(
 #	define ENUM(Name)       } break; case AST_##Name: {
 #	define NEW(...)         __VA_ARGS__;
 
-#	define INTEGER(S,N)     (S) ? (ast->attr |= ATTR_CopyOnAssign, makint((S), (N))   ) : va_arg(va, uint64_t)
-#	define FLOAT(S,N)       (S) ? (ast->attr |= ATTR_CopyOnAssign, makdbl((S), (N))   ) : va_arg(va, double)
-#	define CHARACTER(S,N)   (S) ? (ast->attr |= ATTR_CopyOnAssign, makchr((S), (N))   ) : va_arg(va, int)
-#	define STRING(S,N)      (S) ? (ast->attr |= ATTR_CopyOnAssign, makstr((S), (N), c)) : va_arg(va, String)
-#	define IDENTIFIER(S,N)  (S) ? (                                dupstr((S), (N))   ) : va_arg(va, String)
-#	define OPERATOROF(S,N)  (S) ? (                                makopr((S), (N))   ) : va_arg(va, unsigned)
+#	define INTEGER(S,N)     (ast->attr |= ATTR_CopyOnAssign, makint((S), (N))   )
+#	define FLOAT(S,N)       (ast->attr |= ATTR_CopyOnAssign, makdbl((S), (N))   )
+#	define CHARACTER(S,N)   (ast->attr |= ATTR_CopyOnAssign, makchr((S), (N))   )
+#	define STRING(S,N)      (ast->attr |= ATTR_CopyOnAssign, makstr((S), (N), c))
+#	define IDENTIFIER(S,N)  (                                dupstr((S), (N))   )
+#	define OPERATOROF(S,N)  (                                makopr((S), (N))   )
+
+#	include "oboe.enum"
+
+#	undef INTEGER
+#	undef FLOAT
+#	undef CHARACTER
+#	undef STRING
+#	undef IDENTIFIER
+#	undef OPERATOROF
+	}}
+
+	va_end(va);
+
+	return gc_push(ast);
+}
+
+Ast
+new_ast(
+	sloc_t      sloc,
+	Type        type,
+	...
+) {
+	Ast ast = NULL;
+
+	if(type == AST_Zen) {
+		return ZEN;
+	}
+
+	ast = alloc_ast();
+
+	ast->type = type;
+	ast->sloc = sloc;
+
+	va_list va;
+	va_start(va, type);
+
+	switch(type) {
+	default: {
+#	define ENUM(Name)       } break; case AST_##Name: {
+#	define NEW(...)         __VA_ARGS__;
+
+#	define INTEGER(S,N)     va_arg(va, uint64_t)
+#	define FLOAT(S,N)       va_arg(va, double)
+#	define CHARACTER(S,N)   va_arg(va, int)
+#	define STRING(S,N)      va_arg(va, String)
+#	define IDENTIFIER(S,N)  va_arg(va, String)
+#	define OPERATOROF(S,N)  va_arg(va, unsigned)
 
 #	include "oboe.enum"
 

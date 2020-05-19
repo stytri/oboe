@@ -40,7 +40,7 @@ oboerr(
 	sloc_t sloc,
 	Error  err
 ) {
-	return new_ast(sloc, NULL, AST_Error, err);
+	return new_ast(sloc, AST_Error, err);
 }
 
 char const *

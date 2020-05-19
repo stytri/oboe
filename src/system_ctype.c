@@ -62,7 +62,7 @@ builtin_is_ctype(
 	case AST_Zen:
 	case AST_Integer:
 	case AST_Character:
-		return new_ast(sloc, NULL, AST_Integer, (uint64_t)is_ctype((char32_t)arg->m.ival));
+		return new_ast(sloc, AST_Integer, (uint64_t)is_ctype((char32_t)arg->m.ival));
 	case AST_String: {
 		int         res = 1;
 		size_t      len;
@@ -72,7 +72,7 @@ builtin_is_ctype(
 			res = is_ctype(c);
 		} while(res && *cs)
 			;
-		return new_ast(sloc, NULL, AST_Integer, (uint64_t)res);
+		return new_ast(sloc, AST_Integer, (uint64_t)res);
 	}
 	default:
 		switch(ast_type(arg)) {
@@ -112,7 +112,7 @@ builtin_convert_ctype(
 	case AST_Zen:
 	case AST_Integer:
 	case AST_Character:
-		return new_ast(sloc, NULL, AST_Character, (int)to_ctype((char32_t)arg->m.ival));
+		return new_ast(sloc, AST_Character, (int)to_ctype((char32_t)arg->m.ival));
 	case AST_String: {
 		String s = StringCreate();
 		assert(s != NULL);
@@ -129,7 +129,7 @@ builtin_convert_ctype(
 			}
 		} while(*cs)
 			;
-		return new_ast(sloc, NULL, AST_String, s);
+		return new_ast(sloc, AST_String, s);
 	}
 	default:
 		switch(ast_type(arg)) {

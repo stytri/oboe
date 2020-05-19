@@ -58,7 +58,7 @@ assign(
 
 	if(ast != expr) {
 		if(ast_isCopyOnAssign(ast)) {
-			*past = ast = new_ast(sloc, NULL, AST_Void);
+			*past = ast = new_ast(sloc, AST_Void);
 		}
 
 		memcpy(ast, expr, sizeof(*ast));
@@ -166,7 +166,7 @@ eval_named(
 ) {
 	String s = CharLiteralToString(name, strlen(name));
 	assert(s != NULL);
-	Ast    a = new_ast(sloc, NULL, AST_Identifier, s);
+	Ast    a = new_ast(sloc, AST_Identifier, s);
 
 	return eval(env, a);
 }

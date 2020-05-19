@@ -82,7 +82,7 @@ add_searchpath(
 		cs = StringToCharLiteral(s, &n);
 	}
 
-	Ast    ast   = new_ast(sloc, NULL, AST_String, s);
+	Ast    ast   = new_ast(sloc, AST_String, s);
 	size_t index = locate(searchpaths, ast->m.hash, cs, n);
 	if(!~index) {
 		index = define(searchpaths, ast->m.hash, ast);

@@ -288,7 +288,7 @@ builtin_tmpname(
 		String      s  = CharLiteralToString(cs, strlen(cs));
 		assert(s != NULL);
 
-		return new_ast(sloc, NULL, AST_String, s);
+		return new_ast(sloc, AST_String, s);
 	}
 
 	return error_or(sloc, arg, ERR_InvalidOperand);
@@ -381,7 +381,7 @@ builtin_is_File(
 ) {
 	arg = dereference(env, arg);
 	uint64_t is = ast_isFileReferenceType(arg) || ast_isFileType(arg);
-	return new_ast(sloc, NULL, AST_Integer, is);
+	return new_ast(sloc, AST_Integer, is);
 	(void)env;
 }
 
@@ -393,7 +393,7 @@ builtin_is_Fpos(
 ) {
 	arg = dereference(env, arg);
 	uint64_t is = ast_isFilePositionType(arg);
-	return new_ast(sloc, NULL, AST_Integer, is);
+	return new_ast(sloc, AST_Integer, is);
 	(void)env;
 }
 
@@ -429,8 +429,8 @@ builtin_open(
 		mode = CharLiteralToString("r", 1);
 	}
 
-	ast  = new_ast(sloc, NULL, AST_OpaqueDataType, builtin_file_type, name, mode);
-	return new_ast(sloc, NULL, AST_OpaqueDataReference, ast);
+	ast  = new_ast(sloc, AST_OpaqueDataType, builtin_file_type, name, mode);
+	return new_ast(sloc, AST_OpaqueDataReference, ast);
 }
 
 static Ast
@@ -488,7 +488,7 @@ builtin_getpos(
 	if(ast_isFileType(arg) && (arg->m.lptr != NULL)) {
 		fpos_t fp;
 		if(fgetpos(arg->m.lptr, &fp) == 0)  {
-			return new_ast(sloc, NULL, AST_OpaqueDataType, builtin_fpos_type, fp);
+			return new_ast(sloc, AST_OpaqueDataType, builtin_fpos_type, fp);
 		}
 
 		return error_or(sloc, arg, ERR_FailedOperation);
@@ -531,7 +531,7 @@ builtin_ferror(
 	arg = eval_file(env, arg);
 	if(ast_isFileType(arg) && (arg->m.lptr != NULL)) {
 		uint64_t is_error = ferror(arg->m.lptr);
-		return new_ast(sloc, NULL, AST_Integer, is_error);
+		return new_ast(sloc, AST_Integer, is_error);
 	}
 
 	return error_or(sloc, arg, ERR_InvalidOperand);
@@ -561,7 +561,7 @@ builtin_eof(
 	arg = eval_file(env, arg);
 	if(ast_isFileType(arg) && (arg->m.lptr != NULL)) {
 		uint64_t is_eof = feof(arg->m.lptr);
-		return new_ast(sloc, NULL, AST_Integer, is_eof);
+		return new_ast(sloc, AST_Integer, is_eof);
 	}
 
 	return error_or(sloc, arg, ERR_InvalidOperand);
@@ -836,12 +836,12 @@ builtin_rd_u_1(
 
 	if(res > 0) {
 		if(ast_isZen(arg)) {
-			return new_ast(sloc, NULL, AST_Integer, bval.u64);
+			return new_ast(sloc, AST_Integer, bval.u64);
 		}
 
 		Ast ast = subeval(env, arg);
 		if(ast_isReference(ast)) {
-			arg = new_ast(sloc, NULL, AST_Integer, bval.u64);
+			arg = new_ast(sloc, AST_Integer, bval.u64);
 			ast = unwrapref(ast);
 
 			return assign(sloc, &ast->m.rexpr, arg);
@@ -872,12 +872,12 @@ builtin_rd_f_1(
 
 	if(res > 0) {
 		if(ast_isZen(arg)) {
-			return new_ast(sloc, NULL, AST_Float, bval.f64);
+			return new_ast(sloc, AST_Float, bval.f64);
 		}
 
 		Ast ast = subeval(env, arg);
 		if(ast_isReference(ast)) {
-			arg = new_ast(sloc, NULL, AST_Float, bval.f64);
+			arg = new_ast(sloc, AST_Float, bval.f64);
 			ast = unwrapref(ast);
 
 			return assign(sloc, &ast->m.rexpr, arg);
@@ -918,12 +918,12 @@ builtin_rd_s_1(
 	}
 	if(res > 0) {
 		if(ast_isZen(arg)) {
-			return new_ast(sloc, NULL, AST_String, s);
+			return new_ast(sloc, AST_String, s);
 		}
 
 		Ast ast = subeval(env, arg);
 		if(ast_isReference(ast)) {
-			arg = new_ast(sloc, NULL, AST_String, s);
+			arg = new_ast(sloc, AST_String, s);
 			ast = unwrapref(ast);
 
 			return assign(sloc, &ast->m.rexpr, arg);
@@ -1125,7 +1125,7 @@ builtin_read_1_parse(
 
 	for(char const *cs = args; *cs; ) {
 
-		ast = parse(cs, &cs, 0, &line, new_ast, false);
+		ast = parse(cs, &cs, 0, &line, new_ast_from_lexeme, false);
 		if(ast_isnotZen(ast)) {
 			ast = eval(globals, ast);
 		}
@@ -1232,7 +1232,7 @@ builtin_fgetln(
 
 		String s = StringBuild(builtin_read_1_char, file->m.lptr, 0);
 		if(s) {
-			return new_ast(sloc, NULL, AST_String, s);
+			return new_ast(sloc, AST_String, s);
 		}
 
 		return oboerr(sloc, ERR_FailedOperation);
@@ -1321,7 +1321,7 @@ builtin_getln(
 
 		String s = StringBuild(builtin_read_1_char, stdin, 0);
 		if(s) {
-			return new_ast(sloc, NULL, AST_String, s);
+			return new_ast(sloc, AST_String, s);
 		}
 
 		return oboerr(sloc, ERR_FailedOperation);

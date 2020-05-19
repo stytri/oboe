@@ -444,7 +444,7 @@ process(
 	while(*args) {
 		size_t ts = gc_topof_stack();
 
-		Ast ast = parse(args, &args, source, linop, new_ast, false);
+		Ast ast = parse(args, &args, source, linop, new_ast_from_lexeme, false);
 		if(ast && gfile) {
 			graph(gfile, gtitle, ast);
 		}

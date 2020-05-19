@@ -142,8 +142,8 @@ initialise_errors(
 			size_t      n     = strlen(cs);
 			uint64_t    hash  = memhash(cs, n, 0);
 			String      s     = CharLiteralToString(cs, n);
-			Ast         err   = new_ast(0, NULL, AST_Error, builtinerr[i].err);
-			Ast         def   = new_ast(0, NULL, AST_Reference, s, err);
+			Ast         err   = new_ast(0, AST_Error, builtinerr[i].err);
+			Ast         def   = new_ast(0, AST_Reference, s, err);
 			size_t      index = define(system_environment, hash, def);
 			assert(~index != 0);
 		}
@@ -204,7 +204,7 @@ builtin_system_1(
 		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
 		int         r  = system(cs);
 
-		return new_ast(sloc, NULL, AST_Integer, (uint64_t)r);
+		return new_ast(sloc, AST_Integer, (uint64_t)r);
 	}
 
 	return error_or(sloc, arg, ERR_InvalidOperand);
@@ -230,7 +230,7 @@ builtin_is_##Name( \
 ) { \
 	arg = dereference(env, arg); \
 	uint64_t is = ast_is##Name(arg); \
-	return new_ast(sloc, NULL, AST_Integer, is); \
+	return new_ast(sloc, AST_Integer, is); \
 }
 ENUM(Tag)
 ENUM(Applicate)
@@ -246,7 +246,7 @@ builtin_is_Identifier(
 	Ast    arg
 ) {
 	uint64_t is = ast_isIdentifier(arg);
-	return new_ast(sloc, NULL, AST_Integer, is);
+	return new_ast(sloc, AST_Integer, is);
 	(void)env;
 }
 
@@ -258,7 +258,7 @@ builtin_type(
 ) {
 	arg = eval(env, arg);
 	uint64_t type = arg->type;
-	return new_ast(sloc, NULL, AST_Integer, type);
+	return new_ast(sloc, AST_Integer, type);
 }
 
 static Ast
@@ -270,7 +270,7 @@ builtin_typename(
 	arg = eval(env, arg);
 	char const *cs = ast_typename(arg);
 	String      s  = CharLiteralToString(cs, strlen(cs));
-	return new_ast(sloc, NULL, AST_String, s);
+	return new_ast(sloc, AST_String, s);
 }
 
 static Ast
@@ -301,7 +301,7 @@ builtin_length(
 	default:
 		break;
 	}
-	return new_ast(sloc, NULL, AST_Integer, len);
+	return new_ast(sloc, AST_Integer, len);
 }
 
 //------------------------------------------------------------------------------
@@ -315,7 +315,7 @@ builtin_to_String(
 	arg = eval(env, arg);
 	String s = tostr(arg, false);
 	assert(s != NULL);
-	return new_ast(sloc, NULL, AST_String, s);
+	return new_ast(sloc, AST_String, s);
 }
 
 static Ast
@@ -327,7 +327,7 @@ builtin_to_Literal(
 	arg = eval(env, arg);
 	String s = tostr(arg, true);
 	assert(s != NULL);
-	return new_ast(sloc, NULL, AST_String, s);
+	return new_ast(sloc, AST_String, s);
 }
 
 static Ast
@@ -339,13 +339,13 @@ builtin_to_Character(
 	arg = eval(env, arg);
 	switch(ast_type(arg)) {
 	case AST_Zen:
-		return new_ast(sloc, NULL, AST_Character, (int)'\0');
+		return new_ast(sloc, AST_Character, (int)'\0');
 	case AST_Integer:
-		return new_ast(sloc, NULL, AST_Character, (int)arg->m.ival);
+		return new_ast(sloc, AST_Character, (int)arg->m.ival);
 	case AST_Character:
 		return arg;
 	case AST_Float:
-		return new_ast(sloc, NULL, AST_Character, (int)arg->m.fval);
+		return new_ast(sloc, AST_Character, (int)arg->m.fval);
 	default:
 		break;
 	}
@@ -362,20 +362,20 @@ builtin_to_Integer(
 	arg = eval(env, arg);
 	switch(ast_type(arg)) {
 	case AST_Zen:
-		return new_ast(sloc, NULL, AST_Integer, (uint64_t)0);
+		return new_ast(sloc, AST_Integer, (uint64_t)0);
 	case AST_Integer:
 		return arg;
 	case AST_Character:
-		return new_ast(sloc, NULL, AST_Integer, arg->m.ival);
+		return new_ast(sloc, AST_Integer, arg->m.ival);
 	case AST_Float:
-		return new_ast(sloc, NULL, AST_Integer, (uint64_t)arg->m.fval);
+		return new_ast(sloc, AST_Integer, (uint64_t)arg->m.fval);
 	case AST_String: {
 			char const *cs   = StringToCharLiteral(arg->m.sval, NULL);
 			uint64_t    ival = strtou(cs, NULL);
-			return new_ast(sloc, NULL, AST_Integer, ival);
+			return new_ast(sloc, AST_Integer, ival);
 		}
 	case AST_Error:
-		return new_ast(sloc, NULL, AST_Integer, (uint64_t)arg->qual);
+		return new_ast(sloc, AST_Integer, (uint64_t)arg->qual);
 	default:
 		break;
 	}
@@ -392,19 +392,19 @@ builtin_to_Float(
 	arg = eval(env, arg);
 	switch(ast_type(arg)) {
 	case AST_Zen:
-		return new_ast(sloc, NULL, AST_Float, (double)0);
+		return new_ast(sloc, AST_Float, (double)0);
 	case AST_Integer:
 	case AST_Character:
-		return new_ast(sloc, NULL, AST_Float, (double)arg->m.ival);
+		return new_ast(sloc, AST_Float, (double)arg->m.ival);
 	case AST_Float:
 		return arg;
 	case AST_String: {
 			char const *cs   = StringToCharLiteral(arg->m.sval, NULL);
 			double      fval = strtod(cs, 0);
-			return new_ast(sloc, NULL, AST_Float, fval);
+			return new_ast(sloc, AST_Float, fval);
 		}
 	case AST_Error:
-		return new_ast(sloc, NULL, AST_Float, (double)arg->qual);
+		return new_ast(sloc, AST_Float, (double)arg->qual);
 	default:
 		break;
 	}
@@ -442,7 +442,7 @@ builtin_assert(
 			static char const assertion_failed[] = "!ASSERTION FAILED!";
 			String s = CharLiteralToString(assertion_failed, sizeof(assertion_failed)-1);
 			assert(s != NULL);
-			msg = new_ast(sloc, NULL, AST_String, s);
+			msg = new_ast(sloc, AST_String, s);
 		}
 
 		String      s      = StringCreate();
@@ -498,7 +498,7 @@ builtin_getenv(
 				String s = CharLiteralToString(cs, strlen(cs));
 				assert(s != NULL);
 
-				return new_ast(sloc, NULL, AST_String, s);
+				return new_ast(sloc, AST_String, s);
 			}
 		}
 	}
@@ -544,7 +544,7 @@ builtin_setlocale(
 			String s = CharLiteralToString(cs, strlen(cs));
 			assert(s != NULL);
 
-			return new_ast(sloc, NULL, AST_String, s);
+			return new_ast(sloc, AST_String, s);
 		}
 	}
 
@@ -567,10 +567,10 @@ builtin_clock(
 		clock_t t = clock();
 
 		if((clock_t)0.5 == 0) {
-			return new_ast(sloc, NULL, AST_Integer, (uint64_t)t);
+			return new_ast(sloc, AST_Integer, (uint64_t)t);
 
 		} else {
-			return new_ast(sloc, NULL, AST_Float, (double)t);
+			return new_ast(sloc, AST_Float, (double)t);
 		}
 	}
 
@@ -639,7 +639,7 @@ builtin_time(
 			ast = eval_named(arg, sloc, "is_DST");
 			ok  = ast_isInteger(ast);
 			if(!ok) {
-				ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)0);
+				ast = new_ast(sloc, AST_Integer, (uint64_t)0);
 				ok  = ast_isInteger(ast);
 			}
 		}
@@ -657,10 +657,10 @@ builtin_time(
 
 	if(ok) {
 		if((time_t)0.5 == 0) {
-			return new_ast(sloc, NULL, AST_Integer, (uint64_t)t);
+			return new_ast(sloc, AST_Integer, (uint64_t)t);
 
 		} else {
-			return new_ast(sloc, NULL, AST_Float, (double)t);
+			return new_ast(sloc, AST_Float, (double)t);
 		}
 	}
 
@@ -684,7 +684,7 @@ builtin_difftime(
 			if(ast_isInteger(ast) && ast_isInteger(arg)) {
 				dt = difftime((time_t)ast->m.ival, (time_t)arg->m.ival);
 
-				return new_ast(sloc, NULL, AST_Float, dt);
+				return new_ast(sloc, AST_Float, dt);
 			}
 
 		} else {
@@ -694,7 +694,7 @@ builtin_difftime(
 			if(ast_isFloat(ast) && ast_isFloat(arg)) {
 				dt = difftime((time_t)ast->m.fval, (time_t)arg->m.fval);
 
-				return new_ast(sloc, NULL, AST_Float, dt);
+				return new_ast(sloc, AST_Float, dt);
 			}
 		}
 	}
@@ -717,23 +717,23 @@ convert_time_to_env(
 		memcpy(&tm, tp, sizeof(tm));
 		Ast env = new_env(sloc, NULL), ast;
 
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_sec);
+		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_sec);
 		addenv_named(env, sloc, "seconds", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_min);
+		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_min);
 		addenv_named(env, sloc, "minutes", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_hour);
+		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_hour);
 		addenv_named(env, sloc, "hour", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_mday);
+		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_mday);
 		addenv_named(env, sloc, "day", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_mon + 1);
+		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_mon + 1);
 		addenv_named(env, sloc, "month", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_year + 1900);
+		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_year + 1900);
 		addenv_named(env, sloc, "year", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)(tm.tm_wday ? tm.tm_wday : 7));
+		ast = new_ast(sloc, AST_Integer, (uint64_t)(tm.tm_wday ? tm.tm_wday : 7));
 		addenv_named(env, sloc, "week_day", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_yday + 1);
+		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_yday + 1);
 		addenv_named(env, sloc, "year_day", ast);
-		ast = new_ast(sloc, NULL, AST_Integer, (uint64_t)tm.tm_isdst);
+		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_isdst);
 		addenv_named(env, sloc, "is_DST", ast);
 
 		return env;
@@ -803,7 +803,7 @@ builtin_rand(
 	Ast    arg
 ) {
 	int const r = rand();
-	return new_ast(sloc, NULL, AST_Integer, (uint64_t)r);
+	return new_ast(sloc, AST_Integer, (uint64_t)r);
 
 	(void)env;
 	(void)sloc;
@@ -817,7 +817,7 @@ builtin_randf(
 	Ast    arg
 ) {
 	int const r = rand();
-	return new_ast(sloc, NULL, AST_Float, (double)r / (double)RAND_MAX);
+	return new_ast(sloc, AST_Float, (double)r / (double)RAND_MAX);
 
 	(void)env;
 	(void)sloc;
@@ -850,9 +850,9 @@ builtin_parse(
 			unsigned    source = sloc_source(sloc);
 			unsigned    line   = sloc_line(sloc);
 
-			arg = parse(args, &args, source, &line, new_ast, true);
+			arg = parse(args, &args, source, &line, new_ast_from_lexeme, true);
 
-			return new_ast(sloc, NULL, AST_Quoted, arg);
+			return new_ast(sloc, AST_Quoted, arg);
 		}
 	}
 
@@ -871,7 +871,7 @@ builtin_load(
 
 			String s = mapoboefile(arg->m.sval);
 			if(s) {
-				return new_ast(sloc, NULL, AST_String, s);
+				return new_ast(sloc, AST_String, s);
 			}
 		}
 	}
@@ -902,7 +902,7 @@ builtin_import_1(
 			for(size_t ts = gc_topof_stack();
 				*cs;
 			) {
-				arg = parse(cs, &cs, source, &line, new_ast, false);
+				arg = parse(cs, &cs, source, &line, new_ast_from_lexeme, false);
 				if(ast_isnotZen(arg)) {
 					arg = eval(globals, arg);
 				}
@@ -1014,11 +1014,11 @@ initialise_system_environment(
 		system_environment = new_env(0, NULL);
 
 		Ast var;
-		var = new_ast(0, NULL, AST_Integer, (uint64_t)VERSION);
+		var = new_ast(0, AST_Integer, (uint64_t)VERSION);
 		addenv_named(system_environment, 0, "VERSION", var);
-		var = new_ast(0, NULL, AST_Integer, (uint64_t)RAND_MAX);
+		var = new_ast(0, AST_Integer, (uint64_t)RAND_MAX);
 		addenv_named(system_environment, 0, "RAND_MAX", var);
-		var = new_ast(0, NULL, AST_Float, (double)CLOCKS_PER_SEC);
+		var = new_ast(0, AST_Float, (double)CLOCKS_PER_SEC);
 		addenv_named(system_environment, 0, "CLOCKS_PER_SEC", var);
 
 		initialise_datatypes();
