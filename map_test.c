@@ -7,7 +7,19 @@
 #include "src\string.h"
 #include "src\hash.h"
 
-static int (*is_ctype)(int c) = isalpha;
+static int
+isnoteol(
+	int c
+) {
+	return c
+		&& (c != '\f')
+		&& (c != '\n')
+		&& (c != '\r')
+		&& (c != '\v')
+		;
+}
+
+static int (*is_ctype)(int c) = isnoteol;
 
 static int cmp(
 	Array       arr,
