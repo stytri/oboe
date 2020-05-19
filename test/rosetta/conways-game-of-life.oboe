@@ -1,0 +1,139 @@
+# https://rosettacode.org/wiki/Conway's_Game_of_Life
+
+"rosetta/libutil"@import;
+
+ctrl(c):((c & 0x1F)@to_Character);
+
+ESC:ctrl(`[`);
+
+show(universe): (
+	(ESC"[H")@print,
+	Y:universe@length,
+	X:universe[0]@length,
+	(y:0; y < Y; y++) ?* (
+		(x:0; x < X; x++) ?* (
+			(universe[y][x] ? (ESC"[07m  "ESC"[m" ; "  "))@print
+		),
+		(ESC"[E")@print
+	)
+);
+
+evolve(universe): (
+	new:[], n:,
+
+	Y:universe@length, maxY:Y - 1,
+	X:universe[0]@length, maxX:X - 1,
+
+	new[0] = universe[0],
+	(y:1; y < maxY; y++) ?* (
+		new[y] = [0],
+
+		(x:1; x < maxX; x++) ?* (
+			n = universe[y-1][x-1]
+			  + universe[y-1][x]
+			  + universe[y-1][x+1]
+			  + universe[y  ][x-1]
+			  + universe[y  ][x+1]
+			  + universe[y+1][x-1]
+			  + universe[y+1][x]
+			  + universe[y+1][x+1]
+			,
+
+			new[y][x] = (n == 3 || (n == 2 && universe[y][x]))
+		),
+		new[y][maxX] = 0
+	),
+	new[maxY] = universe[maxY],
+
+	new
+);
+
+μsleep(u): (
+	t:(u * @CLOCKS_PER_SEC) / 1e6,
+	(s:(@clock()); (@clock() - s) < t) ?*
+);
+
+run(universe): (
+	(ESC"[2J")@print,
+	1 ?* (
+		show(universe),
+		universe = evolve(universe),
+		μsleep(200000)
+	)
+);
+
+empty_universe(Y,X): (
+	universe:[],
+
+	(y:0; y < Y; y++) ?* (
+		universe[y] = calloc(X)
+	),
+
+	universe
+);
+
+random(Y,X): (
+	universe:[],
+
+	maxY:Y - 1,
+	maxX:X - 1,
+
+	universe[0] = calloc(X),
+	(y:1; y < maxY; y++) ?* (
+		universe[y] = [0],
+
+		(x:1; x < maxX; x++) ?* (
+			universe[y][x] = select(10)!
+		),
+		universe[y][maxX] = 0
+	),
+	universe[maxY] = calloc(X),
+
+	run(universe)
+);
+
+glider(Y,X): (
+	Y = max(Y,5),
+	X = max(X,5),
+
+	universe:empty_universe(Y,X),
+	universe[1][1] = 1,
+	universe[2][2] = 1,
+	universe[2][3] = 1,
+	universe[3][1] = 1,
+	universe[3][2] = 1,
+
+	run(universe)
+);
+
+blinker(): (
+	universe:[
+		[0,0,0,0,0],
+		[0,0,0,0,0],
+		[0,1,1,1,0],
+		[0,0,0,0,0],
+		[0,0,0,0,0]
+	],
+	run(universe)
+);
+
+main(argc, argv): (
+	N:32,
+
+	(i:1; i < argc; i++) ?* ((
+		(s:argv[i]) ?: ((
+			"random": random(N,N)
+		);(
+			"glider": glider(N,N)
+		);(
+			"blinker": blinker()
+		);(
+			N = s@to_Integer
+		))
+	) ; (
+		random(N,N)
+	))
+);
+
+main(@argc, @argv);
+
