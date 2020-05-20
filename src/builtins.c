@@ -1621,7 +1621,8 @@ builtin_assign_by(
 
 		switch(TYPE(ast_type(lexpr), ast_type(iexpr))) {
 		case TYPE(AST_Environment, AST_Integer):
-		case TYPE(AST_Environment, AST_Character): {
+		case TYPE(AST_Environment, AST_Character):
+			if(ast_isAssignable(lexpr)) {
 				size_t const index  = iexpr->m.ival;
 				size_t const length = array_length(lexpr->m.env);
 				if(index < length) {
@@ -1630,9 +1631,11 @@ builtin_assign_by(
 				if(index == length) {
 					return builtin_array_push_back(env, sloc, lexpr, rexpr, by);
 				}
+				return oboerr(sloc, ERR_InvalidOperand);
 			}
-			return oboerr(sloc, ERR_InvalidOperand);
-		case TYPE(AST_Environment, AST_String): {
+			return oboerr(sloc, ERR_InvalidReferent);
+		case TYPE(AST_Environment, AST_String):
+			if(ast_isAssignable(lexpr)) {
 				size_t const index  = atenv(lexpr, iexpr);
 				size_t const length = array_length(lexpr->m.env);
 				if(index < length) {
@@ -1640,6 +1643,7 @@ builtin_assign_by(
 				}
 				return builtin_array_create_map(env, sloc, lexpr, rexpr, iexpr, by);
 			}
+			return oboerr(sloc, ERR_InvalidReferent);
 		default:
 			return oboerr(sloc, ERR_InvalidReferent);
 		}
@@ -1751,7 +1755,8 @@ builtin_exchange_evaluate(
 
 		switch(TYPE(ast_type(ast), ast_type(iexpr))) {
 		case TYPE(AST_Environment, AST_Integer):
-		case TYPE(AST_Environment, AST_Character): {
+		case TYPE(AST_Environment, AST_Character):
+			if(ast_isAssignable(ast)) {
 				size_t const index  = iexpr->m.ival;
 				size_t const length = array_length(ast->m.env);
 				if(index < length) {
@@ -1761,7 +1766,8 @@ builtin_exchange_evaluate(
 				}
 			}
 			return oboerr(sloc, ERR_InvalidReferent);
-		case TYPE(AST_Environment, AST_String): {
+		case TYPE(AST_Environment, AST_String):
+			if(ast_isAssignable(ast)) {
 				size_t const index  = atenv(ast, iexpr);
 				size_t const length = array_length(ast->m.env);
 				if(index < length) {
@@ -1779,7 +1785,7 @@ builtin_exchange_evaluate(
 	if(ast_isnotZen(ast)) {
 		ast = subeval(env, ast);
 
-		if(ast_isReference(ast)) {
+		if(ast_isReference(ast) && ast_isAssignable(ast->m.rexpr)) {
 			ast = deref(ast);
 			return ast;
 		}
@@ -1837,12 +1843,15 @@ builtin_array(
 		case TYPE(AST_Environment, AST_Character): {
 				size_t const index = rexpr->m.ival;
 				if(index < array_length(lexpr->m.env)) {
+					rexpr = array_at(lexpr->m.env, Ast, index);
+					rexpr->attr |= lexpr->attr & ATTR_NoAssign;
 					return array_at(lexpr->m.env, Ast, index);
 				}
 			}
 			return oboerr(sloc, ERR_InvalidOperand);
 		case TYPE(AST_Environment, AST_String):
 			rexpr = inenv(lexpr, rexpr);
+			rexpr->attr |= lexpr->attr & ATTR_NoAssign;
 			return rexpr;
 		case TYPE(AST_String, AST_Integer):
 		case TYPE(AST_String, AST_Character): {
