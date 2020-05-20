@@ -271,6 +271,7 @@ initialise_ast(
 		ZEN = alloc_ast();
 		assert(ZEN != NULL);
 		ZEN->type = AST_Zen;
+		ZEN->attr = ATTR_NoAssign;
 		gc_push(ZEN);
 	}
 }
@@ -427,6 +428,7 @@ dup_ast(
 		if(ast_isRemoveCopyOnAssign(dup)) {
 			dup->attr &= ~ATTR_CopyOnAssign;
 		}
+		dup->attr &= ~ATTR_NoAssign;
 		dup->sloc = sloc;
 
 		switch(ast->type) {
