@@ -88,5 +88,5 @@ run(number_of_prisoners, games, verbose): (
 	play_game(number_of_prisoners, games, verbose, 0)
 );
 
-run(100, 10000, 0);
+run(100, #(10000)1000, 0);
 
