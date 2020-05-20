@@ -1015,10 +1015,13 @@ initialise_system_environment(
 
 		Ast var;
 		var = new_ast(0, AST_Integer, (uint64_t)VERSION);
+		var->attr |= ATTR_NoAssign;
 		addenv_named(system_environment, 0, "VERSION", var);
 		var = new_ast(0, AST_Integer, (uint64_t)RAND_MAX);
+		var->attr |= ATTR_NoAssign;
 		addenv_named(system_environment, 0, "RAND_MAX", var);
 		var = new_ast(0, AST_Float, (double)CLOCKS_PER_SEC);
+		var->attr |= ATTR_NoAssign;
 		addenv_named(system_environment, 0, "CLOCKS_PER_SEC", var);
 
 		initialise_datatypes();

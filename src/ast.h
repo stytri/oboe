@@ -45,9 +45,10 @@ typedef enum {
 } Type;
 
 typedef enum {
-	ATTR_CopyOnAssign       = 0x01,
-	ATTR_RetainCopyOnAssign = 0x02,
-	ATTR_BIT                = 2
+	ATTR_NoAssign           = 0x01,
+	ATTR_CopyOnAssign       = 0x02,
+	ATTR_RetainCopyOnAssign = 0x04,
+	ATTR_BIT                = 3
 } Attr;
 
 enum { TYPE_MASK = BIT_MASK(N_AST_Types) };
@@ -210,6 +211,13 @@ ast_isReferenceType(
 	unsigned qual
 ) {
 	return ast_isOpaqueDataReference(ast) && (ast->qual == qual);
+}
+
+static inline bool
+ast_isAssignable(
+	Ast ast
+) {
+	return ast && !(ast->attr & ATTR_NoAssign);
 }
 
 static inline bool

@@ -55,21 +55,26 @@ assign(
 	Ast    expr
 ) {
 	Ast ast = *past;
+	if(ast_isAssignable(ast)) {
 
-	if(ast != expr) {
-		if(ast_isCopyOnAssign(ast)) {
-			*past = ast = new_ast(sloc, AST_Void);
+		if(ast != expr) {
+			if(ast_isCopyOnAssign(ast)) {
+				*past = ast = new_ast(sloc, AST_Void);
+			}
+
+			memcpy(ast, expr, sizeof(*ast));
+
+			if(ast_isRemoveCopyOnAssign(expr)) {
+				ast->attr = expr->attr & ~ATTR_CopyOnAssign;
+			}
+			ast->attr &= ~ATTR_NoAssign;
+			ast->sloc = sloc;
 		}
 
-		memcpy(ast, expr, sizeof(*ast));
-
-		if(ast_isRemoveCopyOnAssign(expr)) {
-			ast->attr = expr->attr & ~ATTR_CopyOnAssign;
-		}
-		ast->sloc = sloc;
+		return ast;
 	}
 
-	return ast;
+	return oboerr(sloc, ERR_InvalidReferent);
 }
 
 Ast
