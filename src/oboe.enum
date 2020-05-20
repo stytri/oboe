@@ -58,7 +58,7 @@ ENUM(Zen)
 ENUM(Integer)
 	STR(INTEGER("", ast->m.ival, ""))
 	NEW(
-		ast->m.ival = INTEGER(leme, n);
+		ast->m.ival = INTEGER();
 	)
 	EVAL(
 		RETURN();
@@ -67,7 +67,7 @@ ENUM(Integer)
 ENUM(Float)
 	STR(FLOAT("", ast->m.fval, ""))
 	NEW(
-		ast->m.fval = FLOAT(leme, n);
+		ast->m.fval = FLOAT();
 	)
 	EVAL(
 		RETURN();
@@ -76,7 +76,7 @@ ENUM(Float)
 ENUM(Character)
 	STR(CHARACTER("", ast->m.ival, ""))
 	NEW(
-		ast->m.ival = CHARACTER(leme, n);
+		ast->m.ival = CHARACTER();
 	)
 	EVAL(
 		RETURN();
@@ -85,7 +85,7 @@ ENUM(Character)
 ENUM(String)
 	STR(STRING("", ast->m.sval, ""))
 	NEW(
-		ast->m.sval = gc_link(STRING(leme, n));
+		ast->m.sval = gc_link(STRING());
 		ast->m.hash = HashString(ast->m.sval);
 	)
 	EVAL(
@@ -101,7 +101,7 @@ ENUM(String)
 ENUM(Identifier)
 	STR(IDENTIFIER("", ast->m.sval, ""))
 	NEW(
-		ast->m.sval = gc_link(IDENTIFIER(leme, n));
+		ast->m.sval = gc_link(IDENTIFIER());
 		ast->m.hash = HashString(ast->m.sval);
 	)
 	EVAL(
@@ -119,7 +119,7 @@ ENUM(Operator)
 	NEW(
 		ast->m.lexpr = gc_link(va_arg(va, Ast));
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
-		ast->qual    = OPERATOROF(leme, n);
+		ast->qual    = OPERATOR();
 	)
 	EVAL(
 		ast = OPERATOR(ast->qual, ast->m.lexpr, ast->m.rexpr);

@@ -279,13 +279,13 @@ Ast
 new_ast_from_lexeme(
 	sloc_t      sloc,
 	char const *leme,
-	size_t      n,
+	size_t      len,
 	...
 ) {
 	Ast ast = NULL;
 
 	va_list va;
-	va_start(va, n);
+	va_start(va, len);
 
 	Type     type;
 	char32_t c ='\0';
@@ -294,7 +294,7 @@ new_ast_from_lexeme(
 	c = utf8chr(leme, &cs);
 
 	if(is_Digit(c)) {
-		type = is_float(leme, n) ? AST_Float : AST_Integer;
+		type = is_float(leme, len) ? AST_Float : AST_Integer;
 
 	} else if(is_ID_Start(c)) {
 		type = AST_Identifier;
@@ -345,12 +345,12 @@ new_ast_from_lexeme(
 #	define ENUM(Name)       } break; case AST_##Name: {
 #	define NEW(...)         __VA_ARGS__;
 
-#	define INTEGER(S,N)     (ast->attr |= ATTR_CopyOnAssign, makint((S), (N))   )
-#	define FLOAT(S,N)       (ast->attr |= ATTR_CopyOnAssign, makdbl((S), (N))   )
-#	define CHARACTER(S,N)   (ast->attr |= ATTR_CopyOnAssign, makchr((S), (N))   )
-#	define STRING(S,N)      (ast->attr |= ATTR_CopyOnAssign, makstr((S), (N), c))
-#	define IDENTIFIER(S,N)  (                                dupstr((S), (N))   )
-#	define OPERATOROF(S,N)  (                                makopr((S), (N))   )
+#	define INTEGER(...)     (ast->attr |= ATTR_CopyOnAssign, makint(leme, len)   )
+#	define FLOAT(...)       (ast->attr |= ATTR_CopyOnAssign, makdbl(leme, len)   )
+#	define CHARACTER(...)   (ast->attr |= ATTR_CopyOnAssign, makchr(leme, len)   )
+#	define STRING(...)      (ast->attr |= ATTR_CopyOnAssign, makstr(leme, len, c))
+#	define IDENTIFIER(...)  (                                dupstr(leme, len)   )
+#	define OPERATOR(...)    (                                makopr(leme, len)   )
 
 #	include "oboe.enum"
 
@@ -359,7 +359,7 @@ new_ast_from_lexeme(
 #	undef CHARACTER
 #	undef STRING
 #	undef IDENTIFIER
-#	undef OPERATOROF
+#	undef OPERATOR
 	}}
 
 	va_end(va);
@@ -392,12 +392,12 @@ new_ast(
 #	define ENUM(Name)       } break; case AST_##Name: {
 #	define NEW(...)         __VA_ARGS__;
 
-#	define INTEGER(S,N)     va_arg(va, uint64_t)
-#	define FLOAT(S,N)       va_arg(va, double)
-#	define CHARACTER(S,N)   va_arg(va, int)
-#	define STRING(S,N)      va_arg(va, String)
-#	define IDENTIFIER(S,N)  va_arg(va, String)
-#	define OPERATOROF(S,N)  va_arg(va, unsigned)
+#	define INTEGER(...)     va_arg(va, uint64_t)
+#	define FLOAT(...)       va_arg(va, double)
+#	define CHARACTER(...)   va_arg(va, int)
+#	define STRING(...)      va_arg(va, String)
+#	define IDENTIFIER(...)  va_arg(va, String)
+#	define OPERATOR(...)    va_arg(va, unsigned)
 
 #	include "oboe.enum"
 
@@ -406,7 +406,7 @@ new_ast(
 #	undef CHARACTER
 #	undef STRING
 #	undef IDENTIFIER
-#	undef OPERATOROF
+#	undef OPERATOR
 	}}
 
 	va_end(va);
