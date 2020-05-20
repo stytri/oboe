@@ -249,6 +249,16 @@ ast_isTag(
 );
 
 extern bool
+ast_isTagRef(
+	Ast ast
+);
+
+extern bool
+ast_isConst(
+	Ast ast
+);
+
+extern bool
 ast_isApplicate(
 	Ast ast
 );

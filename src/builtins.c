@@ -94,6 +94,7 @@ maxz(
 static unsigned builtin_applicate_enum   = -1;
 static unsigned builtin_tag_enum         = -1;
 static unsigned builtin_tag_ref_enum     = -1;
+static unsigned builtin_const_enum       = -1;
 static unsigned builtin_assign_enum      = -1;
 static unsigned builtin_assign_ref_enum  = -1;
 static unsigned builtin_assign_land_enum = -1;
@@ -166,6 +167,20 @@ ast_isTag(
 	Ast ast
 ) {
 	return ast_isOp(ast, builtin_tag_enum);
+}
+
+inline bool
+ast_isTagRef(
+	Ast ast
+) {
+	return ast_isOp(ast, builtin_tag_ref_enum);
+}
+
+inline bool
+ast_isConst(
+	Ast ast
+) {
+	return ast_isOp(ast, builtin_const_enum);
 }
 
 inline bool
@@ -1361,11 +1376,12 @@ ast_isParameters(
 }
 
 static Ast
-builtin_tag(
+builtin_decl(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
-	Ast    rexpr
+	Ast    rexpr,
+	bool   is_const
 ) {
 	lexpr = unquote(lexpr);
 
@@ -1374,6 +1390,9 @@ builtin_tag(
 			&& ast_isParameters(lexpr->m.rexpr)
 		) {
 			rexpr = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
+			if(is_const) {
+				rexpr->attr |= ATTR_NoAssign;
+			}
 			addenv(env, sloc, lexpr->m.lexpr, rexpr);
 			return rexpr;
 		}
@@ -1384,6 +1403,9 @@ builtin_tag(
 			uint64_t    hash  = lexpr->m.lexpr->m.hash;
 			rexpr             = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
 			rexpr             = new_ast(sloc, AST_OperatorFunction, s, rexpr);
+			if(is_const) {
+				rexpr->attr |= ATTR_NoAssign;
+			}
 			size_t      index = define(operators, hash, rexpr);
 			assert(~index != 0);
 			return rexpr;
@@ -1393,6 +1415,17 @@ builtin_tag(
 
 	switch(ast_type(lexpr)) {
 	case AST_Zen:
+		if(is_const) {
+			rexpr = ast_isnotQuoted(rexpr) ? (
+				new_ast(sloc, AST_Quoted, rexpr)
+			): ast_isReference(rexpr) ? (
+				dup_ref(sloc, rexpr)
+			):(
+				dup_ast(sloc, rexpr)
+			);
+			rexpr->attr |= ATTR_NoAssign;
+			return rexpr;
+		}
 		return ast_isnotQuoted(rexpr) ? (
 			new_ast(sloc, AST_Quoted, rexpr)
 		) : (
@@ -1400,6 +1433,9 @@ builtin_tag(
 		);
 	case AST_Identifier:
 		rexpr = evaluate_instance(env, sloc, rexpr, BY_Value);
+		if(is_const) {
+			rexpr->attr |= ATTR_NoAssign;
+		}
 		addenv(env, sloc, lexpr, rexpr);
 		return rexpr;
 	case AST_String: // for OperatorAlias
@@ -1407,6 +1443,9 @@ builtin_tag(
 			String      s     = lexpr->m.sval;
 			uint64_t    hash  = lexpr->m.hash;
 			rexpr             = new_ast(sloc, AST_OperatorAlias, s, rexpr->m.sval);
+			if(is_const) {
+				rexpr->attr |= ATTR_NoAssign;
+			}
 			size_t      index = define(operators, hash, rexpr);
 			assert(~index != 0);
 			return rexpr;
@@ -1418,11 +1457,12 @@ builtin_tag(
 }
 
 static Ast
-builtin_tag_ref(
+builtin_decl_ref(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
-	Ast    rexpr
+	Ast    rexpr,
+	bool   is_const
 ) {
 	lexpr = unquote(lexpr);
 
@@ -1430,6 +1470,10 @@ builtin_tag_ref(
 	case AST_Identifier:
 		rexpr = subeval(env, rexpr);
 		if(ast_isReference(rexpr)) {
+			if(is_const) {
+				rexpr = dup_ref(sloc, rexpr);
+				rexpr->attr |= ATTR_NoAssign;
+			}
 			addenv(env, sloc, lexpr, rexpr);
 			return rexpr;
 		}
@@ -1437,6 +1481,36 @@ builtin_tag_ref(
 	default:
 		return oboerr(sloc, ERR_InvalidOperand);
 	}
+}
+
+static Ast
+builtin_tag(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_decl(env, sloc, lexpr, rexpr, false);
+}
+
+static Ast
+builtin_tag_ref(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_decl_ref(env, sloc, lexpr, rexpr, false);
+}
+
+static Ast
+builtin_const(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_decl(env, sloc, lexpr, rexpr, true);
 }
 
 //------------------------------------------------------------------------------
@@ -1449,9 +1523,16 @@ builtin_array_push_back(
 	Ast    rexpr,
 	By     by
 ) {
-	if(ast_isTag(rexpr)) {
+	if(ast_isTag(rexpr) || ast_isTagRef(rexpr)) {
 		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
 			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr, by);
+			addenv(lexpr, sloc, rexpr->m.lexpr, def);
+			return lexpr;
+		}
+	} else if(ast_isConst(rexpr)) {
+		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
+			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr, by);
+			def->attr |= ATTR_NoAssign;
 			addenv(lexpr, sloc, rexpr->m.lexpr, def);
 			return lexpr;
 		}
@@ -1982,6 +2063,7 @@ initialise_builtin_operators(
 		BUILTIN(    "", applicate  , P_Binding)
 		BUILTIN(   ":", tag        , P_Declarative)
 		BUILTIN(  ":^", tag_ref    , P_Declarative)
+		BUILTIN(  "::", const      , P_Declarative)
 		BUILTIN(   "=", assign     , P_Assigning)
 		BUILTIN(  "=^", assign_ref , P_Assigning)
 		BUILTIN( "&&=", assign_land, P_Assigning)

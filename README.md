@@ -192,6 +192,10 @@ or:
 
 _operator-string_ `:` _operator-string_
 
+##### constant
+
+_referent_ `::` _operand_
+
 ##### assignment
 
 either:

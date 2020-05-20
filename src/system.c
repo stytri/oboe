@@ -49,6 +49,8 @@ static unsigned builtin_system_enum        = -1;
 #define ENUM(Name,...) \
 static unsigned builtin_is_##Name##_enum   = -1;
 ENUM(Tag)
+ENUM(TagRef)
+ENUM(Const)
 ENUM(Applicate)
 ENUM(Array)
 #include "oboe.enum"
@@ -233,6 +235,8 @@ builtin_is_##Name( \
 	return new_ast(sloc, AST_Integer, is); \
 }
 ENUM(Tag)
+ENUM(TagRef)
+ENUM(Const)
 ENUM(Applicate)
 ENUM(Array)
 #define builtin_is_Identifier builtin_is_Identifier__hidden
@@ -975,6 +979,8 @@ initialise_system_environment(
 #		define ENUM(Name,...)  \
 		BUILTIN("is_"#Name   , is_##Name)
 		ENUM(Tag)
+		ENUM(TagRef)
+		ENUM(Const)
 		ENUM(Applicate)
 		ENUM(Array)
 #		include "oboe.enum"
