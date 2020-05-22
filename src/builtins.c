@@ -1513,20 +1513,20 @@ builtin_array_push_back(
 	if(ast_isTag(rexpr) || ast_isTagRef(rexpr)) {
 		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
 			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr, by);
-			addenv(lexpr, sloc, rexpr->m.lexpr, def, 0);
-			return lexpr;
+			rexpr = addenv(lexpr, sloc, rexpr->m.lexpr, def, 0);
+			return rexpr;
 		}
 	} else if(ast_isConst(rexpr)) {
 		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
 			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr, by);
-			addenv(lexpr, sloc, rexpr->m.lexpr, def, ATTR_NoAssign);
-			return lexpr;
+			rexpr = addenv(lexpr, sloc, rexpr->m.lexpr, def, ATTR_NoAssign);
+			return rexpr;
 		}
 	} else {
 		rexpr = evaluate_instance(env, sloc, rexpr, by);
 		bool appended = array_push_back(lexpr->m.env, Ast, rexpr);
 		assert(appended);
-		return lexpr;
+		return rexpr;
 	}
 
 	return oboerr(sloc, ERR_InvalidOperand);
@@ -1546,6 +1546,10 @@ builtin_array_assign_index(
 	rexpr = evaluate_instance(env, sloc, rexpr, by);
 	lexpr = *ent;
 	if(ast_isReference(lexpr)) {
+		if(!ast_isAssignable(lexpr)) {
+			return oboerr(sloc, ERR_InvalidReferent);
+		}
+
 		ent = &lexpr->m.rexpr;
 	}
 
@@ -1579,16 +1583,20 @@ builtin_referent_assign(
 	By     by
 ) {
 	lexpr = unwrapref(lexpr);
+	if(ast_isAssignable(lexpr->m.rexpr)) {
 
-	if(ast_isnotZen(lexpr->m.rexpr)) {
-		rexpr = evaluate_assignable(env, sloc, rexpr, by);
-		assign(sloc, &lexpr->m.rexpr, rexpr);
-	} else {
-		rexpr = evaluate_instance(env, sloc, rexpr, by);
-		lexpr->m.rexpr = rexpr;
+		if(ast_isnotZen(lexpr->m.rexpr)) {
+			rexpr = evaluate_assignable(env, sloc, rexpr, by);
+			rexpr = assign(sloc, &lexpr->m.rexpr, rexpr);
+		} else {
+			rexpr = evaluate_instance(env, sloc, rexpr, by);
+			lexpr->m.rexpr = rexpr;
+		}
+
+		return rexpr;
 	}
 
-	return rexpr;
+	return oboerr(sloc, ERR_InvalidReferent);
 }
 
 static Ast
@@ -1638,7 +1646,7 @@ builtin_assign_by(
 	if(ast_isnotZen(lexpr)) {
 		lexpr = subeval(env, lexpr);
 
-		if(ast_isReference(lexpr)) {
+		if(ast_isReference(lexpr) && ast_isAssignable(lexpr)) {
 			return builtin_referent_assign(env, sloc, lexpr, rexpr, by);
 		}
 
@@ -1748,7 +1756,9 @@ builtin_exchange_evaluate(
 				if(index < length) {
 					ast = array_at(ast->m.env, Ast, index);
 					ast = deref(ast);
-					return ast;
+					if(ast_isAssignable(ast)) {
+						return ast;
+					}
 				}
 			}
 			return oboerr(sloc, ERR_InvalidReferent);
@@ -1759,7 +1769,9 @@ builtin_exchange_evaluate(
 				if(index < length) {
 					ast = array_at(ast->m.env, Ast, index);
 					ast = deref(ast);
-					return ast;
+					if(ast_isAssignable(ast)) {
+						return ast;
+					}
 				}
 			}
 			return oboerr(sloc, ERR_InvalidReferent);
@@ -1771,9 +1783,11 @@ builtin_exchange_evaluate(
 	if(ast_isnotZen(ast)) {
 		ast = subeval(env, ast);
 
-		if(ast_isReference(ast) && ast_isAssignable(ast->m.rexpr)) {
+		if(ast_isReference(ast)) {
 			ast = deref(ast);
-			return ast;
+			if(ast_isAssignable(ast)) {
+				return ast;
+			}
 		}
 	}
 
@@ -1831,7 +1845,7 @@ builtin_array(
 				if(index < array_length(lexpr->m.env)) {
 					rexpr = array_at(lexpr->m.env, Ast, index);
 					rexpr->attr |= lexpr->attr & ATTR_NoAssign;
-					return array_at(lexpr->m.env, Ast, index);
+					return rexpr;
 				}
 			}
 			return oboerr(sloc, ERR_InvalidOperand);
@@ -1930,9 +1944,10 @@ builtin_applicate(
 		}
 	case AST_Environment:
 		if(ast_isIdentifier(rexpr) || ast_isString(rexpr)) {
-			lexpr = inenv(lexpr, rexpr);
-			if(ast_isnotZen(lexpr)) {
-				return lexpr;
+			rexpr = inenv(lexpr, rexpr);
+			if(ast_isnotZen(rexpr)) {
+				rexpr->attr |= lexpr->attr & ATTR_NoAssign;
+				return rexpr;
 			}
 			return oboerr(sloc, ERR_InvalidIdentifier);
 		}

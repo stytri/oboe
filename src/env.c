@@ -261,6 +261,8 @@ addenv_arg(
 	Ast    ident,
 	Ast    arg
 ) {
+	Attr attr = 0;
+
 	if(ast_isTag(ident)) {
 		if(ast_isZen(arg)) {
 			arg = ident->m.rexpr;
@@ -270,10 +272,11 @@ addenv_arg(
 		arg   = dup_ast(sloc, arg);
 
 	} else {
-		arg = subeval(env, arg);
+		arg  = subeval(env, arg);
+		attr = arg->attr;
 	}
 
-	return addenv(to, sloc, ident, arg, 0);
+	return addenv(to, sloc, ident, arg, attr);
 }
 
 Ast
