@@ -85,7 +85,7 @@ add_searchpath(
 	Ast    ast   = new_ast(sloc, AST_String, s);
 	size_t index = locate(searchpaths, ast->m.hash, cs, n);
 	if(!~index) {
-		index = define(searchpaths, ast->m.hash, ast);
+		index = define(searchpaths, ast->m.hash, ast, ATTR_NoAssign);
 		assert(~index != 0);
 	}
 

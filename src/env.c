@@ -171,8 +171,11 @@ size_t
 define(
 	Ast      env,
 	uint64_t hash,
-	Ast      def
+	Ast      def,
+	Attr     attr
 ) {
+	def->attr |= attr;
+
 	if(ast_isnotZen(env)) {
 		Array  arr   = env->m.env;
 		size_t index = array_length(arr);
@@ -229,7 +232,8 @@ addenv(
 	Ast    env,
 	sloc_t sloc,
 	Ast    ident,
-	Ast    def
+	Ast    def,
+	Attr   attr
 ) {
 	if(ast_isIdentifier(ident) || ast_isString(ident)) {
 		size_t      n;
@@ -237,8 +241,10 @@ addenv(
 		char const *cs   = StringToCharLiteral(ident->m.sval, &n);
 		n                = locate(env, hash, cs, n);
 		if(~n == 0) {
+			def->attr |= attr;
+
 			def = new_ast(sloc, AST_Reference, ident->m.sval, def);
-			n   = define(env, hash, def);
+			n   = define(env, hash, def, attr);
 			assert(~n != 0);
 			return def;
 		}
@@ -267,7 +273,7 @@ addenv_arg(
 		arg = subeval(env, arg);
 	}
 
-	return addenv(to, sloc, ident, arg);
+	return addenv(to, sloc, ident, arg, 0);
 }
 
 Ast
@@ -319,26 +325,26 @@ addenv_operands(
 	rexpr = subeval(env, rexpr);
 
 	if(ast_isSequence(idents)) {
-		addenv(to, sloc, idents->m.lexpr, lexpr);
+		addenv(to, sloc, idents->m.lexpr, lexpr, 0);
 
 		idents = idents->m.rexpr;
 		if(ast_isSequence(idents)) {
-			addenv(to, sloc, idents->m.lexpr, rexpr);
+			addenv(to, sloc, idents->m.lexpr, rexpr, 0);
 
 			for(idents = idents->m.rexpr;
 				ast_isSequence(idents);
 				idents = idents->m.rexpr
 			) {
-				addenv(to, sloc, idents->m.lexpr, ZEN);
+				addenv(to, sloc, idents->m.lexpr, ZEN, 0);
 			}
-			addenv(to, sloc, idents, ZEN);
+			addenv(to, sloc, idents, ZEN, 0);
 
 		} else {
-			addenv(to, sloc, idents, rexpr);
+			addenv(to, sloc, idents, rexpr, 0);
 		}
 
 	} else {
-		addenv(to, sloc, idents, ast_isnotZen(lexpr) ? lexpr : rexpr);
+		addenv(to, sloc, idents, ast_isnotZen(lexpr) ? lexpr : rexpr, 0);
 	}
 
 	return env;
@@ -352,18 +358,19 @@ addenv_argv(
 	char  *argv[]
 ) {
 	Ast d = new_env(sloc, NULL);
-	addenv_named(to, sloc, "argv", d);
+	addenv_named(to, sloc, "argv", d, ATTR_NoAssign);
 
 	for(int argi = 0; argi < argc; ++argi) {
 		String s = CharLiteralToString(argv[argi], strlen(argv[argi]));
 		assert(s != NULL);
 		Ast    a = new_ast(sloc, AST_String, s);
+		a->attr |= ATTR_NoAssign;
 		bool   appended = array_push_back(d->m.env, Ast, a);
 		assert(appended);
 	}
 
 	d = new_ast(sloc, AST_Integer, (uint64_t)argc);
-	addenv_named(to, sloc, "argc", d);
+	addenv_named(to, sloc, "argc", d, ATTR_NoAssign);
 }
 
 void
@@ -371,13 +378,14 @@ addenv_named(
 	Ast         to,
 	sloc_t      sloc,
 	char const *name,
-	Ast         ast
+	Ast         ast,
+	Attr        attr
 ) {
 	String s = CharLiteralToString(name, strlen(name));
 	assert(s != NULL);
 	Ast    a = new_ast(sloc, AST_Identifier, s);
 
-	addenv(to, 0, a, ast);
+	addenv(to, 0, a, ast, attr);
 }
 
 //------------------------------------------------------------------------------

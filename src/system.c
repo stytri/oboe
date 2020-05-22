@@ -146,7 +146,7 @@ initialise_errors(
 			String      s     = CharLiteralToString(cs, n);
 			Ast         err   = new_ast(0, AST_Error, builtinerr[i].err);
 			Ast         def   = new_ast(0, AST_Reference, s, err);
-			size_t      index = define(system_environment, hash, def);
+			size_t      index = define(system_environment, hash, def, ATTR_NoAssign);
 			assert(~index != 0);
 		}
 
@@ -722,23 +722,23 @@ convert_time_to_env(
 		Ast env = new_env(sloc, NULL), ast;
 
 		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_sec);
-		addenv_named(env, sloc, "seconds", ast);
+		addenv_named(env, sloc, "seconds", ast, 0);
 		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_min);
-		addenv_named(env, sloc, "minutes", ast);
+		addenv_named(env, sloc, "minutes", ast, 0);
 		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_hour);
-		addenv_named(env, sloc, "hour", ast);
+		addenv_named(env, sloc, "hour", ast, 0);
 		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_mday);
-		addenv_named(env, sloc, "day", ast);
+		addenv_named(env, sloc, "day", ast, 0);
 		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_mon + 1);
-		addenv_named(env, sloc, "month", ast);
+		addenv_named(env, sloc, "month", ast, 0);
 		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_year + 1900);
-		addenv_named(env, sloc, "year", ast);
+		addenv_named(env, sloc, "year", ast, 0);
 		ast = new_ast(sloc, AST_Integer, (uint64_t)(tm.tm_wday ? tm.tm_wday : 7));
-		addenv_named(env, sloc, "week_day", ast);
+		addenv_named(env, sloc, "week_day", ast, 0);
 		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_yday + 1);
-		addenv_named(env, sloc, "year_day", ast);
+		addenv_named(env, sloc, "year_day", ast, 0);
 		ast = new_ast(sloc, AST_Integer, (uint64_t)tm.tm_isdst);
-		addenv_named(env, sloc, "is_DST", ast);
+		addenv_named(env, sloc, "is_DST", ast, 0);
 
 		return env;
 	}
@@ -1021,14 +1021,11 @@ initialise_system_environment(
 
 		Ast var;
 		var = new_ast(0, AST_Integer, (uint64_t)VERSION);
-		var->attr |= ATTR_NoAssign;
-		addenv_named(system_environment, 0, "VERSION", var);
+		addenv_named(system_environment, 0, "VERSION", var, ATTR_NoAssign);
 		var = new_ast(0, AST_Integer, (uint64_t)RAND_MAX);
-		var->attr |= ATTR_NoAssign;
-		addenv_named(system_environment, 0, "RAND_MAX", var);
+		addenv_named(system_environment, 0, "RAND_MAX", var, ATTR_NoAssign);
 		var = new_ast(0, AST_Float, (double)CLOCKS_PER_SEC);
-		var->attr |= ATTR_NoAssign;
-		addenv_named(system_environment, 0, "CLOCKS_PER_SEC", var);
+		addenv_named(system_environment, 0, "CLOCKS_PER_SEC", var, ATTR_NoAssign);
 
 		initialise_datatypes();
 		initialise_builtinfn(system_environment, builtinfn, n_builtinfn);

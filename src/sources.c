@@ -69,7 +69,7 @@ add_source(
 	Ast         ast   = new_ast(sloc, AST_String, s);
 	size_t      index = locate(sources, ast->m.hash, cs, n);
 	if(!~index) {
-		index = define(sources, ast->m.hash, ast);
+		index = define(sources, ast->m.hash, ast, ATTR_NoAssign);
 		assert(~index != 0);
 	}
 

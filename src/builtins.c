@@ -1390,10 +1390,7 @@ builtin_decl(
 			&& ast_isParameters(lexpr->m.rexpr)
 		) {
 			rexpr = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
-			if(is_const) {
-				rexpr->attr |= ATTR_NoAssign;
-			}
-			addenv(env, sloc, lexpr->m.lexpr, rexpr);
+			addenv(env, sloc, lexpr->m.lexpr, rexpr, ((is_const) ? ATTR_NoAssign : 0));
 			return rexpr;
 		}
 		if(ast_isString(lexpr->m.lexpr) // for OperatorFunction
@@ -1403,10 +1400,7 @@ builtin_decl(
 			uint64_t    hash  = lexpr->m.lexpr->m.hash;
 			rexpr             = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
 			rexpr             = new_ast(sloc, AST_OperatorFunction, s, rexpr);
-			if(is_const) {
-				rexpr->attr |= ATTR_NoAssign;
-			}
-			size_t      index = define(operators, hash, rexpr);
+			size_t      index = define(operators, hash, rexpr, ((is_const) ? ATTR_NoAssign : 0));
 			assert(~index != 0);
 			return rexpr;
 		}
@@ -1433,20 +1427,14 @@ builtin_decl(
 		);
 	case AST_Identifier:
 		rexpr = evaluate_instance(env, sloc, rexpr, BY_Value);
-		if(is_const) {
-			rexpr->attr |= ATTR_NoAssign;
-		}
-		addenv(env, sloc, lexpr, rexpr);
+		addenv(env, sloc, lexpr, rexpr, ((is_const) ? ATTR_NoAssign : 0));
 		return rexpr;
 	case AST_String: // for OperatorAlias
 		if(ast_isString(rexpr)) {
 			String      s     = lexpr->m.sval;
 			uint64_t    hash  = lexpr->m.hash;
 			rexpr             = new_ast(sloc, AST_OperatorAlias, s, rexpr->m.sval);
-			if(is_const) {
-				rexpr->attr |= ATTR_NoAssign;
-			}
-			size_t      index = define(operators, hash, rexpr);
+			size_t      index = define(operators, hash, rexpr, ((is_const) ? ATTR_NoAssign : 0));
 			assert(~index != 0);
 			return rexpr;
 		}
@@ -1472,9 +1460,8 @@ builtin_decl_ref(
 		if(ast_isReference(rexpr)) {
 			if(is_const) {
 				rexpr = dup_ref(sloc, rexpr);
-				rexpr->attr |= ATTR_NoAssign;
 			}
-			addenv(env, sloc, lexpr, rexpr);
+			addenv(env, sloc, lexpr, rexpr, ((is_const) ? ATTR_NoAssign : 0));
 			return rexpr;
 		}
 		nobreak;
@@ -1526,14 +1513,13 @@ builtin_array_push_back(
 	if(ast_isTag(rexpr) || ast_isTagRef(rexpr)) {
 		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
 			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr, by);
-			addenv(lexpr, sloc, rexpr->m.lexpr, def);
+			addenv(lexpr, sloc, rexpr->m.lexpr, def, 0);
 			return lexpr;
 		}
 	} else if(ast_isConst(rexpr)) {
 		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
 			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr, by);
-			def->attr |= ATTR_NoAssign;
-			addenv(lexpr, sloc, rexpr->m.lexpr, def);
+			addenv(lexpr, sloc, rexpr->m.lexpr, def, ATTR_NoAssign);
 			return lexpr;
 		}
 	} else {
@@ -1577,7 +1563,7 @@ builtin_array_create_map(
 	By     by
 ) {
 	rexpr = evaluate_instance(env, sloc, rexpr, by);
-	rexpr = addenv(lexpr, sloc, iexpr, rexpr);
+	rexpr = addenv(lexpr, sloc, iexpr, rexpr, 0);
 	if(ast_isnotZen(rexpr)) {
 		rexpr = rexpr->m.rexpr;
 	}
@@ -2028,7 +2014,7 @@ initialise_builtinop(
 		uint64_t    hash  = memhash(cs, n, 0);
 		String      s     = CharLiteralToString(cs, n);
 		Ast         oper  = new_ast(0, AST_BuiltinOperator, s, builtinop[i].func, builtinop[i].prec);
-		size_t      index = define(env, hash, oper);
+		size_t      index = define(env, hash, oper, ATTR_NoAssign);
 		assert(~index != 0);
 		*builtinop[i].enup = index;
 	}
@@ -2052,7 +2038,7 @@ initialise_builtinfn(
 		uint64_t    hash  = memhash(cs, n, 0);
 		String      s     = CharLiteralToString(cs, n);
 		Ast         oper  = new_ast(0, AST_BuiltinFunction, s, builtinfn[i].func);
-		size_t      index = define(env, hash, oper);
+		size_t      index = define(env, hash, oper, ATTR_NoAssign);
 		assert(~index != 0);
 		*builtinfn[i].enup = index;
 	}

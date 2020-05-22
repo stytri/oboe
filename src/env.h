@@ -74,7 +74,8 @@ extern size_t
 define(
 	Ast      env,
 	uint64_t hash,
-	Ast      def
+	Ast      def,
+	Attr     attr
 );
 
 //------------------------------------------------------------------------------
@@ -103,7 +104,8 @@ addenv(
 	Ast    env,
 	sloc_t sloc,
 	Ast    ident,
-	Ast    def
+	Ast    def,
+	Attr   attr
 );
 
 extern Ast
@@ -138,7 +140,8 @@ addenv_named(
 	Ast         to,
 	sloc_t      sloc,
 	char const *name,
-	Ast         ast
+	Ast         ast,
+	Attr        attr
 );
 
 //------------------------------------------------------------------------------
