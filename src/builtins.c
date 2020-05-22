@@ -1583,20 +1583,20 @@ builtin_referent_assign(
 	By     by
 ) {
 	lexpr = unwrapref(lexpr);
-	if(ast_isAssignable(lexpr->m.rexpr)) {
 
-		if(ast_isnotZen(lexpr->m.rexpr)) {
+	if(ast_isnotZen(lexpr->m.rexpr)) {
+		if(ast_isAssignable(lexpr->m.rexpr)) {
 			rexpr = evaluate_assignable(env, sloc, rexpr, by);
 			rexpr = assign(sloc, &lexpr->m.rexpr, rexpr);
-		} else {
-			rexpr = evaluate_instance(env, sloc, rexpr, by);
-			lexpr->m.rexpr = rexpr;
+			return rexpr;
 		}
 
-		return rexpr;
+		return oboerr(sloc, ERR_InvalidReferent);
 	}
 
-	return oboerr(sloc, ERR_InvalidReferent);
+	rexpr = evaluate_instance(env, sloc, rexpr, by);
+	lexpr->m.rexpr = rexpr;
+	return rexpr;
 }
 
 static Ast
