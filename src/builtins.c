@@ -184,6 +184,16 @@ ast_isConst(
 }
 
 inline bool
+ast_isDeclaration(
+	Ast ast
+) {
+	return ast_isOp(ast, builtin_tag_enum)
+		|| ast_isOp(ast, builtin_tag_ref_enum)
+		|| ast_isOp(ast, builtin_const_enum)
+	;
+}
+
+inline bool
 ast_isArray(
 	Ast ast
 ) {

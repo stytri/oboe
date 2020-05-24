@@ -259,6 +259,11 @@ ast_isConst(
 );
 
 extern bool
+ast_isDeclaration(
+	Ast ast
+);
+
+extern bool
 ast_isApplicate(
 	Ast ast
 );
