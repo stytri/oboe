@@ -236,18 +236,22 @@ addenv(
 	Attr   attr
 ) {
 	if(ast_isIdentifier(ident) || ast_isString(ident)) {
+		def->attr |= attr;
+
 		size_t      n;
 		uint64_t    hash = ident->m.hash;
 		char const *cs   = StringToCharLiteral(ident->m.sval, &n);
 		n                = locate(env, hash, cs, n);
 		if(~n == 0) {
-			def->attr |= attr;
-
 			def = new_ast(sloc, AST_Reference, ident->m.sval, def);
 			n   = define(env, hash, def, attr);
 			assert(~n != 0);
 			return def;
 		}
+
+		ident = array_at(env->m.env, Ast, n);
+		def   = assign(sloc, &ident->m.rexpr, def);
+		return def;
 	}
 
 	return oboerr(sloc, ERR_InvalidOperand);
