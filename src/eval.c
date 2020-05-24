@@ -64,8 +64,8 @@ assign(
 
 			memcpy(ast, expr, sizeof(*ast));
 
-			if(ast_isRemoveCopyOnAssign(expr)) {
-				ast->attr = expr->attr & ~ATTR_CopyOnAssign;
+			if(ast_isRemoveCopyOnAssign(ast)) {
+				ast->attr &= ~ATTR_CopyOnAssign;
 			}
 			ast->attr &= ~ATTR_NoAssign;
 			ast->sloc = sloc;
