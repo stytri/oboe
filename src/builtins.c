@@ -382,8 +382,6 @@ builtin_if_1(
 		return new_ast(sloc, AST_Integer, cond);
 	}
 
-	env = new_env(sloc, env);
-
 	for(lexpr = undefer(env, lexpr);
 		ast_isAssemblage(lexpr);
 		lexpr = lexpr->m.rexpr
@@ -438,8 +436,6 @@ builtin_case(
 	Ast    lexpr,
 	Ast    rexpr
 ) {
-	env = new_env(sloc, env);
-
 	for(lexpr = undefer(env, lexpr);
 		ast_isAssemblage(lexpr);
 		lexpr = lexpr->m.rexpr
@@ -508,6 +504,7 @@ builtin_case(
 	}
 
 	return refeval(env, rexpr);
+	(void)sloc;
 }
 
 static Ast
@@ -519,8 +516,6 @@ builtin_loop_1(
 	bool   inverted
 ) {
 	Ast iexpr = ZEN;
-
-	env = new_env(sloc, env);
 
 	lexpr = undefer(env, lexpr);
 	if(ast_isAssemblage(lexpr)) {
@@ -552,12 +547,9 @@ builtin_loop_1(
 
 	size_t ts     = gc_topof_stack();
 	Ast    result = ZEN;
-	Ast    outer  = env;
 
 	if(ast_isnotZen(iexpr)) {
 		while(cond) {
-			env = new_env(sloc, outer);
-
 			result = refeval(env, rexpr);
 
 			eval(env, iexpr);
@@ -568,8 +560,6 @@ builtin_loop_1(
 		}
 	} else {
 		while(cond) {
-			env = new_env(sloc, outer);
-
 			result = refeval(env, rexpr);
 
 			cond = ast_toBool(eval(env, lexpr)) ^ inverted;
@@ -579,6 +569,7 @@ builtin_loop_1(
 	}
 
 	return result;
+	(void)sloc;
 }
 
 static Ast

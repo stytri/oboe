@@ -29,8 +29,8 @@ trimlz(s): (
 
 main(argc, argv): (
 	(argc > 1) ? (
-		(tm:, i:3; i < argc; i = i+3) ?* (
-			tm = [
+		(i:3; i < argc; i = i+3) ?* (
+			tm:[
 				year   :trimlz(argv[i-2])@to_Integer,
 				month  :trimlz(argv[i-1])@to_Integer,
 				day    :trimlz(argv[i  ])@to_Integer,
