@@ -1408,6 +1408,7 @@ builtin_decl(
 	lexpr = unquote(lexpr);
 
 	if(ast_isApplicate(lexpr)) {
+		// Function
 		if(ast_isIdentifier(lexpr->m.lexpr)
 			&& ast_isParameters(lexpr->m.rexpr)
 		) {
@@ -1415,13 +1416,31 @@ builtin_decl(
 			addenv(env, sloc, lexpr->m.lexpr, rexpr, ((is_const) ? ATTR_NoAssign : 0));
 			return rexpr;
 		}
-		if(ast_isString(lexpr->m.lexpr) // for OperatorFunction
+		// OperatorFunction with precedence
+		if(ast_isApplicate(lexpr->m.lexpr)
+			&& ast_isString(lexpr->m.lexpr->m.lexpr)
+			&& ast_isString(lexpr->m.lexpr->m.rexpr)
+			&& ast_isParameters(lexpr->m.rexpr)
+		) {
+			size_t      len;
+			char const *cs    = StringToCharLiteral(lexpr->m.lexpr->m.lexpr->m.sval, &len);
+			Precedence  prec  = precedence(cs, len);
+			String      s     = lexpr->m.lexpr->m.rexpr->m.sval;
+			uint64_t    hash  = lexpr->m.lexpr->m.rexpr->m.hash;
+			rexpr             = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
+			rexpr             = new_ast(sloc, AST_OperatorFunction, s, rexpr, prec);
+			size_t      index = define(operators, hash, rexpr, ((is_const) ? ATTR_NoAssign : 0));
+			assert(~index != 0);
+			return rexpr;
+		}
+		// OperatorFunction
+		if(ast_isString(lexpr->m.lexpr)
 			&& ast_isParameters(lexpr->m.rexpr)
 		) {
 			String      s     = lexpr->m.lexpr->m.sval;
 			uint64_t    hash  = lexpr->m.lexpr->m.hash;
 			rexpr             = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
-			rexpr             = new_ast(sloc, AST_OperatorFunction, s, rexpr);
+			rexpr             = new_ast(sloc, AST_OperatorFunction, s, rexpr, P_Assigning);
 			size_t      index = define(operators, hash, rexpr, ((is_const) ? ATTR_NoAssign : 0));
 			assert(~index != 0);
 			return rexpr;

@@ -1,13 +1,8 @@
 *	Documentation
 
-*	Precedence specification for definable operators
--	currently set to additive precedence
-
 *	Improve library
 -	some done, but ongoing as and when
 
 *	Value ranges + proto-types [sic]
-
-*	Search path for import
 
 *	Documentation

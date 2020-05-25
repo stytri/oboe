@@ -186,7 +186,7 @@ _referent_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
 
 or:
 
-_operator-string_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
+[_precedence-operator-string_]? _operator-string_ `(` _parameter_? (`,` _parameter_)* `)` `:` _operand_
 
 or:
 
