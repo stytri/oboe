@@ -307,14 +307,16 @@ new_ast_from_lexeme(
 			Ast lexpr = va_arg(vc, Ast);
 			Ast rexpr = va_arg(vc, Ast);
 			va_end(vc);
-			if(ast_isArray(rexpr)) {
+			if(ast_isBracketed(rexpr)) {
 				if(ast_isZen(rexpr->m.lexpr)) {
 					rexpr->m.lexpr = lexpr;
 					va_end(va);
 					return rexpr;
 				}
 			}
-			if(ast_isOperator(lexpr)) {
+			if(ast_isOperator(lexpr)
+				&& ast_isnotBracketed(lexpr)
+			) {
 				if(ast_isZen(lexpr->m.rexpr)) {
 					lexpr->m.rexpr = rexpr;
 					va_end(va);

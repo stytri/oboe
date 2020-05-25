@@ -198,6 +198,14 @@ ast_isOp(
 }
 
 static inline bool
+ast_isnotOp(
+	Ast      ast,
+	unsigned qual
+) {
+	return ast_isnotOperator(ast) || (ast->qual != qual);
+}
+
+static inline bool
 ast_isType(
 	Ast      ast,
 	unsigned qual
@@ -270,6 +278,21 @@ ast_isApplicate(
 
 extern bool
 ast_isArray(
+	Ast ast
+);
+
+extern bool
+ast_isnotArray(
+	Ast ast
+);
+
+extern bool
+ast_isBracketed(
+	Ast ast
+);
+
+extern bool
+ast_isnotBracketed(
 	Ast ast
 );
 

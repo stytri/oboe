@@ -200,6 +200,27 @@ ast_isArray(
 	return ast_isOp(ast, builtin_array_enum);
 }
 
+inline bool
+ast_isnotArray(
+	Ast ast
+) {
+	return ast_isnotOp(ast, builtin_array_enum);
+}
+
+inline bool
+ast_isBracketed(
+	Ast ast
+) {
+	return ast_isOp(ast, builtin_array_enum);
+}
+
+inline bool
+ast_isnotBracketed(
+	Ast ast
+) {
+	return ast_isnotOp(ast, builtin_array_enum);
+}
+
 //------------------------------------------------------------------------------
 
 #define TYPE(L,R)  (((L) << TYPE_BIT) | (R))
@@ -1979,7 +2000,7 @@ builtin_applicate(
 		}
 		break;
 	case AST_String:
-		if(!ast_isArray(rexpr)) {
+		if(ast_isnotArray(rexpr)) {
 			rexpr = eval(env, rexpr);
 			switch(ast_type(rexpr)) {
 			case AST_Integer: {
