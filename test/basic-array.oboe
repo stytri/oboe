@@ -20,4 +20,13 @@ a@println;
 		a[i][j]@println
 	)
 );
-
+v:11,
+	v@println;
+[](
+	v:22, v@println
+),	v@println;
+[
+	v:33
+](
+	v@println
+),	v@println;
