@@ -105,9 +105,33 @@ Initiated by `\`, followed by:
 
 Initiated by one of `(`, `[`,  `{`, terminated by the corresponding `)`, `]`, `}`.
 
-`{` `}` and `[` `]` are represented in the syntax tree by distinct operators.
-
 `(` `)` are elided, replaced in the syntax tree by the bracketed sub-expression.
+
+`[` `]` and `{` `}` are represented in the syntax tree by distinct operators.
+
+`[` `]` is used to define arrays.
+
+`{` `}` is currently unused.
+
+#### Arrays
+
+An **array** can be indexed, associative, or a mix of both. They can also act as an **environment** (aka Name-space or, scope).
+
+Indexes are zero based. Assigning to to the last + 1 index, appends a new entry.
+
+##### Environments
+
+The following environments are predefined:
+
+**global**, which is available to all; unless **oboe** is invoked with the `--math` option, there are no predefined identifiers in the **global** environment.
+
+**system**, which can be accessed via the **sigil** operator.
+
+in addition each function call has its own environment.
+
+When an **environment** is applied to an expression or, expression-list, it is automatically linked to the current **environment**.
+
+An anonymous **environment** can be utilized to limit the scope of variables.
 
 #### Operators
 
@@ -119,11 +143,11 @@ Initiated by one of `(`, `[`,  `{`, terminated by the corresponding `)`, `]`, `}
 
 ##### User-defined operators
 
-See `lex.h` for definition.
+See `lex.h` for permitted lexeme characters.
 
 #### Identifiers
 
-See `lex.h` for definition.
+See `lex.h` for permitted lexeme characters.
 
 ### Grammar
 
@@ -216,7 +240,7 @@ _condition_ is evaluated, and if the result, when cast to a boolean value, evalu
 
 or:
 
-_condition_ `?` _true-operand_ `;` _false-operand_
+_condition_ `?` `(`_true-operand_ `;` _false-operand_`)`
 
 _condition_ is evaluated, and if the result, when cast to a boolean value, evaluates to **true**, then _true-operand_ is evaluated, otherwise _false-operand_ id evaluated.
 
@@ -272,6 +296,8 @@ The `!*` operator is as above, except the condition is inverted.
 
 _left-operand_ _operator_ _right-operand_
 
+The following operators are built-in:
+
 `&&`	logical AND
 
 `||`	logical OR
@@ -315,6 +341,10 @@ _left-operand_ _operator_ _right-operand_
 `<<>`	rotate left
 
 `<>>`	rotate right
+
+The non-comparative operators also have a self-assigning form: e.g. 
+
+_reference_ `+=` _operand_
 
 ##### applicate
 
