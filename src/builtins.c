@@ -323,6 +323,44 @@ double_to_uint64_t(
 	return ((union { double d; uint64_t u; }){ .d = v }).u;
 }
 
+uint64_t
+ast_toInteger(
+	Ast ast
+) {
+	switch(ast_type(ast)) {
+	case AST_Integer:
+	case AST_Character:
+		return ast->m.ival;
+	case AST_Float:
+		return (uint64_t)ast->m.fval;
+	case AST_String: {
+			char const *cs = StringToCharLiteral(ast->m.sval, NULL);
+			return strtou(cs, NULL);
+		}
+	default:
+		return 0;
+	}
+}
+
+double
+ast_toFloat(
+	Ast ast
+) {
+	switch(ast_type(ast)) {
+	case AST_Integer:
+	case AST_Character:
+		return (double)ast->m.ival;
+	case AST_Float:
+		return ast->m.fval;
+	case AST_String: {
+			char const *cs = StringToCharLiteral(ast->m.sval, NULL);
+			return strtod(cs, 0);
+		}
+	default:
+		return 0.0;
+	}
+}
+
 bool
 ast_toBool(
 	Ast ast

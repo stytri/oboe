@@ -296,6 +296,16 @@ ast_isnotBracketed(
 	Ast ast
 );
 
+extern uint64_t
+ast_toInteger(
+	Ast ast
+);
+
+extern double
+ast_toFloat(
+	Ast ast
+);
+
 extern bool
 ast_toBool(
 	Ast ast
