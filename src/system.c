@@ -70,6 +70,7 @@ static unsigned builtin_time_enum          = -1;
 static unsigned builtin_difftime_enum      = -1;
 static unsigned builtin_localtime_enum     = -1;
 static unsigned builtin_utctime_enum       = -1;
+static unsigned builtin_seed_enum          = -1;
 static unsigned builtin_rand_enum          = -1;
 static unsigned builtin_randf_enum         = -1;
 static unsigned builtin_eval_enum          = -1;
@@ -792,6 +793,71 @@ builtin_utctime(
 
 //------------------------------------------------------------------------------
 
+// https://en.wikipedia.org/wiki/Xorshift
+
+// https://en.wikipedia.org/wiki/Xorshift#Initialization
+static uint64_t
+splitmix64(
+	uint64_t *s
+) {
+	uint64_t result = *s;
+
+	*s = result + 0x9E3779B97f4A7C15;
+	result = (result ^ (result >> 30)) * 0xBF58476D1CE4E5B9;
+	result = (result ^ (result >> 27)) * 0x94D049BB133111EB;
+
+	return result ^ (result >> 31);
+}
+
+static void
+xoroshiro256ss_seed(
+	uint64_t s[4],
+	unsigned seed
+) {
+	uint64_t t = seed;
+
+	s[0] = splitmix64(&t);
+	s[1] = splitmix64(&t);
+	s[2] = splitmix64(&t);
+	s[3] = splitmix64(&t);
+}
+
+static inline uint64_t
+rol64(
+	uint64_t u,
+	int      n
+) {
+	return (u << n) | (u >> (64 - n));
+}
+
+static uint64_t
+xoroshiro256ss(
+	uint64_t s[4]
+) {
+	// https://en.wikipedia.org/wiki/Xorshift#xoshiro256**
+	uint64_t const result = rol64(s[1] * 5, 7) * 9;
+	uint64_t const t = s[1] << 17;
+
+	s[2] ^= s[0];
+	s[3] ^= s[1];
+	s[1] ^= s[2];
+	s[0] ^= s[3];
+
+	s[2] ^= t;
+	s[3] = rol64(s[3], 45);
+
+	return result;
+}
+
+static uint64_t xoroshiro256ss_state[4];
+
+#undef  rand
+#define rand(...)  xoroshiro256ss(xoroshiro256ss_state)
+#undef  srand
+#define srand(S)   xoroshiro256ss_seed(xoroshiro256ss_state, (unsigned)(S))
+#undef  RAND_MAX
+#define RAND_MAX   (~(uint64_t)0)
+
 static void
 initialise_rand(
 	void
@@ -801,12 +867,25 @@ initialise_rand(
 }
 
 static Ast
+builtin_seed(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	arg = eval(env, arg);
+	srand(ast_toInteger(arg));
+	return arg;
+
+	(void)sloc;
+}
+
+static Ast
 builtin_rand(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
 ) {
-	int const r = rand();
+	uint64_t const r = rand();
 	return new_ast(sloc, AST_Integer, (uint64_t)r);
 
 	(void)env;
@@ -820,7 +899,7 @@ builtin_randf(
 	sloc_t sloc,
 	Ast    arg
 ) {
-	int const r = rand();
+	uint64_t const r = rand();
 	return new_ast(sloc, AST_Float, (double)r / (double)RAND_MAX);
 
 	(void)env;
@@ -1002,6 +1081,7 @@ initialise_system_environment(
 		BUILTIN("difftime"    , difftime)
 		BUILTIN("localtime"   , localtime)
 		BUILTIN("utctime"     , utctime)
+		BUILTIN("seed"        , seed)
 		BUILTIN("rand"        , rand)
 		BUILTIN("randf"       , randf)
 		BUILTIN("eval"        , eval)
