@@ -810,7 +810,7 @@ splitmix64(
 }
 
 static void
-xoroshiro256ss_seed(
+xoshiro256ss_seed(
 	uint64_t s[4],
 	unsigned seed
 ) {
@@ -831,7 +831,7 @@ rol64(
 }
 
 static uint64_t
-xoroshiro256ss(
+xoshiro256ss(
 	uint64_t s[4]
 ) {
 	// https://en.wikipedia.org/wiki/Xorshift#xoshiro256**
@@ -849,12 +849,12 @@ xoroshiro256ss(
 	return result;
 }
 
-static uint64_t xoroshiro256ss_state[4];
+static uint64_t xoshiro256ss_state[4];
 
 #undef  rand
-#define rand(...)  xoroshiro256ss(xoroshiro256ss_state)
+#define rand(...)  xoshiro256ss(xoshiro256ss_state)
 #undef  srand
-#define srand(S)   xoroshiro256ss_seed(xoroshiro256ss_state, (unsigned)(S))
+#define srand(S)   xoshiro256ss_seed(xoshiro256ss_state, (unsigned)(S))
 #undef  RAND_MAX
 #define RAND_MAX   (~(uint64_t)0)
 
