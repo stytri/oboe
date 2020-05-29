@@ -866,6 +866,27 @@ initialise_rand(
 	srand(s);
 }
 
+static uint64_t
+rand_in_range(
+	uint64_t r,
+	uint64_t range
+) {
+	if(range == 0 || r == range) {
+		return 0;
+	}
+
+	if(r > range) {
+		for(uint64_t t = -range % range;
+			r < t;
+			r = rand()
+		);
+
+		r %= range;
+	}
+
+	return r;
+}
+
 static Ast
 builtin_seed(
 	Ast    env,
@@ -885,12 +906,19 @@ builtin_rand(
 	sloc_t sloc,
 	Ast    arg
 ) {
-	uint64_t const r = rand();
+	uint64_t r = rand();
+
+	if(ast_isnotZen(arg)) {
+		arg = eval(env, arg);
+		uint64_t range = ast_toInteger(arg);
+		if(range < RAND_MAX) {
+			r = rand_in_range(r, range);
+		}
+	}
+
 	return new_ast(sloc, AST_Integer, (uint64_t)r);
 
-	(void)env;
 	(void)sloc;
-	(void)arg;
 }
 
 static Ast
@@ -899,8 +927,15 @@ builtin_randf(
 	sloc_t sloc,
 	Ast    arg
 ) {
-	uint64_t const r = rand();
-	return new_ast(sloc, AST_Float, (double)r / (double)RAND_MAX);
+	uint64_t r     = rand_in_range(rand(), (uint64_t)1 << 53);
+	double   range = 1.0;
+
+	if(ast_isnotZen(arg)) {
+		arg   = eval(env, arg);
+		range = ast_toFloat(arg);
+	}
+
+	return new_ast(sloc, AST_Float, r * range * (1.0 / ((uint64_t)1 << 53)));
 
 	(void)env;
 	(void)sloc;

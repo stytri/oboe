@@ -39,7 +39,7 @@ ndigits(i:0): (
 );
 
 select(N): (
-	@rand() // N
+	N@rand
 );
 
 shuffle(a): (
