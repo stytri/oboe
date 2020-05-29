@@ -29,6 +29,7 @@ SOFTWARE.
 #include "assert.h"
 #include "parse.h"
 #include "tostr.h"
+#include "rand.h"
 #include "hash.h"
 #include "eval.h"
 #include "env.h"
@@ -793,100 +794,6 @@ builtin_utctime(
 
 //------------------------------------------------------------------------------
 
-// https://en.wikipedia.org/wiki/Xorshift
-
-// https://en.wikipedia.org/wiki/Xorshift#Initialization
-static uint64_t
-splitmix64(
-	uint64_t *s
-) {
-	uint64_t result = *s;
-
-	*s = result + 0x9E3779B97f4A7C15;
-	result = (result ^ (result >> 30)) * 0xBF58476D1CE4E5B9;
-	result = (result ^ (result >> 27)) * 0x94D049BB133111EB;
-
-	return result ^ (result >> 31);
-}
-
-static void
-xoshiro256ss_seed(
-	uint64_t s[4],
-	unsigned seed
-) {
-	uint64_t t = seed;
-
-	s[0] = splitmix64(&t);
-	s[1] = splitmix64(&t);
-	s[2] = splitmix64(&t);
-	s[3] = splitmix64(&t);
-}
-
-static inline uint64_t
-rol64(
-	uint64_t u,
-	int      n
-) {
-	return (u << n) | (u >> (64 - n));
-}
-
-static uint64_t
-xoshiro256ss(
-	uint64_t s[4]
-) {
-	// https://en.wikipedia.org/wiki/Xorshift#xoshiro256**
-	uint64_t const result = rol64(s[1] * 5, 7) * 9;
-	uint64_t const t = s[1] << 17;
-
-	s[2] ^= s[0];
-	s[3] ^= s[1];
-	s[1] ^= s[2];
-	s[0] ^= s[3];
-
-	s[2] ^= t;
-	s[3] = rol64(s[3], 45);
-
-	return result;
-}
-
-static uint64_t xoshiro256ss_state[4];
-
-#undef  rand
-#define rand(...)  xoshiro256ss(xoshiro256ss_state)
-#undef  srand
-#define srand(S)   xoshiro256ss_seed(xoshiro256ss_state, (unsigned)(S))
-#undef  RAND_MAX
-#define RAND_MAX   (~(uint64_t)0)
-
-static void
-initialise_rand(
-	void
-) {
-	int s = time(NULL);
-	srand(s);
-}
-
-static uint64_t
-rand_in_range(
-	uint64_t r,
-	uint64_t range
-) {
-	if(range == 0 || r == range) {
-		return 0;
-	}
-
-	if(r > range) {
-		for(uint64_t t = -range % range;
-			r < t;
-			r = rand()
-		);
-
-		r %= range;
-	}
-
-	return r;
-}
-
 static Ast
 builtin_seed(
 	Ast    env,
@@ -916,7 +823,7 @@ builtin_rand(
 		}
 	}
 
-	return new_ast(sloc, AST_Integer, (uint64_t)r);
+	return new_ast(sloc, AST_Integer, r);
 }
 
 static Ast
@@ -925,7 +832,7 @@ builtin_randf(
 	sloc_t sloc,
 	Ast    arg
 ) {
-	uint64_t r     = rand_in_range(rand(), (uint64_t)1 << 53);
+	uint64_t r     = rand();
 	double   range = 1.0;
 
 	if(ast_isnotZen(arg)) {
@@ -933,7 +840,9 @@ builtin_randf(
 		range = ast_toFloat(arg);
 	}
 
-	return new_ast(sloc, AST_Float, r * range * (1.0 / ((uint64_t)1 << 53)));
+	r = rand_to_float(r, range);
+
+	return new_ast(sloc, AST_Float, r);
 }
 
 //------------------------------------------------------------------------------
@@ -1140,7 +1049,6 @@ initialise_system_environment(
 		initialise_builtinfn(system_environment, builtinfn, n_builtinfn);
 		initialise_builtinop(operators         , builtinop, n_builtinop);
 		initialise_errors();
-		initialise_rand();
 	}
 
 	return EXIT_SUCCESS;

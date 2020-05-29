@@ -39,6 +39,7 @@ SOFTWARE.
 #include "tostr.h"
 #include "graph.h"
 #include "array.h"
+#include "rand.h"
 #include "eval.h"
 #include "gc.h"
 
@@ -99,9 +100,12 @@ print_entry(
 
 static void
 initialise(
-	bool has_math,
-	bool list_builtins
+	char const *generator,
+	bool        has_math,
+	bool        list_builtins
 ) {
+	initialise_rand(generator);
+
 	initialise_ast();
 	initialise_env();
 	initialise_sources();
@@ -171,6 +175,7 @@ main(
 		{18, "-T, --timed",                     "timed execution" },
 
 		{20, "-m, --math",                      "enable math functions in the global namespace" },
+		{21, "-r, --rand GENERATOR",            "select random number GENERATOR" },
 		{90, "-x, --evaluate EXPRESSION*",      "evaluates EXPRESSIONs up to -" },
 		{92, "-I, --import-path PATH",          "add search PATH for import" },
 		{91, "-i, --import FILE",               "imports FILE" },
@@ -180,14 +185,15 @@ main(
 
 	int exit_status = EXIT_SUCCESS;
 
-	unsigned line          = 1;
-	bool     has_math      = false;
-	bool     list_builtins = false;
-	bool     timed         = false;
-	bool     quiet         = false;
-	bool     doeval        = true;
-	FILE    *gfile         = NULL;
-	bool     unprocessed   = true;
+	unsigned    line          = 1;
+	char const *generator     = NULL;
+	bool        has_math      = false;
+	bool        list_builtins = false;
+	bool        timed         = false;
+	bool        quiet         = false;
+	bool        doeval        = true;
+	FILE       *gfile         = NULL;
+	bool        unprocessed   = true;
 
 	for(int argi = 1; argi < argc;) {
 		char const *args = argv[argi++];
@@ -268,10 +274,23 @@ main(
 				has_math = true;
 				break;
 
+			case 21:
+				if(strcmp(argv[argi], "?") && strcmp(argv[argi], "help")) {
+					generator = argv[argi];
+					break;
+				}
+				puts("default");
+				puts("jsf");
+				puts("sfc");
+				puts("splitmix     (default)");
+				puts("xoshiro256**");
+				puts("xsm");
+				goto end;
+
 			case 90:
 				unprocessed = false;
 
-				initialise(has_math, list_builtins);
+				initialise(generator, has_math, list_builtins);
 
 				for(;
 					(argi < argc) && (strcmp(argv[argi], "-") != 0);
@@ -285,7 +304,7 @@ main(
 				break;
 
 			case 0:
-				initialise(has_math, list_builtins);
+				initialise(generator, has_math, list_builtins);
 
 				--argi;
 				addenv_argv(system_environment, 0, argc - argi, &argv[argi]);
@@ -293,7 +312,7 @@ main(
 				unprocessed = false;
 				nobreak;
 			case 91: {
-				initialise(has_math, list_builtins);
+				initialise(generator, has_math, list_builtins);
 
 				size_t ts   = gc_topof_stack();
 				size_t n    = strlen(argv[argi]);
@@ -319,7 +338,7 @@ main(
 				break;
 			}
 			case 92: {
-				initialise(has_math, list_builtins);
+				initialise(generator, has_math, list_builtins);
 
 				size_t ts   = gc_topof_stack();
 				size_t n    = strlen(argv[argi]);
@@ -347,7 +366,7 @@ main(
 	}
 
 	if(unprocessed) {
-		initialise(has_math, list_builtins);
+		initialise(generator, has_math, list_builtins);
 
 		exit_status = interactive(&line, timed, quiet, doeval, gfile);
 	}

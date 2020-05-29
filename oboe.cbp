@@ -107,6 +107,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/parse.h" />
+		<Unit filename="src/rand.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/rand.h" />
 		<Unit filename="src/searchpaths.c">
 			<Option compilerVar="CC" />
 		</Unit>
