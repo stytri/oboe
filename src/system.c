@@ -917,8 +917,6 @@ builtin_rand(
 	}
 
 	return new_ast(sloc, AST_Integer, (uint64_t)r);
-
-	(void)sloc;
 }
 
 static Ast
@@ -936,10 +934,6 @@ builtin_randf(
 	}
 
 	return new_ast(sloc, AST_Float, r * range * (1.0 / ((uint64_t)1 << 53)));
-
-	(void)env;
-	(void)sloc;
-	(void)arg;
 }
 
 //------------------------------------------------------------------------------
