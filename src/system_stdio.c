@@ -144,9 +144,8 @@ builtin_file_type_new(
 	char const *name = StringToCharLiteral(s, NULL);
 	s                = va_arg(va, String);
 	char const *mode = StringToCharLiteral(s, NULL);
-	FILE       *fp   = builtin_file_type__open(name, mode);
-	if(fp) {
-		ast->m.lptr = fp;
+	ast->m.lptr      = builtin_file_type__open(name, mode);
+	if(ast->m.lptr) {
 		return ast;
 	}
 
