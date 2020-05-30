@@ -238,8 +238,8 @@ ENUM(OpaqueDataReference)
 
 ENUM(OpaqueDataType)
 	NEW(
-		odt_new(ast, va);
 		ast->attr |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign);
+		ast = odt_new(gc_push(ast), va);
 	)
 	EVAL(
 		RETURN(ast = odt_eval(ast));
