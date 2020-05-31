@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
+#include "src\assert.h"
 #include "src\array.h"
 #include "src\mapfile.h"
 #include "src\string.h"
@@ -21,27 +22,69 @@ isnoteol(
 
 static int (*is_ctype)(int c) = isnoteol;
 
+struct entry {
+	char const *cs;
+	size_t      len;
+};
+
+#define ENTRY_SLAB_LEN ((1024LU * 1024LU / sizeof(struct entry)) - 1)
+
+struct entry_slab {
+	struct entry_slab *prev;
+	size_t             count;
+	struct entry       entry[ENTRY_SLAB_LEN];
+}	_entry_slab = { NULL, 0, {{ NULL, 0 }} },
+	*entry_slab = &_entry_slab;
+
+static struct entry *
+new_entry(
+	char const *cs,
+	size_t      len
+) {
+	if(entry_slab->count == ENTRY_SLAB_LEN) {
+		struct entry_slab *new_slab = malloc(sizeof(*new_slab));
+		assert(new_slab != NULL);
+
+		new_slab->prev  = entry_slab;
+		new_slab->count = 0;
+		entry_slab      = new_slab;
+	}
+
+	struct entry *new_entry = &entry_slab->entry[entry_slab->count++];
+
+	new_entry->cs  = cs;
+	new_entry->len = len;
+
+	return new_entry;
+}
+
 static int cmp(
 	Array       arr,
 	size_t      index,
 	void const *key,
 	size_t      n
 ) {
-	char const *cs = array_at(arr, char const *, index);
-	char const *ct = key;
-	int         sc = *cs;
-	int         tc = *ct;
-	for(;
-		n && is_ctype(sc) && is_ctype(tc) && (sc == tc);
-		n--, sc = *++cs, tc = *++ct
-	)
-		;
-	if(n == 0) {
-		return is_ctype(sc) || is_ctype(tc);
+	struct entry *entry = array_at(arr, struct entry *, index);
+	if(n == entry->len) {
+
+		char const *cs = entry->cs;
+		char const *ct = key;
+		int         sc = *cs;
+		int         tc = *ct;
+		for(;
+			n && is_ctype(sc) && is_ctype(tc) && (sc == tc);
+			n--, sc = *++cs, tc = *++ct
+		)
+			;
+		if(n == 0) {
+			return is_ctype(sc) || is_ctype(tc);
+		}
 	}
 
 	return 0;
 }
+
+static int map_print_ndigits = 9;
 
 static int
 map_print(
@@ -51,22 +94,41 @@ map_print(
 ) {
 	static uint64_t last_hash = 0;
 
+	struct entry *entry = array_at(context, struct entry *, index);
+
 	if(last_hash != hash) {
 		last_hash = hash;
 		printf("#%16.16llx", hash);
 	} else {
 		printf("+%16.16s", "");
 	}
-	printf("[%zu]\n", index);
+	int n = entry->len;
+	printf("[%*zu] %*.*s\n", map_print_ndigits, index, n, n, entry->cs);
 
 	return 0;
 	(void)context;
+}
+
+static int
+ndigits(
+	uintmax_t n
+) {
+	int d = 1;
+
+	for(; n > 999999999LLU; n /= 1000000000LLU, d += 9);
+	for(; n > 999999LU; n /= 1000000LU, d += 6);
+	for(; n > 999LU; n /= 1000LU, d += 3);
+	for(; n > 9LU; n /= 10LU, d += 1);
+
+	return d;
 }
 
 static void
 map(
 	Array arr
 ) {
+	map_print_ndigits = ndigits(array_length(arr));
+
 	array_foreach(arr, map_print, arr);
 }
 
@@ -146,7 +208,7 @@ int main(
 				size_t   x = array_get_index(&arr, h, cmp, start, n);
 				if(!~x) {
 					x = array_length(&arr);
-					if(array_push_back(&arr, char const *, start)) {
+					if(array_push_back(&arr, struct entry *, new_entry(start, n))) {
 						array_map_index(&arr, h, x);
 					}
 				}
@@ -178,7 +240,7 @@ int main(
 				if(hash) {
 					printf("#%16.16llx: ", h);
 				}
-				printf("%*.*s\n", (int)n, (int)n, array_at(&arr, char const *, x));
+				printf("%*.*s\n", (int)n, (int)n, array_at(&arr, struct entry *, x)->cs);
 			}
 		}
 
