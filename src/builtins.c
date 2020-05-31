@@ -488,6 +488,45 @@ builtin_ifnot(
 	return builtin_if_1(env, sloc, lexpr, rexpr, true);
 }
 
+//------------------------------------------------------------------------------
+
+static bool
+builtin_case_match(
+	Ast    env,
+	Ast    expr
+) {
+	if(ast_isTag(expr)) {
+		if(builtin_case_match(env, expr->m.lexpr)) {
+			return true;
+		}
+
+		expr = expr->m.rexpr;
+	}
+
+	expr = eval(env, expr);
+
+	return ast_toBool(expr);
+}
+
+static bool
+builtin_case_equal(
+	Ast    env,
+	Ast    expr,
+	Ast    cond
+) {
+	if(ast_isTag(expr)) {
+		if(builtin_case_equal(env, expr->m.lexpr, cond)) {
+			return true;
+		}
+
+		expr = expr->m.rexpr;
+	}
+
+	expr = eval(env, expr);
+
+	return are_equal(expr, cond);
+}
+
 static Ast
 builtin_case(
 	Ast    env,
@@ -503,9 +542,6 @@ builtin_case(
 	}
 
 	if(ast_isZen(lexpr)) {
-		Ast  sel;
-		bool cond;
-
 		for(rexpr = undefer(env, rexpr);
 			ast_isAssemblage(rexpr);
 			rexpr = rexpr->m.rexpr
@@ -513,9 +549,7 @@ builtin_case(
 			lexpr = rexpr->m.lexpr;
 
 			if(ast_isTag(lexpr)) {
-				sel = eval(env, lexpr->m.lexpr);
-				cond = ast_toBool(sel);
-				if(cond) {
+				if(builtin_case_match(env, lexpr->m.lexpr)) {
 					return refeval(env, lexpr->m.rexpr);
 				}
 				continue;
@@ -525,16 +559,14 @@ builtin_case(
 		}
 
 		if(ast_isTag(rexpr)) {
-			sel = eval(env, rexpr->m.lexpr);
-			cond = ast_toBool(sel);
-			if(cond) {
+			if(builtin_case_match(env, rexpr->m.lexpr)) {
 				return refeval(env, rexpr->m.rexpr);
 			}
 			return ZEN;
 		}
 
 	} else {
-		Ast sel, cond = eval(env, lexpr);
+		Ast cond = eval(env, lexpr);
 
 		for(rexpr = undefer(env, rexpr);
 			ast_isAssemblage(rexpr);
@@ -543,8 +575,7 @@ builtin_case(
 			lexpr = rexpr->m.lexpr;
 
 			if(ast_isTag(lexpr)) {
-				sel = eval(env, lexpr->m.lexpr);
-				if(are_equal(sel, cond)) {
+				if(builtin_case_equal(env, lexpr->m.lexpr, cond)) {
 					return refeval(env, lexpr->m.rexpr);
 				}
 				continue;
@@ -554,8 +585,7 @@ builtin_case(
 		}
 
 		if(ast_isTag(rexpr)) {
-			sel = eval(env, rexpr->m.lexpr);
-			if(are_equal(sel, cond)) {
+			if(builtin_case_equal(env, rexpr->m.lexpr, cond)) {
 				return refeval(env, rexpr->m.rexpr);
 			}
 			return ZEN;
@@ -565,6 +595,8 @@ builtin_case(
 	return refeval(env, rexpr);
 	(void)sloc;
 }
+
+//------------------------------------------------------------------------------
 
 static Ast
 builtin_loop_1(
