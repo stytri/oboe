@@ -1,0 +1,62 @@
+unable_to_open(file): ("unable to open ", file)@printerr;
+unable_to_read(file): ("unable to read ", file)@printerr;
+
+catword(s): (
+	n:0,
+	(N::s@length; n < N && s[n] <> `/`; n+=1) ?*,
+	(n > 0) ? (s <<< n)@println
+);
+
+catfile(file): (
+	f:file@open,
+
+	f@is_File ? (
+		s:f@getln,
+		N::s@to_Integer,
+		(file, " [", N, "]")@printerr,
+
+		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
+			c::s[0],
+			(s@length && !(c@is_Space || c == `#` || c == `%` || c == `/`)) ? (
+				catword(s)
+			)
+		),
+
+		f@ferror ? unable_to_read file,
+
+		f@close
+	;
+		unable_to_open file
+	)
+);
+
+catfiles(file): (
+	f:file@open,
+
+	f@is_File ? (
+		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
+			catfile(s)
+		),
+
+		f@ferror ? unable_to_read file,
+
+		f@close
+	;
+		unable_to_open file
+	)
+);
+
+main(argc, argv) : (
+	(i:1; i < argc; i+=1) ?* (
+		args:argv[i],
+
+		?: (
+		(args[0] == `@`): catfiles(args << 1, verbose);
+		catfile(args, verbose)
+		)
+	)
+);
+
+main(@argc, @argv);
+
+
