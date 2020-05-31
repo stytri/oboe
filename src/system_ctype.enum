@@ -60,11 +60,18 @@ ENUM(is_UCS_Punctuation)
 ENUM(is_UCS_Symbol_math)
 ENUM(is_UCS_Symbol_currency)
 ENUM(is_UCS_Symbol_modifier)
+ENUM(is_UCS_Symbol_other)
 ENUM(is_UCS_Symbol)
 ENUM(is_UCS_Separator_space)
 ENUM(is_UCS_Separator_line)
 ENUM(is_UCS_Separator_paragraph)
 ENUM(is_UCS_Separator)
+ENUM(is_UCS_Other_control)
+ENUM(is_UCS_Other_format)
+ENUM(is_UCS_Other_surrogate)
+ENUM(is_UCS_Other_private_use)
+ENUM(is_UCS_Other_unassigned)
+ENUM(is_UCS_Other)
 
 //------------------------------------------------------------------------------
 

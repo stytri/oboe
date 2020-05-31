@@ -62,11 +62,18 @@ enum {
 	UCS_Symbol_math = UINT32_C(0x40000),
 	UCS_Symbol_currency = UINT32_C(0x80000),
 	UCS_Symbol_modifier = UINT32_C(0x100000),
+	UCS_Symbol_other = UINT32_C(0x200000),
 	UCS_Symbol = UINT32_C(0x3c0000),
 	UCS_Separator_space = UINT32_C(0x400000),
 	UCS_Separator_line = UINT32_C(0x800000),
 	UCS_Separator_paragraph = UINT32_C(0x1000000),
 	UCS_Separator = UINT32_C(0x1c00000),
+	UCS_Other_control = UINT32_C(0x2000000),
+	UCS_Other_format = UINT32_C(0x4000000),
+	UCS_Other_surrogate = UINT32_C(0x8000000),
+	UCS_Other_private_use = UINT32_C(0x10000000),
+	UCS_Other_unassigned = UINT32_C(0x20000000),
+	UCS_Other = UINT32_C(0x3e000000),
 
 	UCS_Lu = UCS_Letter_uppercase,
 	UCS_Ll = UCS_Letter_lowercase,
@@ -94,11 +101,18 @@ enum {
 	UCS_Sm = UCS_Symbol_math,
 	UCS_Sc = UCS_Symbol_currency,
 	UCS_Sk = UCS_Symbol_modifier,
+	UCS_So = UCS_Symbol_other,
 	UCS_S = UCS_Symbol,
 	UCS_Zs = UCS_Separator_space,
 	UCS_Zl = UCS_Separator_line,
 	UCS_Zp = UCS_Separator_paragraph,
 	UCS_Z = UCS_Separator,
+	UCS_Cc = UCS_Other_control,
+	UCS_Cf = UCS_Other_format,
+	UCS_Cs = UCS_Other_surrogate,
+	UCS_Co = UCS_Other_private_use,
+	UCS_Cn = UCS_Other_unassigned,
+	UCS_C = UCS_Other,
 };
 typedef uint32_t UCS_t;
 
@@ -265,6 +279,12 @@ is_UCS_Symbol_modifier(
 	return is_UCS(UCS_Symbol_modifier, c);
 }
 static inline int
+is_UCS_Symbol_other(
+	char32_t c
+) {
+	return is_UCS(UCS_Symbol_other, c);
+}
+static inline int
 is_UCS_Symbol(
 	char32_t c
 ) {
@@ -293,6 +313,42 @@ is_UCS_Separator(
 	char32_t c
 ) {
 	return is_UCS(UCS_Separator, c);
+}
+static inline int
+is_UCS_Other_control(
+	char32_t c
+) {
+	return is_UCS(UCS_Other_control, c);
+}
+static inline int
+is_UCS_Other_format(
+	char32_t c
+) {
+	return is_UCS(UCS_Other_format, c);
+}
+static inline int
+is_UCS_Other_surrogate(
+	char32_t c
+) {
+	return is_UCS(UCS_Other_surrogate, c);
+}
+static inline int
+is_UCS_Other_private_use(
+	char32_t c
+) {
+	return is_UCS(UCS_Other_private_use, c);
+}
+static inline int
+is_UCS_Other_unassigned(
+	char32_t c
+) {
+	return is_UCS(UCS_Other_unassigned, c);
+}
+static inline int
+is_UCS_Other(
+	char32_t c
+) {
+	return is_UCS(UCS_Other, c);
 }
 
 //------------------------------------------------------------------------------
