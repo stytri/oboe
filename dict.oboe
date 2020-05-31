@@ -1,9 +1,18 @@
 unable_to_open(file): ("unable to open ", file)@printerr;
 unable_to_read(file): ("unable to read ", file)@printerr;
 
+is_delim(c:): (
+	c == `#`
+	|| c == `%`
+	|| c == `/`
+	|| c == `[` || c == `]`
+	|| c == `{` || c == `}`
+);
+
 catword(s): (
 	n:0,
-	(N::s@length; n < N && s[n] <> `/`; n+=1) ?*,
+	(N::s@length; n < N && !(is_delim(s[n])); n+=1) ?*,
+	(; n > 1 && s[n-1]@is_Space; n-=1) ?*,
 	(n > 0) ? (s <<< n)@println
 );
 
@@ -17,7 +26,7 @@ catfile(file): (
 
 		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
 			c::s[0],
-			(s@length && !(c@is_Space || c == `#` || c == `%` || c == `/`)) ? (
+			(s@length && !(c@is_Space || is_delim(c))) ? (
 				catword(s)
 			)
 		),
