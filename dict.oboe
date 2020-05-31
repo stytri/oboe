@@ -11,7 +11,7 @@ catfile(file): (
 	f:file@open,
 
 	f@is_File ? (
-		s:f@getln,
+		s:f@fgetln,
 		N::s@to_Integer,
 		(file, " [", N, "]")@printerr,
 
