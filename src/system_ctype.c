@@ -151,7 +151,7 @@ builtin_SpanInSet(
 		Ast lexpr = eval(env, args->m.lexpr);
 		Ast rexpr = eval(env, args->m.rexpr);
 
-		if(ast_isString(lexpr) && ast_isString(lexpr)) {
+		if(ast_isString(lexpr) && ast_isString(rexpr)) {
 			uint64_t span = 0;
 
 			char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
@@ -191,7 +191,7 @@ builtin_SpanNotInSet(
 		Ast lexpr = eval(env, args->m.lexpr);
 		Ast rexpr = eval(env, args->m.rexpr);
 
-		if(ast_isString(lexpr) && ast_isString(lexpr)) {
+		if(ast_isString(lexpr) && ast_isString(rexpr)) {
 			uint64_t span = 0;
 
 			char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
