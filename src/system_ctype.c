@@ -43,6 +43,7 @@ SOFTWARE.
 #define ENUM(Name,...)  static unsigned builtin_##Name##_enum = -1;
 	ENUM(is_CharInSet)
 	ENUM(SpanInSet)
+	ENUM(SpanNotInSet)
 	ENUM(to_Uppercase)
 	ENUM(to_Lowercase)
 #include "system_ctype.enum"
@@ -180,6 +181,47 @@ builtin_SpanInSet(
 	return oboerr(sloc, ERR_InvalidOperand);
 }
 
+static Ast
+builtin_SpanNotInSet(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       args
+) {
+	if(ast_isSequence(args)) {
+		Ast lexpr = eval(env, args->m.lexpr);
+		Ast rexpr = eval(env, args->m.rexpr);
+
+		if(ast_isString(lexpr) && ast_isString(lexpr)) {
+			uint64_t span = 0;
+
+			char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
+			char const *cz = StringToCharLiteral(rexpr->m.sval, NULL);
+
+			for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
+				bool inset = false;
+
+				char const *ct = cz;
+				for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
+					if(c == t) {
+						inset = true;
+						break;
+					}
+				}
+
+				if(inset) {
+					break;
+				}
+
+				span++;
+			}
+
+			return new_ast(sloc, AST_Integer, span);
+		}
+	}
+
+	return oboerr(sloc, ERR_InvalidOperand);
+}
+
 //------------------------------------------------------------------------------
 
 typedef char32_t (*to_CType)(char32_t);
@@ -254,6 +296,7 @@ initialise_system_ctype(
 #	define ENUM(Name,...) BUILTIN(#Name, Name)
 		ENUM(is_CharInSet)
 		ENUM(SpanInSet)
+		ENUM(SpanNotInSet)
 		ENUM(to_Uppercase)
 		ENUM(to_Lowercase)
 #	include "system_ctype.enum"
