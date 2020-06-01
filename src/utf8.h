@@ -64,6 +64,12 @@ utf8encode(
 	char32_t cc
 );
 
+extern char const *
+utf8strchr(
+	char const *cs,
+	char32_t    c
+);
+
 //------------------------------------------------------------------------------
 
 #ifdef __cplusplus

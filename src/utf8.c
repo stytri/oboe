@@ -197,3 +197,17 @@ utf8encode(
 	if(endp) *endp = s;
 	return n;
 }
+
+char const *
+utf8strchr(
+	char const *cs,
+	char32_t    c
+) {
+	char const *at = cs;
+
+	for(char32_t cc;
+		*(at = cs) && ~(cc = utf8chr(cs, &cs)) && (cc != c);
+	);
+
+	return *at ? at : NULL;
+}
