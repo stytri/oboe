@@ -2,7 +2,7 @@ unable_to_open(file): ("unable to open ", file)@printerr;
 unable_to_read(file): ("unable to read ", file)@printerr;
 
 catword(s): (
-	n:(@SpanNotInSet(s, "#%/[]{}")),
+	n:(@span_NotInSet(s, "#%/[]{}")),
 	(; n > 1 && s[n-1]@is_Space; n-=1) ?*,
 	(n > 0) ? (s <<< n)@println
 );

@@ -41,11 +41,17 @@ SOFTWARE.
 //------------------------------------------------------------------------------
 
 #define ENUM(Name,...)  static unsigned builtin_##Name##_enum = -1;
-	ENUM(is_CharInSet)
-	ENUM(SpanInSet)
-	ENUM(SpanNotInSet)
 	ENUM(to_Uppercase)
 	ENUM(to_Lowercase)
+#undef ENUM
+#define ENUM(Name,...)  static unsigned builtin_span_##Name##_enum = -1;
+	ENUM(InSet)
+#include "system_ctype.enum"
+#define ENUM(Name,...)  static unsigned builtin_span_Not##Name##_enum = -1;
+	ENUM(InSet)
+#include "system_ctype.enum"
+#define ENUM(Name,...)  static unsigned builtin_is_##Name##_enum = -1;
+	ENUM(CharInSet)
 #include "system_ctype.enum"
 
 //------------------------------------------------------------------------------
@@ -89,12 +95,12 @@ builtin_is_ctype(
 
 #define ENUM(Name,...) \
 static Ast \
-builtin_##Name( \
+builtin_is_##Name( \
 	Ast       env, \
 	sloc_t    sloc, \
 	Ast       arg \
 ) { \
-	return builtin_is_ctype(env, sloc, arg, Name); \
+	return builtin_is_ctype(env, sloc, arg, is_##Name); \
 }
 #include "system_ctype.enum"
 
@@ -142,7 +148,7 @@ builtin_is_CharInSet(
 }
 
 static Ast
-builtin_SpanInSet(
+builtin_span_InSet(
 	Ast       env,
 	sloc_t    sloc,
 	Ast       args
@@ -182,7 +188,47 @@ builtin_SpanInSet(
 }
 
 static Ast
-builtin_SpanNotInSet(
+builtin_span_ctype(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       arg,
+	is_CType  is_ctype
+) {
+	arg = eval(env, arg);
+	if(ast_isString(arg)) {
+
+		uint64_t span = 0;
+
+		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
+		for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
+
+			bool inset = is_ctype(c);
+			if(!inset) {
+				break;
+			}
+
+			span++;
+		}
+
+		return new_ast(sloc, AST_Integer, span);
+	}
+
+	return oboerr(sloc, ERR_InvalidOperand);
+}
+
+#define ENUM(Name,...) \
+static Ast \
+builtin_span_##Name( \
+	Ast       env, \
+	sloc_t    sloc, \
+	Ast       arg \
+) { \
+	return builtin_span_ctype(env, sloc, arg, is_##Name); \
+}
+#include "system_ctype.enum"
+
+static Ast
+builtin_span_NotInSet(
 	Ast       env,
 	sloc_t    sloc,
 	Ast       args
@@ -221,6 +267,46 @@ builtin_SpanNotInSet(
 
 	return oboerr(sloc, ERR_InvalidOperand);
 }
+
+static Ast
+builtin_span_not_ctype(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       arg,
+	is_CType  is_ctype
+) {
+	arg = eval(env, arg);
+	if(ast_isString(arg)) {
+
+		uint64_t span = 0;
+
+		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
+		for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
+
+			bool inset = is_ctype(c);
+			if(inset) {
+				break;
+			}
+
+			span++;
+		}
+
+		return new_ast(sloc, AST_Integer, span);
+	}
+
+	return oboerr(sloc, ERR_InvalidOperand);
+}
+
+#define ENUM(Name,...) \
+static Ast \
+builtin_span_Not##Name( \
+	Ast       env, \
+	sloc_t    sloc, \
+	Ast       arg \
+) { \
+	return builtin_span_not_ctype(env, sloc, arg, is_##Name); \
+}
+#include "system_ctype.enum"
 
 //------------------------------------------------------------------------------
 
@@ -293,13 +379,21 @@ initialise_system_ctype(
 	void
 ) {
 	static struct builtinfn const builtinfn[] = {
-#	define ENUM(Name,...) BUILTIN(#Name, Name)
-		ENUM(is_CharInSet)
-		ENUM(SpanInSet)
-		ENUM(SpanNotInSet)
+#	define STR(X)         #X
+#	define ENUM(Name,...) BUILTIN(STR(Name), Name)
 		ENUM(to_Uppercase)
 		ENUM(to_Lowercase)
+#	undef ENUM
+#	define ENUM(Name,...) BUILTIN(STR(span_##Name), span_##Name)
+		ENUM(InSet)
 #	include "system_ctype.enum"
+#	define ENUM(Name,...) BUILTIN(STR(span_Not##Name), span_Not##Name)
+		ENUM(InSet)
+#	include "system_ctype.enum"
+#	define ENUM(Name,...) BUILTIN(STR(is_##Name), is_##Name)
+		ENUM(CharInSet)
+#	include "system_ctype.enum"
+#	undef STR
 	};
 	static size_t const n_builtinfn = sizeof(builtinfn) / sizeof(builtinfn[0]);
 
