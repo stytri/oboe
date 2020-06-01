@@ -860,7 +860,7 @@ builtin_compare(
 		sense
 	);
 	if(r >= 0) {
-		return new_ast(sloc, AST_Integer, r != 0);
+		return new_ast(sloc, AST_Integer, (uint64_t)(r != 0));
 	}
 
 	return oboerr(sloc, ERR_InvalidOperand);
