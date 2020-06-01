@@ -41,6 +41,7 @@ SOFTWARE.
 //------------------------------------------------------------------------------
 
 #define ENUM(Name,...)  static unsigned builtin_##Name##_enum = -1;
+	ENUM(is_CharInSet)
 	ENUM(to_Uppercase)
 	ENUM(to_Lowercase)
 #include "system_ctype.enum"
@@ -94,6 +95,49 @@ builtin_##Name( \
 	return builtin_is_ctype(env, sloc, arg, Name); \
 }
 #include "system_ctype.enum"
+
+static Ast
+builtin_is_CharInSet(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       args
+) {
+	if(ast_isSequence(args)) {
+		Ast      ast = eval(env, args->m.lexpr);
+		char32_t c   = (char32_t)ast_toInteger(ast);
+
+		for(args = args->m.rexpr; ast_isSequence(args); args = args->m.rexpr) {
+
+			ast = eval(env, args->m.lexpr);
+			if(ast_isString(ast)) {
+				char const *cs = StringToCharLiteral(ast->m.sval, NULL);
+				if(utf8strchr(cs, c) != NULL) {
+					return new_ast(sloc, AST_Integer, UINT64_C(1));
+				}
+			} else {
+				if(c == ast_toInteger(ast)) {
+					return new_ast(sloc, AST_Integer, UINT64_C(1));
+				}
+			}
+		}
+
+		ast = eval(env, args);
+		if(ast_isString(ast)) {
+			char const *cs = StringToCharLiteral(ast->m.sval, NULL);
+			if(utf8strchr(cs, c) != NULL) {
+				return new_ast(sloc, AST_Integer, UINT64_C(1));
+			}
+		} else {
+			if(c == ast_toInteger(ast)) {
+				return new_ast(sloc, AST_Integer, UINT64_C(1));
+			}
+		}
+
+		return new_ast(sloc, AST_Integer, UINT64_C(0));
+	}
+
+	return oboerr(sloc, ERR_InvalidOperand);
+}
 
 //------------------------------------------------------------------------------
 
@@ -167,6 +211,7 @@ initialise_system_ctype(
 ) {
 	static struct builtinfn const builtinfn[] = {
 #	define ENUM(Name,...) BUILTIN(#Name, Name)
+		ENUM(is_CharInSet)
 		ENUM(to_Uppercase)
 		ENUM(to_Lowercase)
 #	include "system_ctype.enum"
