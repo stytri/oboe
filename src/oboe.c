@@ -512,7 +512,7 @@ process(
 				prefix = "pico";
 			}
 		}
-		printf("\nexecution time: %g %s%s\n", tx, prefix, units);
+		errorf("\nexecution time: %g %s%s\n", tx, prefix, units);
 	}
 
 	return EXIT_SUCCESS;
