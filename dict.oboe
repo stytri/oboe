@@ -16,13 +16,12 @@ catword(s): (
 	(n > 0) ? (s <<< n)@println
 );
 
-catfile(file): (
+catfile(file, verbose): (
 	f:file@open,
 
 	f@is_File ? (
 		s:f@fgetln,
-		N::s@to_Integer,
-		(file, " [", N, "]")@printerr,
+		verbose ? (file, " [", s@to_Integer, "]")@printerr,
 
 		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
 			c::s[0],
@@ -39,12 +38,12 @@ catfile(file): (
 	)
 );
 
-catfiles(file): (
+catfiles(file, verbose): (
 	f:file@open,
 
 	f@is_File ? (
 		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
-			catfile(s)
+			catfile(s, verbose)
 		),
 
 		f@ferror ? unable_to_read file,
@@ -55,14 +54,33 @@ catfiles(file): (
 	)
 );
 
+help::"
+dict [options] FILE...
+options:
+	-h, --help           display this help
+	-v, --verbose        display file name
+
+Where FILE is the name of the file to be processed. More than one file may be
+given; each file will be processed in turn.
+
+If FILE is prefixed with @, then it provides a list of files to be processed,
+with one file per line.
+";
+
 main(argc, argv) : (
+	verbose:0,
+
 	(i:1; i < argc; i+=1) ?* (
 		args:argv[i],
 
-		?: (
-		(args[0] == `@`): catfiles(args << 1, verbose);
-		catfile(args, verbose)
-		)
+		args ?: (
+		"-h": "--help": help@printerr;
+		"-v": "--verbose": verbose = 1;
+		(args[0] == `@`) ? (
+			catfiles(args << 1, verbose)
+		;
+			catfile(args, verbose)
+		))
 	)
 );
 
