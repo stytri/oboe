@@ -380,7 +380,7 @@ builtin_is_File(
 ) {
 	arg = dereference(env, arg);
 	uint64_t is = ast_isFileReferenceType(arg) || ast_isFileType(arg);
-	return new_ast(sloc, AST_Integer, is);
+	return new_ast(sloc, AST_Boolean, is);
 	(void)env;
 }
 
@@ -392,7 +392,7 @@ builtin_is_Fpos(
 ) {
 	arg = dereference(env, arg);
 	uint64_t is = ast_isFilePositionType(arg);
-	return new_ast(sloc, AST_Integer, is);
+	return new_ast(sloc, AST_Boolean, is);
 	(void)env;
 }
 
@@ -530,7 +530,7 @@ builtin_ferror(
 	arg = eval_file(env, arg);
 	if(ast_isFileType(arg) && (arg->m.lptr != NULL)) {
 		uint64_t is_error = ferror(arg->m.lptr);
-		return new_ast(sloc, AST_Integer, is_error);
+		return new_ast(sloc, AST_Boolean, is_error);
 	}
 
 	return error_or(sloc, arg, ERR_InvalidOperand);
@@ -560,7 +560,7 @@ builtin_eof(
 	arg = eval_file(env, arg);
 	if(ast_isFileType(arg) && (arg->m.lptr != NULL)) {
 		uint64_t is_eof = feof(arg->m.lptr);
-		return new_ast(sloc, AST_Integer, is_eof);
+		return new_ast(sloc, AST_Boolean, is_eof);
 	}
 
 	return error_or(sloc, arg, ERR_InvalidOperand);
@@ -587,6 +587,7 @@ builtin_wr_u_1(
 	switch(arg->type) {
 		union btypes bval;
 	case AST_Zen:
+	case AST_Boolean:
 	case AST_Integer:
 	case AST_Character:
 		switch(bits) {
@@ -631,6 +632,7 @@ builtin_wr_f_1(
 	switch(arg->type) {
 		union btypes bval;
 	case AST_Zen:
+	case AST_Boolean:
 	case AST_Integer:
 	case AST_Character:
 		switch(bits) {
@@ -675,6 +677,7 @@ builtin_wr_s_1(
 		size_t      len;
 		char const *cs;
 	case AST_Zen:
+	case AST_Boolean:
 	case AST_Integer:
 	case AST_Character:
 	case AST_Float:

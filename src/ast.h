@@ -130,7 +130,8 @@ static inline bool
 ast_isNumeric(
 	Ast ast
 ) {
-	return ast && ((ast->type == AST_Integer) || (ast->type == AST_Float));
+	return ast
+		&& ((ast->type == AST_Boolean) || (ast->type == AST_Integer) || (ast->type == AST_Float));
 }
 
 static inline bool
@@ -138,19 +139,6 @@ ast_isDeferred(
 	Ast ast
 ) {
 	return ast && ((ast->type == AST_Reference) || (ast->type == AST_Quoted));
-}
-
-static inline bool
-ast_isLiteral(
-	Ast ast
-) {
-	return ast && (
-		   (ast->type == AST_Zen)
-		|| (ast->type == AST_Integer)
-		|| (ast->type == AST_Float)
-		|| (ast->type == AST_Character)
-		|| (ast->type == AST_String)
-	);
 }
 
 #define ENUM(Name) \
@@ -166,7 +154,8 @@ static inline bool
 ast_isnotNumeric(
 	Ast ast
 ) {
-	return ast && ((ast->type != AST_Integer) && (ast->type != AST_Float));
+	return ast
+		&& ((ast->type != AST_Boolean) && (ast->type != AST_Integer) && (ast->type != AST_Float));
 }
 
 static inline bool
@@ -174,19 +163,6 @@ ast_isnotDeferred(
 	Ast ast
 ) {
 	return ast && ((ast->type != AST_Reference) && (ast->type != AST_Quoted));
-}
-
-static inline bool
-ast_isnotLiteral(
-	Ast ast
-) {
-	return ast
-		&& (ast->type != AST_Zen)
-		&& (ast->type != AST_Integer)
-		&& (ast->type != AST_Float)
-		&& (ast->type != AST_Character)
-		&& (ast->type != AST_String)
-	;
 }
 
 static inline bool

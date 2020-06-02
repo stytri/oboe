@@ -328,6 +328,7 @@ ast_toInteger(
 	Ast ast
 ) {
 	switch(ast_type(ast)) {
+	case AST_Boolean:
 	case AST_Integer:
 	case AST_Character:
 		return ast->m.ival;
@@ -347,6 +348,7 @@ ast_toFloat(
 	Ast ast
 ) {
 	switch(ast_type(ast)) {
+	case AST_Boolean:
 	case AST_Integer:
 	case AST_Character:
 		return (double)ast->m.ival;
@@ -366,6 +368,7 @@ ast_toBool(
 	Ast ast
 ) {
 	switch(ast_type(ast)) {
+	case AST_Boolean:
 	case AST_Integer:
 	case AST_Character:
 		return ast->m.ival != 0;
@@ -392,19 +395,29 @@ are_equal(
 	Ast rexpr
 ) {
 	switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
-	case TYPE(AST_Integer, AST_Integer):
-	case TYPE(AST_Integer, AST_Character):
+	case TYPE(AST_Boolean  , AST_Boolean):
+	case TYPE(AST_Boolean  , AST_Integer):
+	case TYPE(AST_Boolean  , AST_Character):
+	case TYPE(AST_Integer  , AST_Boolean):
+	case TYPE(AST_Integer  , AST_Integer):
+	case TYPE(AST_Integer  , AST_Character):
+	case TYPE(AST_Character, AST_Boolean):
 	case TYPE(AST_Character, AST_Integer):
 	case TYPE(AST_Character, AST_Character):
 		return (lexpr->m.ival == rexpr->m.ival);
-	case TYPE(AST_Integer, AST_Float):
+	case TYPE(AST_Boolean  , AST_Float):
+	case TYPE(AST_Integer  , AST_Float):
+	case TYPE(AST_Character, AST_Float):
 		return float_equal((double)lexpr->m.ival, rexpr->m.fval);
+	case TYPE(AST_Float, AST_Boolean):
 	case TYPE(AST_Float, AST_Integer):
+	case TYPE(AST_Float, AST_Character):
 		return float_equal(lexpr->m.fval, (double)rexpr->m.ival);
 	case TYPE(AST_Float, AST_Float):
 		return float_equal(lexpr->m.fval, rexpr->m.fval);
 	case TYPE(AST_String, AST_String):
 		return StringEqual(lexpr->m.sval, rexpr->m.sval);
+	case TYPE(AST_Boolean, AST_Zen):
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
 		return (lexpr->m.ival == 0);
@@ -412,6 +425,7 @@ are_equal(
 		return float_equal(lexpr->m.fval, 0.0);
 	case TYPE(AST_String, AST_Zen):
 		return StringEqual(lexpr->m.sval, NullString());
+	case TYPE(AST_Zen, AST_Boolean):
 	case TYPE(AST_Zen, AST_Integer):
 	case TYPE(AST_Zen, AST_Character):
 		return (0 == rexpr->m.ival);
@@ -426,6 +440,23 @@ are_equal(
 	}
 }
 
+static Ast
+invalid_operand(
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	if(ast_isError(lexpr)) {
+		return lexpr;
+	}
+
+	if(ast_isError(rexpr)) {
+		return rexpr;
+	}
+
+	return oboerr(sloc, ERR_InvalidOperand);
+}
+
 //------------------------------------------------------------------------------
 
 static Ast
@@ -438,7 +469,7 @@ builtin_if_1(
 ) {
 	if(ast_isZen(lexpr) || ast_isZen(rexpr)) {
 		uint64_t cond = ast_toBool(eval(env, ast_isnotZen(lexpr) ? lexpr : rexpr)) ^ inverted;
-		return new_ast(sloc, AST_Integer, cond);
+		return new_ast(sloc, AST_Boolean, cond);
 	}
 
 	for(lexpr = undefer(env, lexpr);
@@ -703,7 +734,7 @@ builtin_land(
 		result = ast_toBool(rexpr);
 	}
 
-	return new_ast(sloc, AST_Integer, result);
+	return new_ast(sloc, AST_Boolean, result);
 }
 
 static Ast
@@ -722,7 +753,7 @@ builtin_lor(
 		result = ast_toBool(rexpr);
 	}
 
-	return new_ast(sloc, AST_Integer, result);
+	return new_ast(sloc, AST_Boolean, result);
 }
 
 //------------------------------------------------------------------------------
@@ -809,19 +840,29 @@ compare_delegate(
 		}
 
 	} else switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
-	case TYPE(AST_Integer, AST_Integer):
-	case TYPE(AST_Integer, AST_Character):
+	case TYPE(AST_Boolean  , AST_Boolean):
+	case TYPE(AST_Boolean  , AST_Integer):
+	case TYPE(AST_Boolean  , AST_Character):
+	case TYPE(AST_Integer  , AST_Boolean):
+	case TYPE(AST_Integer  , AST_Integer):
+	case TYPE(AST_Integer  , AST_Character):
+	case TYPE(AST_Character, AST_Boolean):
 	case TYPE(AST_Character, AST_Integer):
 	case TYPE(AST_Character, AST_Character):
 		return integercmp(lexpr->m.ival, rexpr->m.ival);
+	case TYPE(AST_Boolean, AST_Float):
 	case TYPE(AST_Integer, AST_Float):
+	case TYPE(AST_Character, AST_Float):
 		return floatcmp((double)lexpr->m.ival, rexpr->m.fval);
+	case TYPE(AST_Float, AST_Boolean):
 	case TYPE(AST_Float, AST_Integer):
+	case TYPE(AST_Float, AST_Character):
 		return floatcmp(lexpr->m.fval, (double)rexpr->m.ival);
 	case TYPE(AST_Float, AST_Float):
 		return floatcmp(lexpr->m.fval, rexpr->m.fval);
 	case TYPE(AST_String, AST_String):
 		return stringcmp(lexpr->m.sval, rexpr->m.sval);
+	case TYPE(AST_Boolean, AST_Zen):
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
 		return integercmp(lexpr->m.ival, 0);
@@ -829,6 +870,7 @@ compare_delegate(
 		return floatcmp(lexpr->m.fval, 0.0);
 	case TYPE(AST_String, AST_Zen):
 		return stringcmp(lexpr->m.sval, NullString());
+	case TYPE(AST_Zen, AST_Boolean):
 	case TYPE(AST_Zen, AST_Integer):
 	case TYPE(AST_Zen, AST_Character):
 		return integercmp(0, rexpr->m.ival);
@@ -860,7 +902,7 @@ builtin_compare(
 		sense
 	);
 	if(r >= 0) {
-		return new_ast(sloc, AST_Integer, (uint64_t)(r != 0));
+		return new_ast(sloc, AST_Boolean, (uint64_t)(r != 0));
 	}
 
 	return oboerr(sloc, ERR_InvalidOperand);
@@ -919,43 +961,40 @@ builtin_bitwise(
 	rexpr = eval(env, rexpr);
 
 	switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
-	case TYPE(AST_Integer, AST_Integer):
-	case TYPE(AST_Integer, AST_Character):
+	case TYPE(AST_Boolean  , AST_Boolean):
+	case TYPE(AST_Boolean  , AST_Integer):
+	case TYPE(AST_Boolean  , AST_Character):
+	case TYPE(AST_Integer  , AST_Boolean):
+	case TYPE(AST_Integer  , AST_Integer):
+	case TYPE(AST_Integer  , AST_Character):
+	case TYPE(AST_Character, AST_Boolean):
 	case TYPE(AST_Character, AST_Integer):
 	case TYPE(AST_Character, AST_Character):
 		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, rexpr->m.ival));
+	case TYPE(AST_Boolean, AST_Float):
 	case TYPE(AST_Integer, AST_Float):
+	case TYPE(AST_Character, AST_Float):
 		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, double_to_uint64_t(rexpr->m.fval)));
+	case TYPE(AST_Float, AST_Boolean):
 	case TYPE(AST_Float, AST_Integer):
+	case TYPE(AST_Float, AST_Character):
 		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), rexpr->m.ival));
 	case TYPE(AST_Float, AST_Float):
 		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), double_to_uint64_t(rexpr->m.fval)));
+	case TYPE(AST_Boolean, AST_Zen):
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
 		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, 0));
 	case TYPE(AST_Float, AST_Zen):
 		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), 0));
+	case TYPE(AST_Zen, AST_Boolean):
 	case TYPE(AST_Zen, AST_Integer):
 	case TYPE(AST_Zen, AST_Character):
 		return new_ast(sloc, AST_Integer, integerop(0, rexpr->m.ival));
 	case TYPE(AST_Zen, AST_Float):
 		return new_ast(sloc, AST_Integer, integerop(0, double_to_uint64_t(rexpr->m.fval)));
 	default:
-		switch(ast_type(lexpr)) {
-		case AST_Error:
-			return lexpr;
-		case AST_Zen: case AST_Integer: case AST_Character: case AST_Float:
-			switch(ast_type(rexpr)) {
-			case AST_Error:
-				return rexpr;
-			case AST_Zen: case AST_Integer: case AST_Character: case AST_Float:
-				return oboerr(sloc, ERR_InvalidOperand);
-			default:
-				return oboerr(rexpr->sloc, ERR_InvalidOperand);
-			}
-		default:
-			return oboerr(lexpr->sloc, ERR_InvalidOperand);
-		}
+		return invalid_operand(sloc, lexpr, rexpr);
 	}
 }
 #define BUILTIN_BITWISE(Name) \
@@ -992,43 +1031,40 @@ builtin_arithmetic(
 	rexpr = eval(env, rexpr);
 
 	switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
-	case TYPE(AST_Integer, AST_Integer):
-	case TYPE(AST_Integer, AST_Character):
+	case TYPE(AST_Boolean  , AST_Boolean):
+	case TYPE(AST_Boolean  , AST_Integer):
+	case TYPE(AST_Boolean  , AST_Character):
+	case TYPE(AST_Integer  , AST_Boolean):
+	case TYPE(AST_Integer  , AST_Integer):
+	case TYPE(AST_Integer  , AST_Character):
+	case TYPE(AST_Character, AST_Boolean):
 	case TYPE(AST_Character, AST_Integer):
 	case TYPE(AST_Character, AST_Character):
 		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, rexpr->m.ival));
+	case TYPE(AST_Boolean, AST_Float):
 	case TYPE(AST_Integer, AST_Float):
+	case TYPE(AST_Character, AST_Float):
 		return new_ast(sloc, AST_Float, floatop((double)lexpr->m.ival, rexpr->m.fval));
+	case TYPE(AST_Float, AST_Boolean):
 	case TYPE(AST_Float, AST_Integer):
+	case TYPE(AST_Float, AST_Character):
 		return new_ast(sloc, AST_Float, floatop(lexpr->m.fval, (double)rexpr->m.ival));
 	case TYPE(AST_Float, AST_Float):
 		return new_ast(sloc, AST_Float, floatop(lexpr->m.fval, rexpr->m.fval));
+	case TYPE(AST_Boolean, AST_Zen):
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
 		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, 0));
 	case TYPE(AST_Float, AST_Zen):
 		return new_ast(sloc, AST_Float, floatop(lexpr->m.fval, 0.0));
+	case TYPE(AST_Zen, AST_Boolean):
 	case TYPE(AST_Zen, AST_Integer):
 	case TYPE(AST_Zen, AST_Character):
 		return new_ast(sloc, AST_Integer, integerop(0, rexpr->m.ival));
 	case TYPE(AST_Zen, AST_Float):
 		return new_ast(sloc, AST_Float, floatop(0.0, rexpr->m.fval));
 	default:
-		switch(ast_type(lexpr)) {
-		case AST_Error:
-			return lexpr;
-		case AST_Zen: case AST_Integer: case AST_Character: case AST_Float:
-			switch(ast_type(rexpr)) {
-			case AST_Error:
-				return rexpr;
-			case AST_Zen: case AST_Integer: case AST_Character: case AST_Float:
-				return oboerr(sloc, ERR_InvalidOperand);
-			default:
-				return oboerr(rexpr->sloc, ERR_InvalidOperand);
-			}
-		default:
-			return oboerr(lexpr->sloc, ERR_InvalidOperand);
-		}
+		return invalid_operand(sloc, lexpr, rexpr);
 	}
 }
 #define BUILTIN_ARITHMETIC(Name) \
@@ -1076,25 +1112,39 @@ builtin_bitmove(
 	rexpr = eval(env, rexpr);
 
 	switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
-	case TYPE(AST_Integer, AST_Integer):
-	case TYPE(AST_Integer, AST_Character):
+	case TYPE(AST_Boolean  , AST_Boolean):
+	case TYPE(AST_Boolean  , AST_Integer):
+	case TYPE(AST_Boolean  , AST_Character):
+	case TYPE(AST_Integer  , AST_Boolean):
+	case TYPE(AST_Integer  , AST_Integer):
+	case TYPE(AST_Integer  , AST_Character):
+	case TYPE(AST_Character, AST_Boolean):
 	case TYPE(AST_Character, AST_Integer):
 	case TYPE(AST_Character, AST_Character):
 		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, rexpr->m.ival));
+	case TYPE(AST_Boolean, AST_Float):
 	case TYPE(AST_Integer, AST_Float):
+	case TYPE(AST_Character, AST_Float):
 		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, (uint64_t)rexpr->m.fval));
+	case TYPE(AST_Float, AST_Boolean):
 	case TYPE(AST_Float, AST_Integer):
+	case TYPE(AST_Float, AST_Character):
 		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), rexpr->m.ival));
 	case TYPE(AST_Float, AST_Float):
 		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), (uint64_t)rexpr->m.fval));
+	case TYPE(AST_String, AST_Boolean):
 	case TYPE(AST_String, AST_Integer):
+	case TYPE(AST_String, AST_Character):
 		return new_ast(sloc, AST_String , stringop(lexpr->m.sval, rexpr->m.ival));
 	case TYPE(AST_String, AST_Float):
 		return new_ast(sloc, AST_String , stringop(lexpr->m.sval, (uint64_t)rexpr->m.fval));
+	case TYPE(AST_Environment, AST_Boolean):
 	case TYPE(AST_Environment, AST_Integer):
+	case TYPE(AST_Environment, AST_Character):
 		return new_ast(sloc, AST_Environment, arrayop(lexpr->m.env, rexpr->m.ival), ZEN);
 	case TYPE(AST_Environment, AST_Float):
 		return new_ast(sloc, AST_Environment, arrayop(lexpr->m.env, (uint64_t)rexpr->m.fval), ZEN);
+	case TYPE(AST_Boolean, AST_Zen):
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
 		return new_ast(sloc, AST_Integer, integerop(lexpr->m.ival, 0));
@@ -1102,27 +1152,14 @@ builtin_bitmove(
 		return new_ast(sloc, AST_Integer, integerop(double_to_uint64_t(lexpr->m.fval), 0));
 	case TYPE(AST_String, AST_Zen):
 		return new_ast(sloc, AST_String , stringop(lexpr->m.sval, 0));
+	case TYPE(AST_Zen, AST_Boolean):
 	case TYPE(AST_Zen, AST_Integer):
 	case TYPE(AST_Zen, AST_Character):
 		return new_ast(sloc, AST_Integer, integerop(0, rexpr->m.ival));
 	case TYPE(AST_Zen, AST_Float):
 		return new_ast(sloc, AST_Integer, integerop(0, (uint64_t)rexpr->m.fval));
 	default:
-		switch(ast_type(lexpr)) {
-		case AST_Error:
-			return lexpr;
-		case AST_Zen: case AST_Integer: case AST_Float: case AST_String:
-			switch(ast_type(rexpr)) {
-			case AST_Error:
-				return rexpr;
-			case AST_Zen: case AST_Integer: case AST_Float:
-				return oboerr(sloc, ERR_InvalidOperand);
-			default:
-				return oboerr(rexpr->sloc, ERR_InvalidOperand);
-			}
-		default:
-			return oboerr(lexpr->sloc, ERR_InvalidOperand);
-		}
+		return invalid_operand(sloc, lexpr, rexpr);
 	}
 }
 #define BUILTIN_BITMOVE(Name) \
@@ -1309,16 +1346,16 @@ builtin_math1(
 	arg = eval(env, arg);
 
 	switch(ast_type(arg)) {
+	case AST_Boolean:
 	case AST_Integer:
+	case AST_Character:
 		return new_ast(sloc, AST_Float, floatfn((double)arg->m.ival));
 	case AST_Float:
 		return new_ast(sloc, AST_Float, floatfn(arg->m.fval));
-	case AST_Zen:
-		return oboerr(sloc, ERR_InvalidOperand);
 	case AST_Error:
 		return arg;
 	default:
-		return oboerr(arg->sloc, ERR_InvalidOperand);
+		return oboerr(sloc, ERR_InvalidOperand);
 	}
 }
 
@@ -1334,29 +1371,28 @@ builtin_math2(
 		Ast rexpr = eval(env, arg->m.rexpr);
 
 		switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
-		case TYPE(AST_Integer, AST_Integer):
+		case TYPE(AST_Boolean  , AST_Boolean):
+		case TYPE(AST_Boolean  , AST_Integer):
+		case TYPE(AST_Boolean  , AST_Character):
+		case TYPE(AST_Integer  , AST_Boolean):
+		case TYPE(AST_Integer  , AST_Integer):
+		case TYPE(AST_Integer  , AST_Character):
+		case TYPE(AST_Character, AST_Boolean):
+		case TYPE(AST_Character, AST_Integer):
+		case TYPE(AST_Character, AST_Character):
 			return new_ast(sloc, AST_Float, floatop((double)lexpr->m.ival, (double)rexpr->m.ival));
+		case TYPE(AST_Boolean, AST_Float):
 		case TYPE(AST_Integer, AST_Float):
+		case TYPE(AST_Character, AST_Float):
 			return new_ast(sloc, AST_Float, floatop((double)lexpr->m.ival, rexpr->m.fval));
+		case TYPE(AST_Float, AST_Boolean):
 		case TYPE(AST_Float, AST_Integer):
+		case TYPE(AST_Float, AST_Character):
 			return new_ast(sloc, AST_Float, floatop(lexpr->m.fval, (double)rexpr->m.ival));
 		case TYPE(AST_Float, AST_Float):
 			return new_ast(sloc, AST_Float, floatop(lexpr->m.fval, rexpr->m.fval));
-		default: switch(ast_type(lexpr)) {
-		case AST_Error:
-			return lexpr;
-		case AST_Zen: case AST_Integer: case AST_Float:
-			switch(ast_type(rexpr)) {
-			case AST_Error:
-				return rexpr;
-			case AST_Zen: case AST_Integer: case AST_Float:
-				return oboerr(sloc, ERR_InvalidOperand);
-			default:
-				return oboerr(rexpr->sloc, ERR_InvalidOperand);
-			}
 		default:
-			return oboerr(lexpr->sloc, ERR_InvalidOperand);
-		}
+			return invalid_operand(sloc, lexpr, rexpr);
 		}
 	}
 
@@ -1725,6 +1761,7 @@ builtin_assign_by(
 		lexpr     = eval(env, lexpr->m.lexpr);
 
 		switch(TYPE(ast_type(lexpr), ast_type(iexpr))) {
+		case TYPE(AST_Environment, AST_Boolean):
 		case TYPE(AST_Environment, AST_Integer):
 		case TYPE(AST_Environment, AST_Character):
 			if(ast_isAssignable(lexpr)) {
@@ -1859,6 +1896,7 @@ builtin_exchange_evaluate(
 		ast       = eval(env, ast->m.lexpr);
 
 		switch(TYPE(ast_type(ast), ast_type(iexpr))) {
+		case TYPE(AST_Environment, AST_Boolean):
 		case TYPE(AST_Environment, AST_Integer):
 		case TYPE(AST_Environment, AST_Character):
 			if(ast_isAssignable(ast)) {
@@ -1950,6 +1988,7 @@ builtin_array(
 		rexpr = eval(env, rexpr);
 
 		switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
+		case TYPE(AST_Environment, AST_Boolean):
 		case TYPE(AST_Environment, AST_Integer):
 		case TYPE(AST_Environment, AST_Character): {
 				size_t const index = rexpr->m.ival;
@@ -1964,6 +2003,7 @@ builtin_array(
 			rexpr = inenv(lexpr, rexpr);
 			rexpr->attr |= lexpr->attr & ATTR_NoAssign;
 			return rexpr;
+		case TYPE(AST_String, AST_Boolean):
 		case TYPE(AST_String, AST_Integer):
 		case TYPE(AST_String, AST_Character): {
 				char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
@@ -2012,6 +2052,7 @@ builtin_applicate(
 	case AST_Zen:
 		(void)eval(env, rexpr);
 		return ZEN;
+	case AST_Boolean:
 	case AST_Integer:
 		rexpr = eval(env, rexpr);
 		switch(ast_type(rexpr)) {
@@ -2038,6 +2079,16 @@ builtin_applicate(
 	case AST_Float:
 		rexpr = eval(env, rexpr);
 		switch(ast_type(rexpr)) {
+		case AST_Character: {
+				String s = RepeatedCharToString(rexpr->m.ival, (uint64_t)lexpr->m.fval);
+				assert(s != NULL);
+				return new_ast(sloc, AST_String, s);
+			}
+		case AST_String: {
+				String s = RepeatedString(rexpr->m.sval, (uint64_t)lexpr->m.fval);
+				assert(s != NULL);
+				return new_ast(sloc, AST_String, s);
+			}
 		case AST_Function: {
 				Ast locals = new_env(sloc, env);
 				addenv_args(locals, env, sloc, rexpr->m.lexpr, lexpr);
@@ -2069,8 +2120,14 @@ builtin_applicate(
 	case AST_Character:
 		rexpr = eval(env, rexpr);
 		switch(ast_type(rexpr)) {
+		case AST_Boolean:
 		case AST_Integer: {
 				String s = RepeatedCharToString(lexpr->m.ival, rexpr->m.ival);
+				assert(s != NULL);
+				return new_ast(sloc, AST_String, s);
+			}
+		case AST_Float: {
+				String s = RepeatedCharToString(lexpr->m.ival, (uint64_t)rexpr->m.fval);
 				assert(s != NULL);
 				return new_ast(sloc, AST_String, s);
 			}
@@ -2092,8 +2149,14 @@ builtin_applicate(
 		if(ast_isnotArray(rexpr)) {
 			rexpr = eval(env, rexpr);
 			switch(ast_type(rexpr)) {
+			case AST_Boolean:
 			case AST_Integer: {
 					String s = RepeatedString(lexpr->m.sval, rexpr->m.ival);
+					assert(s != NULL);
+					return new_ast(sloc, AST_String, s);
+				}
+			case AST_Float: {
+					String s = RepeatedString(lexpr->m.sval, (uint64_t)rexpr->m.fval);
 					assert(s != NULL);
 					return new_ast(sloc, AST_String, s);
 				}

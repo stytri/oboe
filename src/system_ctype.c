@@ -69,9 +69,10 @@ builtin_is_ctype(
 
 	switch(arg->type) {
 	case AST_Zen:
+	case AST_Boolean:
 	case AST_Integer:
 	case AST_Character:
-		return new_ast(sloc, AST_Integer, (uint64_t)is_ctype((char32_t)arg->m.ival));
+		return new_ast(sloc, AST_Boolean, (uint64_t)is_ctype((char32_t)arg->m.ival));
 	case AST_String: {
 		int         res = 1;
 		size_t      len;
@@ -81,7 +82,7 @@ builtin_is_ctype(
 			res = is_ctype(c);
 		} while(res && *cs)
 			;
-		return new_ast(sloc, AST_Integer, (uint64_t)res);
+		return new_ast(sloc, AST_Boolean, (uint64_t)res);
 	}
 	default:
 		switch(ast_type(arg)) {
@@ -120,11 +121,11 @@ builtin_is_CharInSet(
 			if(ast_isString(ast)) {
 				char const *cs = StringToCharLiteral(ast->m.sval, NULL);
 				if(utf8strchr(cs, c) != NULL) {
-					return new_ast(sloc, AST_Integer, UINT64_C(1));
+					return new_ast(sloc, AST_Boolean, UINT64_C(1));
 				}
 			} else {
 				if(c == ast_toInteger(ast)) {
-					return new_ast(sloc, AST_Integer, UINT64_C(1));
+					return new_ast(sloc, AST_Boolean, UINT64_C(1));
 				}
 			}
 		}
@@ -133,15 +134,15 @@ builtin_is_CharInSet(
 		if(ast_isString(ast)) {
 			char const *cs = StringToCharLiteral(ast->m.sval, NULL);
 			if(utf8strchr(cs, c) != NULL) {
-				return new_ast(sloc, AST_Integer, UINT64_C(1));
+				return new_ast(sloc, AST_Boolean, UINT64_C(1));
 			}
 		} else {
 			if(c == ast_toInteger(ast)) {
-				return new_ast(sloc, AST_Integer, UINT64_C(1));
+				return new_ast(sloc, AST_Boolean, UINT64_C(1));
 			}
 		}
 
-		return new_ast(sloc, AST_Integer, UINT64_C(0));
+		return new_ast(sloc, AST_Boolean, UINT64_C(0));
 	}
 
 	return oboerr(sloc, ERR_InvalidOperand);
@@ -323,6 +324,7 @@ builtin_convert_ctype(
 
 	switch(arg->type) {
 	case AST_Zen:
+	case AST_Boolean:
 	case AST_Integer:
 	case AST_Character:
 		return new_ast(sloc, AST_Character, (int)to_ctype((char32_t)arg->m.ival));

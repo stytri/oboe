@@ -234,7 +234,7 @@ builtin_is_##Name( \
 ) { \
 	arg = dereference(env, arg); \
 	uint64_t is = ast_is##Name(arg); \
-	return new_ast(sloc, AST_Integer, is); \
+	return new_ast(sloc, AST_Boolean, is); \
 }
 ENUM(Tag)
 ENUM(TagRef)
@@ -252,7 +252,7 @@ builtin_is_Identifier(
 	Ast    arg
 ) {
 	uint64_t is = ast_isIdentifier(arg);
-	return new_ast(sloc, AST_Integer, is);
+	return new_ast(sloc, AST_Boolean, is);
 	(void)env;
 }
 
@@ -346,6 +346,7 @@ builtin_to_Character(
 	switch(ast_type(arg)) {
 	case AST_Zen:
 		return new_ast(sloc, AST_Character, (int)'\0');
+	case AST_Boolean:
 	case AST_Integer:
 		return new_ast(sloc, AST_Character, (int)arg->m.ival);
 	case AST_Character:
@@ -371,6 +372,7 @@ builtin_to_Integer(
 		return new_ast(sloc, AST_Integer, (uint64_t)0);
 	case AST_Integer:
 		return arg;
+	case AST_Boolean:
 	case AST_Character:
 		return new_ast(sloc, AST_Integer, arg->m.ival);
 	case AST_Float:
@@ -399,6 +401,7 @@ builtin_to_Float(
 	switch(ast_type(arg)) {
 	case AST_Zen:
 		return new_ast(sloc, AST_Float, (double)0);
+	case AST_Boolean:
 	case AST_Integer:
 	case AST_Character:
 		return new_ast(sloc, AST_Float, (double)arg->m.ival);
@@ -469,6 +472,7 @@ builtin_assert(
 
 		eof = eval(env, eof);
 		switch(ast_type(eof)) {
+		case AST_Boolean:
 		case AST_Integer:
 			cond = eof->m.ival != 0;
 			break;
@@ -967,6 +971,7 @@ builtin_exit(
 		switch(ast_type(arg)) {
 		case AST_Zen:
 			break;
+		case AST_Boolean:
 		case AST_Integer:
 			exit((int)arg->m.ival);
 		default:
