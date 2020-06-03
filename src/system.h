@@ -49,6 +49,11 @@ initialise_system_ctype(
 	void
 );
 
+extern int
+initialise_system_bits(
+	void
+);
+
 //------------------------------------------------------------------------------
 
 extern Ast

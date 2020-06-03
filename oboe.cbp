@@ -133,6 +133,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/system.h" />
+		<Unit filename="src/system_bits.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/system_ctype.c">
 			<Option compilerVar="CC" />
 		</Unit>

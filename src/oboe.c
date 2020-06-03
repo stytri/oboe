@@ -114,6 +114,7 @@ initialise(
 	initialise_system_environment();
 	initialise_system_stdio();
 	initialise_system_ctype();
+	initialise_system_bits();
 
 	if(list_builtins) {
 		array_foreach(operators->m.env         , print_entry, operators);

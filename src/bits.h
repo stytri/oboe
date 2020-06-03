@@ -112,6 +112,141 @@ bitmaskz(
 #endif
 }
 
+static inline int
+lzcount64(
+	uint64_t x
+) {
+	int n = 64;
+
+	if(x >= (UINT64_C(1) << 32)) {
+		x >>= 32;
+		n -= 32;
+	}
+	if(x >= (UINT64_C(1) << 16)) {
+		x >>= 16;
+		n -= 16;
+	}
+	if(x >= (UINT64_C(1) << 8)) {
+		x >>= 8;
+		n -= 8;
+	}
+	if(x >= (UINT64_C(1) << 4)) {
+		x >>= 4;
+		n -= 4;
+	}
+	x *= 4;
+	x  = UINT64_C(0x4444444433332210) >> x;
+	x &= 0xf;
+	n -= x;
+
+	return n;
+}
+
+static inline int
+lzcount32(
+	uint32_t x
+) {
+	int n = 32;
+
+	if(x >= (UINT32_C(1) << 16)) {
+		x >>= 16;
+		n -= 16;
+	}
+	if(x >= (UINT32_C(1) << 8)) {
+		x >>= 8;
+		n -= 8;
+	}
+	if(x >= (UINT32_C(1) << 4)) {
+		x >>= 4;
+		n -= 4;
+	}
+	x *= 4;
+	x  = UINT64_C(0x4444444433332210) >> x;
+	x &= 0xf;
+	n -= x;
+
+	return n;
+}
+
+static inline size_t
+lzcountz(
+	size_t x
+) {
+#if SIZE_MAX > UINT32_MAX
+	return lzcount64(x);
+#else
+	return lzcount32(x);
+#endif
+}
+
+static inline int
+msbit64(
+	uint64_t x
+) {
+#	define MSBIT_SHIFT(V,N)  (((V) > (((uint64_t)1 << (1 << (N))) - 1)) << (N))
+
+	int      n, shift;
+	uint64_t v;
+
+	n     = MSBIT_SHIFT(x,5);
+	v     = x >> n;
+	shift = MSBIT_SHIFT(v,4);
+	v   >>= shift;
+	n    |= shift;
+	shift = MSBIT_SHIFT(v,3);
+	v   >>= shift;
+	n    |= shift;
+	shift = MSBIT_SHIFT(v,2);
+	v   >>= shift;
+	n    |= shift;
+	shift = MSBIT_SHIFT(v,1);
+	v   >>= shift;
+	n    |= shift;
+	n    |= (v >> 1);
+
+	return n + (x > 0);
+
+#	undef MSBIT_SHIFT
+}
+
+static inline int
+msbit32(
+	uint32_t x
+) {
+#	define MSBIT_SHIFT(V,N)  (((V) > (((uint32_t)1 << (1 << (N))) - 1)) << (N))
+
+	int      n, shift;
+	uint32_t v;
+
+	n     = MSBIT_SHIFT(x,4);
+	v     = x >> n;
+	shift = MSBIT_SHIFT(v,3);
+	v   >>= shift;
+	n    |= shift;
+	shift = MSBIT_SHIFT(v,2);
+	v   >>= shift;
+	n    |= shift;
+	shift = MSBIT_SHIFT(v,1);
+	v   >>= shift;
+	n    |= shift;
+	n    |= (v >> 1);
+
+	return n + (x > 0);
+
+#	undef MSBIT_SHIFT
+}
+
+static inline size_t
+msbitz(
+	size_t x
+) {
+#if SIZE_MAX > UINT32_MAX
+	return msbit64(x);
+#else
+	return msbit32(x);
+#endif
+}
+
 //------------------------------------------------------------------------------
 
 static inline bool
