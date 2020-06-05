@@ -141,7 +141,7 @@ locate(
 		return index;
 	}
 
-	return ~(size_t)0;
+	return ~SIZE_C(0);
 }
 
 Ast
@@ -185,7 +185,7 @@ define(
 		}
 	}
 
-	return ~(size_t)0;
+	return ~SIZE_C(0);
 }
 
 //------------------------------------------------------------------------------

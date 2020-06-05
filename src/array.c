@@ -151,7 +151,7 @@ array_map_index(
 ) {
 	uintptr_t uip = to_pointer(index);
 	if(to_index(uip) != index) {
-		return ~(size_t)0;
+		return ~SIZE_C(0);
 	}
 
 	if(arr->map != (uintptr_t)NULL) {
@@ -185,7 +185,7 @@ array_map_index(
 						}
 					}
 					if(i == LEAF_MAX_SIZE) {
-						return ~(size_t)0;
+						return ~SIZE_C(0);
 					}
 
 					if(is_at_capacity(i)) {
@@ -193,7 +193,7 @@ array_map_index(
 						z    = sizeof(struct node) + ((i * 2) * sizeof(uintptr_t));
 						leaf = realloc(leaf, z);
 						if(!leaf) {
-							return ~(size_t)0;
+							return ~SIZE_C(0);
 						}
 						// ensure pointer to here is updated
 						*here = (uintptr_t)leaf;
@@ -209,7 +209,7 @@ array_map_index(
 				z    = sizeof(struct node) + sizeof(uintptr_t);
 				node = malloc(z);
 				if(!node) {
-					return ~(size_t)0;
+					return ~SIZE_C(0);
 				}
 
 				// move this leaf node down a level
@@ -239,7 +239,7 @@ array_map_index(
 					z    = sizeof(struct node) + ((k * 2) * sizeof(uintptr_t));
 					node = realloc(node, z);
 					if(!node) {
-						return ~(size_t)0;
+						return ~SIZE_C(0);
 					}
 					// ensure pointer to here is updated and tagged as a branch node
 					*here = tag_pointer(node);
@@ -250,7 +250,7 @@ array_map_index(
 				z    = sizeof(struct node) + sizeof(uintptr_t);
 				leaf = malloc(z);
 				if(!leaf) {
-					return ~(size_t)0;
+					return ~SIZE_C(0);
 				}
 
 				leaf->map    = hash;
@@ -290,7 +290,7 @@ array_map_index(
 		}
 	}
 
-	return ~(size_t)0;
+	return ~SIZE_C(0);
 }
 
 size_t
@@ -343,7 +343,7 @@ array_get_index(
 		}	// for
 	}
 
-	return ~(size_t)0;
+	return ~SIZE_C(0);
 }
 
 static int

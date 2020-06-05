@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include "utf8.h"
+#include "stdtypes.h"
 
 //------------------------------------------------------------------------------
 
@@ -95,7 +96,7 @@ utf8len(
 				;
 		err:
 			if(endp) *endp = cs;
-			return ~(size_t)0;
+			return ~SIZE_C(0);
 		}
 	}
 end:

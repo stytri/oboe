@@ -30,4 +30,15 @@ SOFTWARE.
 #include <inttypes.h>
 #include <limits.h>
 
+//------------------------------------------------------------------------------
+
+#if SIZE_MAX > UINT32_MAX
+#	define SIZE_C(N) UINT64_C(N)
+#else
+#	define SIZE_C(N) UINT32_C(N)
+#endif
+
+//------------------------------------------------------------------------------
+
+
 #endif//ndef STDTYPES_H_INCLUDED
