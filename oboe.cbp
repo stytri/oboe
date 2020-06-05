@@ -33,9 +33,6 @@
 		<VirtualTargets>
 			<Add alias="All" targets="Debug;Release;" />
 		</VirtualTargets>
-		<Compiler>
-			<Add option="-DNPOOL=1" />
-		</Compiler>
 		<Unit filename="src/array.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -82,8 +79,6 @@
 		<Unit filename="src/mapfile.h" />
 		<Unit filename="src/marray.c">
 			<Option compilerVar="CC" />
-			<Option compile="0" />
-			<Option link="0" />
 		</Unit>
 		<Unit filename="src/marray.h" />
 		<Unit filename="src/nobreak.h" />
