@@ -100,7 +100,7 @@ marray_element_pointer(
 	size_t index
 ) {
 	size_t const i = msbitz(index);
-	size_t const m = (~SIZE_C(0) >> 1) >> (64 - i);
+	size_t const m = (~SIZE_C(0) >> 1) >> ((CHAR_BIT * sizeof(index)) - i);
 	size_t const x = index & m;
 	void **const s = arr->base;
 
