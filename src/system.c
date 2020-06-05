@@ -52,8 +52,12 @@ static unsigned builtin_is_##Name##_enum   = -1;
 ENUM(Tag)
 ENUM(TagRef)
 ENUM(Const)
+ENUM(Declaration)
+ENUM(Bracketed)
 ENUM(Applicate)
+ENUM(Assign)
 ENUM(Array)
+ENUM(Range)
 #include "oboe.enum"
 static unsigned builtin_type_enum          = -1;
 static unsigned builtin_typename_enum      = -1;
@@ -239,8 +243,12 @@ builtin_is_##Name( \
 ENUM(Tag)
 ENUM(TagRef)
 ENUM(Const)
+ENUM(Declaration)
+ENUM(Bracketed)
 ENUM(Applicate)
+ENUM(Assign)
 ENUM(Array)
+ENUM(Range)
 #define builtin_is_Identifier builtin_is_Identifier__hidden
 #include "oboe.enum"
 #undef  builtin_is_Identifier
@@ -997,14 +1005,18 @@ initialise_system_environment(
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 
 	static struct builtinfn const builtinfn[] = {
-		BUILTIN("system"    , system)
+		BUILTIN("system"      , system)
 #		define ENUM(Name,...)  \
-		BUILTIN("is_"#Name   , is_##Name)
+		BUILTIN("is_"#Name    , is_##Name)
 		ENUM(Tag)
 		ENUM(TagRef)
 		ENUM(Const)
+		ENUM(Declaration)
+		ENUM(Bracketed)
 		ENUM(Applicate)
+		ENUM(Assign)
 		ENUM(Array)
+		ENUM(Range)
 #		include "oboe.enum"
 		BUILTIN("type"        , type)
 		BUILTIN("typename"    , typename)

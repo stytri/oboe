@@ -253,12 +253,32 @@ ast_isApplicate(
 );
 
 extern bool
+ast_isAssign(
+	Ast ast
+);
+
+extern bool
+ast_isnotAssign(
+	Ast ast
+);
+
+extern bool
 ast_isArray(
 	Ast ast
 );
 
 extern bool
 ast_isnotArray(
+	Ast ast
+);
+
+extern bool
+ast_isRange(
+	Ast ast
+);
+
+extern bool
+ast_isnotRange(
 	Ast ast
 );
 
