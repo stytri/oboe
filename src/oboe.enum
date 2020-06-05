@@ -132,6 +132,9 @@ ENUM(Operator)
 	)
 	EVAL(
 		ast = OPERATOR(ast->qual, ast->m.lexpr, ast->m.rexpr);
+		if(ast_isRange(ast)) {
+			RETURN();
+		}
 	)
 	SWEEP(
 		ast->m.lexpr = gc_unlink(ast->m.lexpr);
