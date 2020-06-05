@@ -38,10 +38,8 @@ marray_expand(
 
 	if((0 < count) && (count <= (buf_max - capacity))) {
 		size_t new_capacity      = capacity_of(capacity + count);
-		size_t mask_capacity     = bitmaskz   (capacity);
-		size_t tail              = popcountz  (mask_capacity);
-		size_t mask_new_capacity = bitmaskz   (new_capacity);
-		size_t new_tail          = popcountz  (mask_new_capacity);
+		size_t tail              = msbitz     (capacity);
+		size_t new_tail          = msbitz     (new_capacity);
 		void **slot              = arr->base;
 
 		if(!slot || (tail < new_tail)) {
@@ -81,10 +79,9 @@ marray_free(
 	Array  arr
 ) {
 	if(arr) {
-		void **slot = arr->base;
+		void **const slot = arr->base;
 		if(slot) {
-			size_t m = bitmaskz (arr->capacity);
-			size_t n = popcountz(m);
+			size_t n = msbitz(arr->capacity);
 			for(size_t i = 0; i < n; ++i) {
 				free(slot[i]);
 			}
@@ -102,10 +99,10 @@ marray_element_pointer(
 	size_t size,
 	size_t index
 ) {
-	size_t m = bitmaskz(index);
-	size_t i = popcountz(m);
-	size_t x = index & (m >> 1);
-	void **s = arr->base;
+	size_t const i = msbitz(index);
+	size_t const m = (~SIZE_C(0) >> 1) >> (64 - i);
+	size_t const x = index & m;
+	void **const s = arr->base;
 
 	return &((char *)(s[i]))[x * size];
 }
