@@ -250,8 +250,8 @@ addenv(
 		}
 
 		ident = array_at(env->m.env, Ast, n);
-		def   = assign(sloc, &ident->m.rexpr, def);
-		return def;
+		assign(sloc, &ident->m.rexpr, def);
+		return ident;
 	}
 
 	return oboerr(sloc, ERR_InvalidOperand);
