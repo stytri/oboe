@@ -696,8 +696,8 @@ builtin_loop_range(
 		subeval(env, lexpr->m.lexpr)
 	);
 
-	uint64_t next = ast_toInteger(iexpr->m.lexpr);
-	uint64_t end  = ast_toInteger(iexpr->m.rexpr);
+	uint64_t next = ast_toInteger(eval(env, iexpr->m.lexpr));
+	uint64_t end  = ast_toInteger(eval(env, iexpr->m.rexpr));
 	uint64_t step = (next > end) ? -1 : 1;
 
 	iexpr = new_ast(sloc, AST_Integer, next);
