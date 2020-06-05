@@ -61,16 +61,20 @@ marray_element_pointer(
 	*marray_ptr(Arr, Type, Index) \
 )
 
-#define marray_create_back(Arr,Type)  ( \
+#define marray_alloc_back(Arr,sizeof_Type)  ( \
 	(array_at_capacity(Arr) ? ( \
-		marray_expand((Arr), sizeof(Type), 1) \
+		marray_expand((Arr), sizeof_Type, 1) \
 	) : ( \
 		true \
 	)) ? ( \
-		marray_ptr((Arr),Type,(Arr)->length++) \
+		marray_element_pointer((Arr), sizeof_Type, (Arr)->length++) \
 	) : ( \
-		(Type *)NULL \
+		NULL \
 	) \
+)
+
+#define marray_create_back(Arr,Type)  ( \
+	(Type *)marray_alloc_back(Arr, sizeof(Type)) \
 )
 
 #define marray_push_back(Arr,Type,Val)  ( \

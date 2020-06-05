@@ -26,6 +26,7 @@ SOFTWARE.
 #include "odt.h"
 #include "hash.h"
 #include "strlib.h"
+#include "marray.h"
 #include "assert.h"
 #include "utf8.h"
 #include "parse.h"
@@ -189,6 +190,12 @@ run_gc(
 
 //------------------------------------------------------------------------------
 
+#ifndef NPOOL
+static size_t        sizeof_ast = 0;
+static void   const *free_list  = NULL;
+static struct array  ast_pool   = ARRAY();
+#endif
+
 static void
 ast_gc_mark(
 	void const *p,
@@ -222,7 +229,13 @@ ast_gc_sweep(
 	}}
 
 	memset(ast, 0, sizeof(*ast));
+#ifndef NPOOL
+	p                 = gc_pfree(ast);
+	*(void const **)p = free_list;
+	free_list         = p;
+#else
 	gc_free(ast);
+#endif
 	return;
 }
 
@@ -234,7 +247,18 @@ alloc_ast(
 		run_gc();
 	}
 
+#ifndef NPOOL
+	void *ptr;
+	if(free_list) {
+		ptr       = (void *)free_list;
+		free_list = *(void **)ptr;
+	} else {
+		ptr = marray_alloc_back(&ast_pool, sizeof_ast);
+	}
+	Ast ast = gc_pmalloc(ptr, sizeof_ast, ast_gc_mark, ast_gc_sweep);
+#else
 	Ast ast = gc_malloc(sizeof(*ast), ast_gc_mark, ast_gc_sweep);
+#endif
 	assert(ast != NULL);
 	*ast = (struct ast){ AST_Void, 0, 0, 0, {{ NULL }, { NULL }} };
 	return ast;
@@ -267,6 +291,9 @@ void
 initialise_ast(
 	void
 ) {
+#ifndef NPOOL
+	sizeof_ast = gc_sizeof(struct ast);
+#endif
 	if(!ZEN) {
 		ZEN = alloc_ast();
 		assert(ZEN != NULL);

@@ -302,8 +302,58 @@ gc_free(
 	return;
 }
 
+void *
+gc_pmalloc(
+	void  *placement,
+	size_t size,
+	void (*mark )(void const *ptr, void (*gc_mark)(void const *)),
+	void (*sweep)(void const *ptr)
+) {
+	void *ptr = NULL;
+
+	if(size >= GC_MIN) {
+		if(!(ptr = placement)) {
+			if(_gc_in_limit(1, size - GC_MIN)) {
+				size = _gc_rounded_size(size - GC_MIN);
+				ptr  =  (malloc)(size);
+			}
+		}
+
+		if(ptr) {
+			memset(ptr, 0, GC_MIN);
+			ptr = _gc_set(ptr, size, mark, sweep);
+			_gc_total_size += size;
+		}
+	}
+
+	return ptr;
+}
+
+void *
+gc_pfree(
+	void const *ptr
+) {
+	if(ptr) {
+		ptr = _gc_unwrap(ptr);
+		if(_gc(ptr)->link == 0) {
+			_gc(ptr)->mark  = _gc_no_mark;
+			_gc(ptr)->sweep = _gc_no_sweep;
+			_gc_total_size -= _gc(ptr)->size;
+		}
+	}
+
+	return (void *)ptr;
+}
+
 size_t
-gc_sizeof(
+_gc_sizeof(
+	size_t size
+) {
+	return _gc_rounded_size(size);
+}
+
+size_t
+gc_size(
 	void const *ptr
 ) {
 	if(!ptr) {

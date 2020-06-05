@@ -73,8 +73,31 @@ gc_free(
 	void const *ptr
 );
 
+#undef  pmalloc
+#define pmalloc(Placement,Size)  gc_pmalloc((Placement), (Size), NULL, NULL)
+extern void *
+gc_pmalloc(
+	void  *placement,
+	size_t size,
+	void (*mark )(void const *ptr, void (*gc_mark)(void const *)),
+	void (*sweep)(void const *ptr)
+);
+
+#undef  pfree
+#define pfree(Ptr)  gc_pfree((Ptr))
+extern void*
+gc_pfree(
+	void const *ptr
+);
+
+#define gc_sizeof(Type)  _gc_sizeof(sizeof(Type))
 extern size_t
-gc_sizeof(
+_gc_sizeof(
+	size_t size
+);
+
+extern size_t
+gc_size(
 	void const *ptr
 );
 
