@@ -1,0 +1,52 @@
+N:9;
+R:0..N;
+R1:1..(N+1);
+R2:(N/2)..(N+2);
+RR:N..0;
+RR1:(N+1)..1;
+RR2:(N+2)..(N/2);
+
+(1..N)@print;
+(i:1..N) ?* (` `, i)@print;
+``@println;
+
+(1..(N-1))@print;
+(i:1..(N-1)) ?* (` `, i)@print;
+``@println;
+
+((N/2)..(N+2))@print;
+(i:(N/2)..(N+2)) ?* (` `, i)@print;
+``@println;
+
+R@print;
+(i:R) ?* (` `, i)@print;
+``@println;
+
+R1@print;
+(i:R1) ?* (` `, i)@print;
+``@println;
+
+R2@print;
+(i:R2) ?* (` `, i)@print;
+``@println;
+
+(N..1)@print;
+(i:N..1) ?* (` `, i)@print;
+``@println;
+
+((N-1)..1)@print;
+(i:(N-1)..1) ?* (` `, i)@print;
+``@println;
+
+RR@print;
+(i:RR) ?* (` `, i)@print;
+``@println;
+
+RR1@print;
+(i:RR1) ?* (` `, i)@print;
+``@println;
+
+RR2@print;
+(i:RR2) ?* (` `, i)@print;
+``@println;
+
