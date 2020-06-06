@@ -476,6 +476,104 @@ are_equal(
 	}
 }
 
+static int
+comparator(
+	Ast lexpr,
+	Ast rexpr
+) {
+	switch(TYPE(ast_type(lexpr), ast_type(rexpr))) {
+	case TYPE(AST_Boolean  , AST_Boolean):
+	case TYPE(AST_Boolean  , AST_Integer):
+	case TYPE(AST_Boolean  , AST_Character):
+	case TYPE(AST_Integer  , AST_Boolean):
+	case TYPE(AST_Integer  , AST_Integer):
+	case TYPE(AST_Integer  , AST_Character):
+	case TYPE(AST_Character, AST_Boolean):
+	case TYPE(AST_Character, AST_Integer):
+	case TYPE(AST_Character, AST_Character):
+		return (lexpr->m.ival > rexpr->m.ival)
+			- (lexpr->m.ival < rexpr->m.ival);
+	case TYPE(AST_Boolean  , AST_Float):
+	case TYPE(AST_Integer  , AST_Float):
+	case TYPE(AST_Character, AST_Float):
+		return isgreater((double)lexpr->m.ival, rexpr->m.fval)
+				- isless((double)lexpr->m.ival, rexpr->m.fval);
+	case TYPE(AST_Float, AST_Boolean):
+	case TYPE(AST_Float, AST_Integer):
+	case TYPE(AST_Float, AST_Character):
+		return isgreater(lexpr->m.fval, (double)rexpr->m.ival)
+				- isless(lexpr->m.fval, (double)rexpr->m.ival);
+	case TYPE(AST_Float, AST_Float):
+		return isgreater(lexpr->m.fval, rexpr->m.fval)
+				- isless(lexpr->m.fval, rexpr->m.fval);
+	case TYPE(AST_String, AST_String):
+		return StringCompare(lexpr->m.sval, rexpr->m.sval);
+	case TYPE(AST_Boolean, AST_Zen):
+	case TYPE(AST_Integer, AST_Zen):
+	case TYPE(AST_Character, AST_Zen):
+		return (lexpr->m.ival > 0);
+	case TYPE(AST_Float, AST_Zen):
+		return isgreater(lexpr->m.fval, 0.0);
+	case TYPE(AST_String, AST_Zen):
+		return StringCompare(lexpr->m.sval, NullString());
+	case TYPE(AST_Zen, AST_Boolean):
+	case TYPE(AST_Zen, AST_Integer):
+	case TYPE(AST_Zen, AST_Character):
+		return -(0 < rexpr->m.ival);
+	case TYPE(AST_Zen, AST_Float):
+		return -isless(0.0, rexpr->m.fval);
+	case TYPE(AST_Zen, AST_String):
+		return StringCompare(NullString(), rexpr->m.sval);
+	case TYPE(AST_Error, AST_Error):
+		return (lexpr->qual > rexpr->qual)
+			- (lexpr->qual < rexpr->qual);
+	default:
+		return -1;
+	}
+}
+
+static bool
+in_range_1(
+	Ast lexpr,
+	Ast expr,
+	Ast rexpr
+) {
+	if(ast_isEnvironment(expr)) {
+		Array     arr = expr->m.env;
+		int const N   = array_length(arr);
+
+		for(int i = 0; i < N; i++) {
+			expr = array_at(arr, Ast, i);
+
+			if(!in_range_1(lexpr, expr, rexpr)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	return (comparator(lexpr, expr) <= 0)
+		&& (comparator(expr, rexpr) <= 0)
+	;
+}
+
+static bool
+in_range(
+	Ast env,
+	Ast range,
+	Ast expr
+) {
+	Ast lexpr = eval(env, range->m.lexpr);
+	Ast rexpr = eval(env, range->m.rexpr);
+
+	if(comparator(lexpr, rexpr) < 0) {
+		return in_range_1(lexpr, expr, rexpr);
+	}
+
+	return in_range_1(rexpr, expr, lexpr);
+}
+
 static Ast
 invalid_operand(
 	sloc_t sloc,
@@ -590,6 +688,10 @@ builtin_case_equal(
 	}
 
 	expr = eval(env, expr);
+
+	if(ast_isRange(expr)) {
+		return in_range(env, expr, cond);
+	}
 
 	return are_equal(expr, cond);
 }

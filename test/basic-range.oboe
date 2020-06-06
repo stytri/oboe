@@ -62,3 +62,13 @@ N:9,
 ("i=(", N, "-=1)")@print;
 (j:(i=(N-=1))) ?* (` `, j)@print;
 ``@println;
+
+s:"FG+hj=12";
+(i:0..(s@length-1)) ?* (
+	(c:s[i]) ?: (
+	`A`..`Z`: (c, " Uppercase")@println;
+	`a`..`z`: (c, " Lowercase")@println;
+	`0`..`9`: (c, " Digit")@println;
+	(c, " Other")@println
+	)
+);
