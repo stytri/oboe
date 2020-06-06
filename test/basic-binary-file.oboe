@@ -15,7 +15,7 @@ write(file): (
 );
 
 print_array(a): (
-	(i:0; i < a@length; i+=1) ?* (
+	(i:0..(a@length-1)) ?* (
 		a[i]@to_Literal@println
 	)
 );

@@ -5,6 +5,6 @@ y:"/usr/bin";
 path[y]=y;
 z:"/bin";
 path[z]=z;
-(i:0; i < path@length; i=i+1) ?* (
+(i:0..(path@length-1)) ?* (
 	path[i]@println
 );

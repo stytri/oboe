@@ -4,7 +4,7 @@
 
 sum(x, lo:, hi:, term) : (
 	return:0.0,
-	(x = lo; x <= hi; x++) ?* (
+	(x=lo..hi) ?* (
 		return += term
 	)
 );

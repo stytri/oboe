@@ -15,19 +15,19 @@ drawer:[], prisoner:[];
 initialize(N): (
 	card:[],
 
-	(i:0; i < N; i++) ?* (
+	(i:0..(N-1)) ?* (
 		card[i] = i+1
 	),
 	shuffle(card),
 
-	(i:0; i < N; i++) ?* (
+	(i:0..(N-1)) ?* (
 		prisoner[i] = new_prisoner(i+1),
 		drawer[i] = new_drawer(card[i])
 	)
 );
 
 close_drawers(): (
-	(i:0; i < drawer@length; i++) ?* (
+	(i:0..(drawer@length-1)) ?* (
 		drawer[i]opened = 0
 	)
 );
@@ -62,7 +62,7 @@ play(is_random): (
 play_game(number_of_prisoners, games, verbose, is_random): (
 	won:0,
 	t1:(@clock()),
-	(i:0; i < games; i++) ?* (
+	(i:0..(games-1)) ?* (
 		initialize(number_of_prisoners),
 
 		once:play(is_random),
@@ -70,7 +70,7 @@ play_game(number_of_prisoners, games, verbose, is_random): (
 
 		verbose ? (
 			("...Game ", i, "...", once ? ("won" ; "lost"))@println,
-			(i:0; i < number_of_prisoners; i++) ?* (
+			(i:0..(number_of_prisoners-1)) ?* (
 				prisoner[i]@println
 			)
 		)

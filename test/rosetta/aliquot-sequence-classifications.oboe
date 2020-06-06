@@ -70,7 +70,7 @@ process(file): (
 );
 
 main(argc, argv): (
-	(i:1; i < argc; i++) ?* (
+	(i:1..(argc-1)) ?* (
 		(argv[i][0] == `-`) ? (
 			process(argv[i] << 1)
 		;

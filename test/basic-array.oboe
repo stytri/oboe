@@ -2,19 +2,19 @@ a:[three:3,two:2,one:1];
 a(one)@println;
 a(two)@println;
 a["three"]@println;
-(i:0; i < 3; i=i+1) ?* (
+(i:0..2) ?* (
 	(a[i], " ")@print
 );
 ''@println;
 a:[];
-(i:0; i < 10; i=i+1) ?* (
+(i:0..9) ?* (
 	a[i]=[],
 	(j:0; j > i; j = j+1) !* (
 		a[i][j] = i*j+j
 	)
 );
 a@println;
-(i:0; i < 10; i=i+1) ?* (
+(i:0..9) ?* (
 	a[i]@println,
 	(j:0; j > i; j = j+1) !* (
 		a[i][j]@println

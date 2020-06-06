@@ -11,7 +11,7 @@
 @println (2 ?: (0: "zero"; 1: "one"; 2: "two"; "other"));
 @println (3 ?: (0: "zero"; 1: "one"; 2: "two"; "other"));
 
-(i:0; i < 10; i+=1) ?* (
+(i:0..9) ?* (
 	i ?: (
 	0: (i, " single")@println;
 	1: 2: (i, " double")@println;
@@ -19,7 +19,7 @@
 	(i, " default")@println;
 	)
 );
-(i:0; i < 10; i+=1) ?* (
+(i:0..9) ?* (
 	?: (
 	i == 9: (i, " single")@println;
 	i == 8: i == 7: (i, " double")@println;
