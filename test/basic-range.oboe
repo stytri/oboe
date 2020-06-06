@@ -57,3 +57,8 @@ RR2@print;
 (N, "-=1")@print;
 (i:N-=1) ?* (` `, i)@print;
 ``@println;
+
+N:9,
+("i=(", N, "-=1)")@print;
+(j:(i=(N-=1))) ?* (` `, j)@print;
+``@println;
