@@ -194,6 +194,10 @@ A _sequence_ may be evaluated differently when used as an operand, but is otherw
 
 _left-operand_ is evaluated, then _right-operand_ is evaluated.
 
+##### range
+
+_operand_ `..` _operand_
+
 ##### declaration
 
 either:
@@ -290,7 +294,15 @@ or:
 
 `(` _initialization_ `;` _condition_ `;` _recalculation_ `)`
 
-The `!*` operator is as above, except the condition is inverted.
+or:
+
+`(` _operand_ `:` _range_ `)`
+
+or:
+
+`(` _operand_ `=` _range_ `)`
+
+The `!*` operator is as above, except the condition is inverted; does **not** apply to **range**s.
 
 ##### evaluation
 
