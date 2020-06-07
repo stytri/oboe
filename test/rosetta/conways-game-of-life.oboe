@@ -63,8 +63,7 @@ run(universe): (
 );
 
 empty_universe(Y,X): (
-	universe:[],
-	universe[0..(Y-1)] = calloc(X)
+	[0..(Y-1)] = calloc(X)
 );
 
 random(Y,X): (

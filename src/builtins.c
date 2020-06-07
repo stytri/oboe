@@ -1987,6 +1987,10 @@ builtin_assign_by_delegate(
 			}
 			return oboerr(sloc, ERR_InvalidReferent);
 		default:
+			if(ast_isZen(lexpr) && ast_isRange(iexpr)) {
+				lexpr = new_env(sloc, NULL);
+			}
+
 			if(ast_isAssignable(lexpr)
 				&& ast_isEnvironment(lexpr) && ast_isRange(iexpr)
 			) {
