@@ -296,11 +296,11 @@ or:
 
 or:
 
-`(` _operand_ `:` _range_ `)`
+`(` _referent_ `:` _range_ `)`
 
 or:
 
-`(` _operand_ `=` _range_ `)`
+`(` _reference_ `=` _range_ `)`
 
 The `!*` operator is as above, except the condition is inverted; does **not** apply to **range**s.
 
