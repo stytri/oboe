@@ -2280,6 +2280,30 @@ builtin_array(
 			}
 			return oboerr(sloc, ERR_InvalidOperand);
 		default:
+			if(ast_isRange(rexpr)) {
+				size_t start  = ast_toInteger(eval(env, rexpr->m.lexpr));
+				size_t end    = ast_toInteger(eval(env, rexpr->m.rexpr));
+				size_t length = array_length(lexpr->m.env);
+				if(start > end) {
+					size_t temp = start;
+					start       = end;
+					end         = temp;
+				}
+				if(start > length) {
+					start = length;
+				}
+				if(end > length) {
+					end = length;
+				}
+				length = end - start + 1;
+
+				Array  arr = arrintop_alloc();
+				arrintop_resize(arr, length);
+				arrintop_copy  (arr, 0, lexpr->m.env, start, length);
+
+				return new_ast(sloc, AST_Environment, arr, NULL);
+			}
+
 			return oboerr(sloc, ERR_InvalidOperand);
 		}
 	}

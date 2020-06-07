@@ -30,3 +30,6 @@ v:11,
 ](
 	v@println
 ),	v@println;
+m:[0..9]=(i+=1);
+m@println;
+m[3..6]@println;
