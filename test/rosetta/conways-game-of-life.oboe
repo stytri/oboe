@@ -64,12 +64,7 @@ run(universe): (
 
 empty_universe(Y,X): (
 	universe:[],
-
-	(y:0; y < Y; y++) ?* (
-		universe[y] = calloc(X)
-	),
-
-	universe
+	universe[0..(Y-1)] = calloc(X)
 );
 
 random(Y,X): (

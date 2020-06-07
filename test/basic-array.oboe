@@ -7,8 +7,8 @@ a["three"]@println;
 );
 ''@println;
 a:[];
+a[0..9]=[],
 (i:0..9) ?* (
-	a[i]=[],
 	(j:0; j > i; j = j+1) !* (
 		a[i][j] = i*j+j
 	)

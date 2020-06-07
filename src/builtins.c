@@ -1987,6 +1987,39 @@ builtin_assign_by_delegate(
 			}
 			return oboerr(sloc, ERR_InvalidReferent);
 		default:
+			if(ast_isAssignable(lexpr)
+				&& ast_isEnvironment(lexpr) && ast_isRange(iexpr)
+			) {
+				size_t       index  = ast_toInteger(eval(env, iexpr->m.lexpr));
+				size_t       end    = ast_toInteger(eval(env, iexpr->m.rexpr));
+				size_t const length = array_length(lexpr->m.env);
+				if(index > end) {
+					size_t temp = index;
+					index       = end;
+					end         = temp;
+				}
+				if(index < length) {
+					if(end < length) {
+						do {
+							builtin_array_assign_index(env, sloc, lexpr, rexpr, index, by);
+						} while(index++ != end)
+							;
+						return lexpr;
+					}
+					while(index != length) {
+						builtin_array_assign_index(env, sloc, lexpr, rexpr, index, by);
+						index++;
+					}
+				}
+				if(index == length) {
+					do {
+						builtin_array_push_back(env, sloc, lexpr, rexpr, by);
+					} while(index++ != end)
+						;
+					return lexpr;
+				}
+				return oboerr(sloc, ERR_InvalidOperand);
+			}
 			return oboerr(sloc, ERR_InvalidReferent);
 		}
 	}

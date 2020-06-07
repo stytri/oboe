@@ -4,10 +4,7 @@
 
 N:100;
 is_open:[];
-
-(door:0..(N-1)) ?* (
-	is_open[door] = 0
-);
+is_open[0..(N-1)] = 0;
 
 (pass:0..(N-1)) ?* (
 	(door:pass; door < N; door = door+pass+1) ?* (
