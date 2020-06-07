@@ -180,6 +180,54 @@ lzcountz(
 }
 
 static inline int
+tzcount64(
+	uint64_t x
+) {
+	int n = 64;
+
+	x &= -x;
+	n -= (x > 0);
+
+	if(x & UINT64_C(0x00000000FFFFFFFF)) n -= 32;
+	if(x & UINT64_C(0x0000FFFF0000FFFF)) n -= 16;
+	if(x & UINT64_C(0x00FF00FF00FF00FF)) n -=  8;
+	if(x & UINT64_C(0x0F0F0F0F0F0F0F0F)) n -=  4;
+	if(x & UINT64_C(0x3333333333333333)) n -=  2;
+	if(x & UINT64_C(0x5555555555555555)) n -=  1;
+
+	return n;
+}
+
+static inline int
+tzcount32(
+	uint32_t x
+) {
+	int n = 32;
+
+	x &= -x;
+	n -= (x > 0);
+
+	if(x & UINT32_C(0x0000FFFF)) n -= 16;
+	if(x & UINT32_C(0x00FF00FF)) n -=  8;
+	if(x & UINT32_C(0x0F0F0F0F)) n -=  4;
+	if(x & UINT32_C(0x33333333)) n -=  2;
+	if(x & UINT32_C(0x55555555)) n -=  1;
+
+	return n;
+}
+
+static inline size_t
+tzcountz(
+	size_t x
+) {
+#if SIZE_MAX > UINT32_MAX
+	return tzcount64(x);
+#else
+	return tzcount32(x);
+#endif
+}
+
+static inline int
 msbit64(
 	uint64_t x
 ) {

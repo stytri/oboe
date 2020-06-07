@@ -33,6 +33,7 @@ SOFTWARE.
 static unsigned builtin_popcount_enum = -1;
 static unsigned builtin_bitmask_enum  = -1;
 static unsigned builtin_lzcount_enum  = -1;
+static unsigned builtin_tzcount_enum  = -1;
 static unsigned builtin_msbit_enum    = -1;
 
 //------------------------------------------------------------------------------
@@ -116,6 +117,29 @@ builtin_lzcount(
 }
 
 static Ast
+builtin_tzcount(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	arg = eval(env, arg);
+	switch(ast_type(arg)) {
+	case AST_Zen:
+	case AST_Boolean:
+	case AST_Integer:
+	case AST_Character:
+		return new_ast(sloc, AST_Integer, (uint64_t)tzcount64(arg->m.ival));
+	case AST_Float:
+		return new_ast(sloc, AST_Integer, (uint64_t)tzcount64(double_to_uint64_t(arg->m.fval)));
+	case AST_Error:
+		return arg;
+	default:
+		return oboerr(sloc, ERR_InvalidOperand);
+	}
+
+}
+
+static Ast
 builtin_msbit(
 	Ast    env,
 	sloc_t sloc,
@@ -148,6 +172,7 @@ initialise_system_bits(
 		BUILTIN("popcount", popcount)
 		BUILTIN("bitmask" , bitmask)
 		BUILTIN("lzcount" , lzcount)
+		BUILTIN("tzcount" , tzcount)
 		BUILTIN("msbit"   , msbit)
 	};
 	static size_t const n_builtinfn = sizeof(builtinfn) / sizeof(builtinfn[0]);
