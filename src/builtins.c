@@ -776,7 +776,7 @@ builtin_tag(
 );
 
 static Ast
-builtin_assign_by_delegate(
+builtin_referent_assign(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
@@ -886,7 +886,7 @@ builtin_loop_range(
 		iexpr = new_ast(sloc, AST_Integer, next);
 
 		for(size_t ts = gc_topof_stack();;) {
-			builtin_assign_by_delegate(env, sloc, texpr, iexpr, BY_Value);
+			builtin_referent_assign(env, sloc, texpr, iexpr, BY_Value);
 
 			result = refeval(env, rexpr);
 
