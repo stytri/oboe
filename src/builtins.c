@@ -785,6 +785,83 @@ builtin_assign_by_delegate(
 );
 
 static Ast
+builtin_loop_array(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr,
+	Ast    iexpr
+) {
+	Ast texpr = ast_isTag(lexpr) ? (
+		builtin_tag(env, sloc, lexpr->m.lexpr, ZEN)
+	):(
+		subeval(env, lexpr->m.lexpr)
+	);
+
+	if(ast_isReference(texpr)) {
+		Ast result = ZEN;
+
+		Ast   ast = eval(env, iexpr->m.lexpr);
+		Array arr;
+		if(ast_isZen(ast)) {
+			ast   = eval(env, iexpr);
+			arr   = ast->m.env;
+			iexpr = ZEN;
+		} else {
+			arr   = ast->m.env;
+			iexpr = eval(env, iexpr->m.rexpr);
+		}
+
+		size_t const length = array_length(arr);
+		size_t const last   = length - !!length;
+		size_t       index  = 0;
+		size_t       end    = last;
+		size_t       step   = 1;
+		if(ast_isRange(iexpr)) {
+			index = ast_toInteger(eval(env, iexpr->m.lexpr));
+			ast   = eval(env, iexpr->m.rexpr);
+			end   = ast_isZen(ast) ? last : ast_toInteger(ast);
+			if(index > end) {
+				if(index > last) {
+					if(end > last) {
+						return oboerr(sloc, ERR_InvalidOperand);
+					}
+
+					index = last;
+				}
+				if(index > end) {
+					step = -1;
+				}
+			} else {
+				if(index > last) {
+					return oboerr(sloc, ERR_InvalidOperand);
+				}
+				if(end > last) {
+					end = last;
+				}
+			}
+		}
+
+		if(length > 0) for(size_t ts = gc_topof_stack();;) {
+			texpr->m.rexpr = array_at(arr, Ast, index);
+
+			result = refeval(env, rexpr);
+
+			texpr->m.rexpr = ZEN;
+
+			gc_return(ts, result);
+
+			if(index == end) break;
+			index += step;
+		}
+
+		return result;
+	}
+
+	return oboerr(sloc, ERR_InvalidReferent);
+}
+
+static Ast
 builtin_loop_range(
 	Ast    env,
 	sloc_t sloc,
@@ -798,30 +875,33 @@ builtin_loop_range(
 		subeval(env, lexpr->m.lexpr)
 	);
 
-	uint64_t next = ast_toInteger(eval(env, iexpr->m.lexpr));
-	Ast      ast  = eval(env, iexpr->m.rexpr);
-	uint64_t end  = ast_isZen(ast) ? UINT64_MAX : ast_toInteger(ast);
-	uint64_t step = (next > end) ? -1 : 1;
+	if(ast_isReference(texpr)) {
+		Ast result = ZEN;
 
-	iexpr = new_ast(sloc, AST_Integer, next);
+		uint64_t next = ast_toInteger(eval(env, iexpr->m.lexpr));
+		Ast      ast  = eval(env, iexpr->m.rexpr);
+		uint64_t end  = ast_isZen(ast) ? UINT64_MAX : ast_toInteger(ast);
+		uint64_t step = (next > end) ? -1 : 1;
 
-	size_t ts     = gc_topof_stack();
-	Ast    result = ZEN;
+		iexpr = new_ast(sloc, AST_Integer, next);
 
-	for(;;) {
-		builtin_assign_by_delegate(env, sloc, texpr, iexpr, BY_Value);
+		for(size_t ts = gc_topof_stack();;) {
+			builtin_assign_by_delegate(env, sloc, texpr, iexpr, BY_Value);
 
-		result = refeval(env, rexpr);
+			result = refeval(env, rexpr);
 
-		gc_return(ts, result);
+			gc_return(ts, result);
 
-		if(next == end) break;
+			if(next == end) break;
 
-		next += step;
-		iexpr->m.ival = next;
+			next += step;
+			iexpr->m.ival = next;
+		}
+
+		return result;
 	}
 
-	return result;
+	return oboerr(sloc, ERR_InvalidReferent);
 }
 
 static Ast
@@ -838,9 +918,17 @@ builtin_loop_1(
 	if((ast_isTag(lexpr)
 			|| ast_isAssign(lexpr))
 		&& ast_isnotZen(lexpr->m.lexpr)
-		&& ast_isRange(iexpr = undefer(env, lexpr->m.rexpr))
 	) {
-		return builtin_loop_range(env, sloc, lexpr, rexpr, iexpr);
+		if(ast_isArray(lexpr->m.rexpr)) {
+			if(ast_isZen(lexpr->m.rexpr->m.lexpr)
+				|| ast_isZen(lexpr->m.rexpr->m.rexpr)
+				|| ast_isRange(lexpr->m.rexpr->m.rexpr)
+			) {
+				return builtin_loop_array(env, sloc, lexpr, rexpr, lexpr->m.rexpr);
+			}
+		} else if(ast_isRange(iexpr = undefer(env, lexpr->m.rexpr))) {
+			return builtin_loop_range(env, sloc, lexpr, rexpr, iexpr);
+		}
 	}
 
 	iexpr = ZEN;
