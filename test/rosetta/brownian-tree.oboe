@@ -50,9 +50,9 @@ main(argc, argv): (
 	),
 
 	('P1\n', SIDE, ` `, SIDE, `\n`)@print,
-	(y:0..(SIDE-1)) ?* (
-		(x:0..(SIDE-1)) ?* (
-			(W[y][x], ` `)@print
+	(Wy:W[]) ?* (
+		(Wyx:Wy[]) ?* (
+			(Wyx, ` `)@print
 		),
 		`\n`@print
 	)

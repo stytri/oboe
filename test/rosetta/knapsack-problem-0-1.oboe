@@ -33,9 +33,9 @@ items:[
 N_items:items@length;
 
 max_name_width:0;
-(i:0..(N_items-1)) ?* (
-	(max_name_width < items[i]name@length) ? (
-		max_name_width = items[i]name@length
+(item:items[]) ?* (
+	(max_name_width < item name@length) ? (
+		max_name_width = item name@length
 	)
 );
 

@@ -26,9 +26,7 @@ initialize(N): (
 );
 
 close_drawers(): (
-	(i:0..(drawer@length-1)) ?* (
-		drawer[i]opened = 0
-	)
+	(d:drawer[]) ?* (d opened = 0)
 );
 
 play(is_random): (

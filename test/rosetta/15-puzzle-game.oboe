@@ -23,8 +23,8 @@ setup(): (
 	count: -1,
 
 	cells[0..(N-1)] =[],
-	(row:0; row < N; row++) ?* (
-		cells[row][0..(N-1)] = (count++)
+	(row:cells[]) ?* (
+		row[0..(N-1)] = (count++)
 	),
 
 	hole(row = 0, column = 0),
@@ -68,10 +68,10 @@ is_not_finished(): (
 
 show_cells(): (
 	``@println,
-	(row:0..(N-1)) ?* (
-		(column:0..(N-1)) ?* (
-			(cells[row][column]) ? (
-				(" : ", itos(2, cells[row][column]))@print
+	(row:cells[]) ?* (
+		(column:row[]) ?* (
+			column ? (
+				(" : ", itos(2, column))@print
 			;
 				" :   "@print
 			)
