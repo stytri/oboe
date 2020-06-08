@@ -799,7 +799,8 @@ builtin_loop_range(
 	);
 
 	uint64_t next = ast_toInteger(eval(env, iexpr->m.lexpr));
-	uint64_t end  = ast_toInteger(eval(env, iexpr->m.rexpr));
+	Ast      ast  = eval(env, iexpr->m.rexpr);
+	uint64_t end  = ast_isZen(ast) ? UINT64_MAX : ast_toInteger(ast);
 	uint64_t step = (next > end) ? -1 : 1;
 
 	iexpr = new_ast(sloc, AST_Integer, next);
@@ -1994,9 +1995,10 @@ builtin_assign_by_delegate(
 			if(ast_isAssignable(lexpr)
 				&& ast_isEnvironment(lexpr) && ast_isRange(iexpr)
 			) {
-				size_t       index  = ast_toInteger(eval(env, iexpr->m.lexpr));
-				size_t       end    = ast_toInteger(eval(env, iexpr->m.rexpr));
 				size_t const length = array_length(lexpr->m.env);
+				size_t       index  = ast_toInteger(eval(env, iexpr->m.lexpr));
+				Ast          ast    = eval(env, iexpr->m.rexpr);
+				size_t       end    = ast_isZen(ast) ? length - !!length : ast_toInteger(ast);
 				if(index > end) {
 					size_t temp = index;
 					index       = end;
@@ -2281,9 +2283,10 @@ builtin_array(
 			return oboerr(sloc, ERR_InvalidOperand);
 		default:
 			if(ast_isRange(rexpr)) {
-				size_t start  = ast_toInteger(eval(env, rexpr->m.lexpr));
-				size_t end    = ast_toInteger(eval(env, rexpr->m.rexpr));
 				size_t length = array_length(lexpr->m.env);
+				size_t start  = ast_toInteger(eval(env, rexpr->m.lexpr));
+				Ast    ast    = eval(env, rexpr->m.rexpr);
+				size_t end    = ast_isZen(ast) ? length - !!length : ast_toInteger(ast);
 				if(start > end) {
 					size_t temp = start;
 					start       = end;
