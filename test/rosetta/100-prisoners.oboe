@@ -61,14 +61,14 @@ play(is_random): (
 play_game(number_of_prisoners, games, verbose, is_random): (
 	won:0,
 	t1:(@clock()),
-	(i:0..(games-1)) ?* (
+	(g:1..games) ?* (
 		initialize(number_of_prisoners),
 
 		once:play(is_random),
 		won = won + once,
 
 		verbose ? (
-			("...Game ", i, "...", once ? ("won" ; "lost"))@println,
+			("...Game ", g, "...", once ? ("won" ; "lost"))@println,
 			(i:0..(number_of_prisoners-1)) ?* (
 				prisoner[i]@println
 			)
