@@ -6,8 +6,8 @@ RR:N..0;
 RR1:(N+1)..1;
 RR2:(N+2)..(N/2);
 
-(1..N)@print;
-(i:1..N) ?* (` `, i)@print;
+(0..N)@print;
+(i:0..N) ?* (` `, i)@print;
 ``@println;
 
 (1..(N-1))@print;
@@ -16,6 +16,14 @@ RR2:(N+2)..(N/2);
 
 ((N/2)..(N+2))@print;
 (i:(N/2)..(N+2)) ?* (` `, i)@print;
+``@println;
+
+(..N)@print;
+(i:(..N)) ?* (` `, i)@print;
+``@println;
+
+((0-N)..)@print;
+(i:(0-N)..) ?* (` `, i)@print;
 ``@println;
 
 R@print;
