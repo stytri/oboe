@@ -793,9 +793,9 @@ builtin_loop_array(
 	Ast    iexpr
 ) {
 	Ast texpr = ast_isTag(lexpr) ? (
-		builtin_tag(env, sloc, lexpr->m.lexpr, ZEN)
+		addenv(env, sloc, lexpr->m.lexpr, ZEN, 0)
 	):(
-		subeval(env, lexpr->m.lexpr)
+		unwrapref(subeval(env, lexpr->m.lexpr))
 	);
 	if(ast_isReference(texpr)) {
 
@@ -870,9 +870,9 @@ builtin_loop_range(
 	Ast    iexpr
 ) {
 	Ast texpr = ast_isTag(lexpr) ? (
-		builtin_tag(env, sloc, lexpr->m.lexpr, ZEN)
+		addenv(env, sloc, lexpr->m.lexpr, ZEN, 0)
 	):(
-		subeval(env, lexpr->m.lexpr)
+		unwrapref(subeval(env, lexpr->m.lexpr))
 	);
 	if(ast_isReference(texpr)) {
 
@@ -886,7 +886,7 @@ builtin_loop_range(
 		iexpr = new_ast(sloc, AST_Integer, next);
 
 		for(size_t ts = gc_topof_stack();;) {
-			builtin_referent_assign(env, sloc, texpr, iexpr, BY_Value);
+			texpr->m.rexpr = iexpr;
 
 			result = refeval(env, rexpr);
 
