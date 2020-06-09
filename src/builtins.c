@@ -792,13 +792,9 @@ builtin_loop_array(
 	Ast    rexpr,
 	Ast    iexpr
 ) {
-	Ast texpr = ast_isTag(lexpr) ? (
-		builtin_tag(env, sloc, lexpr->m.lexpr, ZEN)
-	):(
-		subeval(env, lexpr->m.lexpr)
-	);
-
+	Ast texpr = builtin_tag(env, sloc, lexpr, ZEN);
 	if(ast_isReference(texpr)) {
+
 		Ast result = ZEN;
 
 		Ast   ast = eval(env, iexpr->m.lexpr);
@@ -869,13 +865,9 @@ builtin_loop_range(
 	Ast    rexpr,
 	Ast    iexpr
 ) {
-	Ast texpr = ast_isTag(lexpr) ? (
-		builtin_tag(env, sloc, lexpr->m.lexpr, ZEN)
-	):(
-		subeval(env, lexpr->m.lexpr)
-	);
-
+	Ast texpr = builtin_tag(env, sloc, lexpr, ZEN);
 	if(ast_isReference(texpr)) {
+
 		Ast result = ZEN;
 
 		uint64_t next = ast_toInteger(eval(env, iexpr->m.lexpr));
@@ -917,17 +909,17 @@ builtin_loop_1(
 	lexpr = unquote(lexpr);
 	if((ast_isTag(lexpr)
 			|| ast_isAssign(lexpr))
-		&& ast_isnotZen(lexpr->m.lexpr)
+		&& ast_isIdentifier(lexpr->m.lexpr)
 	) {
 		if(ast_isArray(lexpr->m.rexpr)) {
 			if(ast_isZen(lexpr->m.rexpr->m.lexpr)
 				|| ast_isZen(lexpr->m.rexpr->m.rexpr)
 				|| ast_isRange(lexpr->m.rexpr->m.rexpr)
 			) {
-				return builtin_loop_array(env, sloc, lexpr, rexpr, lexpr->m.rexpr);
+				return builtin_loop_array(env, sloc, lexpr->m.lexpr, rexpr, lexpr->m.rexpr);
 			}
 		} else if(ast_isRange(iexpr = undefer(env, lexpr->m.rexpr))) {
-			return builtin_loop_range(env, sloc, lexpr, rexpr, iexpr);
+			return builtin_loop_range(env, sloc, lexpr->m.lexpr, rexpr, iexpr);
 		}
 	}
 

@@ -296,27 +296,15 @@ or:
 
 or:
 
-`(` _referent_ `:` _range_ `)`   
+`(` _identifier_ `:` _range_ `)`   
 
 or:
 
-`(` _reference_ `=` _range_ `)`
+`(` _identifier_ `:` _array_`[`_range_`]` `)`
 
 or:
 
-`(` _referent_ `:` _array_`[`_range_`]` `)`
-
-or:
-
-`(` _referent_ `=` _array_`[`_range_`]` `)`
-
-or:
-
-`(` _referent_ `:` `[`_initializer_`]` `)`
-
-or:
-
-`(` _referent_ `=` `[`_initializer_`]` `)`
+`(` _identifier_ `:` `[`_initializer_`]` `)`
 
 The `!*` operator is as above, except the condition is inverted; does **not** apply to **range**s.
 
