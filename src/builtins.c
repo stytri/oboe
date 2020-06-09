@@ -931,12 +931,16 @@ builtin_loop_1(
 			) {
 				return builtin_loop_array(env, sloc, lexpr, rexpr, lexpr->m.rexpr);
 			}
-		} else if(ast_isRange(iexpr = undefer(env, lexpr->m.rexpr))) {
-			return builtin_loop_range(env, sloc, lexpr, rexpr, iexpr);
+		} else {
+			iexpr = undefer(env, lexpr->m.rexpr);
+
+			if(ast_isRange(iexpr)) {
+				return builtin_loop_range(env, sloc, lexpr, rexpr, iexpr);
+			}
+
+			iexpr = ZEN;
 		}
 	}
-
-	iexpr = ZEN;
 
 	lexpr = undefer(env, lexpr);
 	if(ast_isAssemblage(lexpr)) {
