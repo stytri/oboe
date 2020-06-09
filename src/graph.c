@@ -280,9 +280,8 @@ graph_header(
 	FILE *stream
 ) {
 	fputs("digraph g {\n", stream);
-	fputs("\torientation=potrait;\n", stream);
 	fputs("\tcompound=true;\n", stream);
-	fputs("\tsplines=lines;\n", stream);
+	fputs("\tsplines=false;\n", stream);
 }
 
 void
