@@ -41,9 +41,9 @@ max_name_width:0;
 
 knapsack(items, n:, w:): (
 	m:[calloc(w + 1)],
-	(i:1..n) ?* (
+	(i::1..n) ?* (
         m[i] = calloc(w + 1),
-        (j:0..w) ?* (
+        (j::0..w) ?* (
 			(items[i - 1]weight > j) ? ((
 				m[i][j] = m[i - 1][j]
 			) ; (
@@ -55,12 +55,12 @@ knapsack(items, n:, w:): (
 	),
 
 	s:calloc(n),
-	(i:n, j:w; i > 0; i--) ?* (
+	[]((i:n, j:w; i > 0; i--) ?* (
 		(m[i][j] > m[i - 1][j]) ? (
 			j = j - items[i - 1]weight,
 			s[i - 1] = 1
 		)
-	),
+	)),
 	s
 );
 
@@ -77,7 +77,7 @@ is_packed:knapsack(items, N_items, 400);
 total_weight:0;
 total_value:0;
 
-(i:0..(N_items-1)) ?* (
+(i::0..(N_items-1)) ?* (
 	is_packed[i] ? (
 		print(items[i]name, items[i]weight, items[i]value),
 		total_weight += items[i]weight,

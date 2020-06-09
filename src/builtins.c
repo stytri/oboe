@@ -794,6 +794,8 @@ builtin_loop_array(
 ) {
 	Ast texpr = ast_isTag(lexpr) ? (
 		addenv(env, sloc, lexpr->m.lexpr, ZEN, 0)
+	): ast_isConst(lexpr) ? (
+		addenv(env, sloc, lexpr->m.lexpr, ZEN, ATTR_NoAssign)
 	):(
 		unwrapref(subeval(env, lexpr->m.lexpr))
 	);
@@ -871,6 +873,8 @@ builtin_loop_range(
 ) {
 	Ast texpr = ast_isTag(lexpr) ? (
 		addenv(env, sloc, lexpr->m.lexpr, ZEN, 0)
+	): ast_isConst(lexpr) ? (
+		addenv(env, sloc, lexpr->m.lexpr, ZEN, ATTR_NoAssign)
 	):(
 		unwrapref(subeval(env, lexpr->m.lexpr))
 	);
@@ -916,6 +920,7 @@ builtin_loop_1(
 
 	lexpr = unquote(lexpr);
 	if((ast_isTag(lexpr)
+			|| ast_isConst(lexpr)
 			|| ast_isAssign(lexpr))
 		&& ast_isIdentifier(lexpr->m.lexpr)
 	) {

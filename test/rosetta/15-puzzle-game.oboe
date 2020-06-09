@@ -68,8 +68,8 @@ is_not_finished(): (
 
 show_cells(): (
 	``@println,
-	(row:cells[]) ?* (
-		(column:row[]) ?* (
+	(row::cells[]) ?* (
+		(column::row[]) ?* (
 			column ? (
 				(" : ", itos(2, column))@print
 			;
@@ -83,7 +83,7 @@ show_cells(): (
 
 get_move(): (
 	s:getcmd(),
-	(i:0..(s@length-1)) ?* (
+	(i::0..(s@length-1)) ?* (
 		s[i] ?: (
 		(`u`: update(0));
 		(`d`: update(1));

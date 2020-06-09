@@ -10,8 +10,8 @@ show(universe): (
 	(ESC"[H")@print,
 	Y:universe@length,
 	X:universe[0]@length,
-	(y:0..(Y-1)) ?* (
-		(x:0..(X-1)) ?* (
+	(y::0..(Y-1)) ?* (
+		(x::0..(X-1)) ?* (
 			(universe[y][x] ? (ESC"[07m  "ESC"[m" ; "  "))@print
 		),
 		(ESC"[E")@print
@@ -25,10 +25,10 @@ evolve(universe): (
 	X:universe[0]@length, maxX:X - 1,
 
 	new[0] = universe[0],
-	(y:1..(maxY-1)) ?* (
+	(y::1..(maxY-1)) ?* (
 		new[y] = [0],
 
-		(x:1..(maxX-1)) ?* (
+		(x::1..(maxX-1)) ?* (
 			n = universe[y-1][x-1]
 			  + universe[y-1][x]
 			  + universe[y-1][x+1]
@@ -73,10 +73,10 @@ random(Y,X): (
 	maxX:X - 1,
 
 	universe[0] = calloc(X),
-	(y:1..(maxY-1)) ?* (
+	(y::1..(maxY-1)) ?* (
 		universe[y] = [0],
 
-		(x:1..(maxX-1)) ?* (
+		(x::1..(maxX-1)) ?* (
 			universe[y][x] = select(10)!
 		),
 		universe[y][maxX] = 0
