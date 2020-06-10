@@ -236,7 +236,7 @@ addenv(
 	Attr   attr
 ) {
 	if(ast_isIdentifier(ident) || ast_isString(ident)) {
-		def->attr |= attr;
+		def->attr = (def->attr & ~ATTR_NoAssign) | attr;
 
 		size_t      n;
 		uint64_t    hash = ident->m.hash;
