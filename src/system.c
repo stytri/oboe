@@ -533,7 +533,7 @@ builtin_getenv(
 			char const *cs = StringToCharLiteral(arg->m.sval, &len);
 			if(cs && (len > 0)) {
 				cs = getenv(cs);
-				String s = CharLiteralToString(cs, strlen(cs));
+				StringConst s = cs ? CharLiteralToString(cs, strlen(cs)) : NullString();
 				assert(s != NULL);
 
 				return new_ast(sloc, AST_String, s);
