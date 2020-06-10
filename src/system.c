@@ -24,6 +24,7 @@ SOFTWARE.
 #include "version.h"
 #include "builtins.h"
 #include "sources.h"
+#include "mapfile.h"
 #include "system.h"
 #include "strlib.h"
 #include "assert.h"
@@ -209,10 +210,29 @@ builtin_system_1(
 	arg = eval(env, arg);
 	if(ast_isString(arg)) {
 
-		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
+		char capout[L_tmpnam+2] = ">", *capnam = &capout[1];
+		tmpnam(capnam);
+
+		String      t  = DuplicateString(arg->m.sval);
+		String      s  = StringAppendCharLiteral(t, capout, strlen(capout));
+		char const *cs = StringToCharLiteral(s, NULL);
 		int         r  = system(cs);
 
-		return new_ast(sloc, AST_Integer, (uint64_t)r);
+		if(t != s) {
+			StringDelete(t);
+		}
+		StringDelete(s);
+
+		if(r != EXIT_SUCCESS) {
+			remove(capnam);
+
+			return new_ast(sloc, AST_Integer, (uint64_t)r);
+		}
+
+		s = mapfile(capnam);
+		remove(capnam);
+
+		return new_ast(sloc, AST_String, s);
 	}
 
 	return error_or(sloc, arg, ERR_InvalidOperand);
