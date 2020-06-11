@@ -244,7 +244,21 @@ builtin_system(
 	sloc_t sloc,
 	Ast    arg
 ) {
-	return sequential_evaluation(builtin_system_1, env, sloc, arg);
+	if(ast_isSequence(arg)) {
+		Ast vec = new_env(sloc, NULL);
+
+		do {
+			Ast  ast      = builtin_system_1(env, sloc, ast_isSequence(arg) ? arg->m.lexpr : arg);
+			bool appended = array_push_back(vec->m.env, Ast, ast);
+			assert(appended);
+
+		} while(ast_isSequence(arg) && (arg = arg->m.rexpr))
+			;
+
+		return vec;
+	}
+
+	return builtin_system_1(env, sloc, arg);
 }
 
 //------------------------------------------------------------------------------
