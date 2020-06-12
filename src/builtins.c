@@ -2379,7 +2379,8 @@ builtin_array(
 			}
 			return oboerr(sloc, ERR_InvalidOperand);
 		default:
-			if(ast_isRange(rexpr)) {
+			if(ast_isRange(rexpr)) switch(ast_type(lexpr)) {
+			case AST_Environment: {
 				size_t length = array_length(lexpr->m.env);
 				size_t start  = ast_toInteger(eval(env, rexpr->m.lexpr));
 				Ast    ast    = eval(env, rexpr->m.rexpr);
@@ -2389,19 +2390,45 @@ builtin_array(
 					start       = end;
 					end         = temp;
 				}
-				if(start > length) {
-					start = length;
-				}
-				if(end > length) {
-					end = length;
-				}
-				length = end - start + 1;
+				if((start < length) && (end < length)) {
+					length = end - start + 1;
 
-				Array  arr = arrintop_alloc();
-				arrintop_resize(arr, length);
-				arrintop_copy  (arr, 0, lexpr->m.env, start, length);
+					Array  arr = arrintop_alloc();
+					arrintop_resize(arr, length);
+					arrintop_copy  (arr, 0, lexpr->m.env, start, length);
 
-				return new_ast(sloc, AST_Environment, arr, NULL);
+					return new_ast(sloc, AST_Environment, arr, NULL);
+				}
+				break;
+			}
+			case AST_String: {
+				size_t      length;
+				char const *cs    = StringToCharLiteral(lexpr->m.sval, &length);
+				length            = utf8len(cs, NULL, length);
+				size_t      start = ast_toInteger(eval(env, rexpr->m.lexpr));
+				Ast         ast   = eval(env, rexpr->m.rexpr);
+				size_t      end   = ast_isZen(ast) ? length - !!length : ast_toInteger(ast);
+				if(start > end) {
+					size_t temp = start;
+					start       = end;
+					end         = temp;
+				}
+				if((start < length) && (end < length)) {
+					start = utf8off(cs, NULL, start);
+					end   = utf8off(cs, NULL, end + 1);
+
+					String s = (length > 0) ? (
+						SubString(lexpr->m.sval, start, end - start)
+					):(
+						StringCreate()
+					);
+
+					return new_ast(sloc, AST_String, s);
+				}
+				break;
+			}
+			default:
+				break;
 			}
 
 			return oboerr(sloc, ERR_InvalidOperand);
