@@ -115,9 +115,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/sources.h" />
+		<Unit filename="src/ssostring.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/stdtypes.h" />
 		<Unit filename="src/string.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
 		</Unit>
 		<Unit filename="src/string.h" />
 		<Unit filename="src/strlib.c">
