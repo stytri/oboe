@@ -178,20 +178,6 @@ StringCapacity(
 	return s ? s->cap : 0;
 }
 
-int
-StringGetChar(
-	StringConst s,
-	size_t      i
-) {
-	size_t n = StringLength(s);
-
-	if(i < n) {
-		return s->cs[i];
-	}
-
-	return -1;
-}
-
 StringConst
 NullString(
 	void

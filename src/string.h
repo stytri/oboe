@@ -53,12 +53,6 @@ StringCapacity(
 	StringConst s
 );
 
-extern int
-StringGetChar(
-	StringConst s,
-	size_t      i
-);
-
 extern StringConst
 NullString(
 	void
