@@ -172,6 +172,7 @@ pack_string(
 //------------------------------------------------------------------------------
 
 static size_t const  sizes[] = {
+#if 0
 	(STRING_MIN * 1),
 	(STRING_MIN * 2),
 	(STRING_MIN * 3),
@@ -179,6 +180,7 @@ static size_t const  sizes[] = {
 	(STRING_MIN * 5),
 	(STRING_MIN * 6),
 	(STRING_MIN * 7),
+#endif
 	(STRING_MIN * 8 * 1),
 	(STRING_MIN * 8 * 2),
 	(STRING_MIN * 8 * 3),
@@ -247,6 +249,10 @@ string_allocation_size(
 	size_t siz
 ) {
 	if(siz >= SSO_SIZE) {
+		if(siz < ((STRING_MIN * 8) - 1)) {
+			return ((siz + 1) + (STRING_MIN - 1)) & ~(STRING_MIN - 1);
+		}
+
 		for(size_t i = 0; i < n_sizes; ++i) {
 			if(siz < sizes[i]) {
 				return sizes[i];
