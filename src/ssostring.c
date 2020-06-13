@@ -171,93 +171,22 @@ pack_string(
 
 //------------------------------------------------------------------------------
 
-static size_t const  sizes[] = {
-#if 0
-	(STRING_MIN * 1),
-	(STRING_MIN * 2),
-	(STRING_MIN * 3),
-	(STRING_MIN * 4),
-	(STRING_MIN * 5),
-	(STRING_MIN * 6),
-	(STRING_MIN * 7),
-#endif
-	(STRING_MIN * 8 * 1),
-	(STRING_MIN * 8 * 2),
-	(STRING_MIN * 8 * 3),
-	(STRING_MIN * 8 * 4),
-	(STRING_MIN * 8 * 5),
-	(STRING_MIN * 8 * 6),
-	(STRING_MIN * 8 * 7),
-	(STRING_MIN * 8 * 8 * 1),
-	(STRING_MIN * 8 * 8 * 2),
-	(STRING_MIN * 8 * 8 * 3),
-	(STRING_MIN * 8 * 8 * 4),
-	(STRING_MIN * 8 * 8 * 5),
-	(STRING_MIN * 8 * 8 * 6),
-	(STRING_MIN * 8 * 8 * 7),
-	(STRING_MIN * 8 * 8 * 8 *  1),
-	(STRING_MIN * 8 * 8 * 8 *  2),
-	(STRING_MIN * 8 * 8 * 8 *  3),
-	(STRING_MIN * 8 * 8 * 8 *  4),
-	(STRING_MIN * 8 * 8 * 8 *  5),
-	(STRING_MIN * 8 * 8 * 8 *  6),
-	(STRING_MIN * 8 * 8 * 8 *  7),
-	(STRING_MIN * 8 * 8 * 8 *  8),
-	(STRING_MIN * 8 * 8 * 8 *  9),
-	(STRING_MIN * 8 * 8 * 8 * 10),
-	(STRING_MIN * 8 * 8 * 8 * 11),
-	(STRING_MIN * 8 * 8 * 8 * 12),
-	(STRING_MIN * 8 * 8 * 8 * 13),
-	(STRING_MIN * 8 * 8 * 8 * 14),
-	(STRING_MIN * 8 * 8 * 8 * 15),
-	(STRING_MIN * 8 * 8 * 8 * 16 *  1),
-	(STRING_MIN * 8 * 8 * 8 * 16 *  2),
-	(STRING_MIN * 8 * 8 * 8 * 16 *  3),
-	(STRING_MIN * 8 * 8 * 8 * 16 *  4),
-	(STRING_MIN * 8 * 8 * 8 * 16 *  5),
-	(STRING_MIN * 8 * 8 * 8 * 16 *  6),
-	(STRING_MIN * 8 * 8 * 8 * 16 *  7),
-	(STRING_MIN * 8 * 8 * 8 * 16 *  8),
-	(STRING_MIN * 8 * 8 * 8 * 16 *  9),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 10),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 11),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 12),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 13),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 14),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 15),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  1),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  2),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  3),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  4),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  5),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  6),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  7),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  8),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 *  9),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 10),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 11),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 12),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 13),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 14),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 15),
-	(STRING_MIN * 8 * 8 * 8 * 16 * 16 * 16),
-};
-static size_t const n_sizes = sizeof(sizes) / sizeof(sizes[0]);
-
 static size_t
 string_allocation_size(
 	size_t siz
 ) {
+#	define STRING_ALLOCATION_SIZE(U,M) do {\
+		if(siz < (((U) * (M)) - 1)) { \
+			return ((siz + 1) + ((U) - 1)) & ~((U) - 1); \
+		} \
+	} while(0)
 	if(siz >= SSO_SIZE) {
-		if(siz < ((STRING_MIN * 8) - 1)) {
-			return ((siz + 1) + (STRING_MIN - 1)) & ~(STRING_MIN - 1);
-		}
-
-		for(size_t i = 0; i < n_sizes; ++i) {
-			if(siz < sizes[i]) {
-				return sizes[i];
-			}
-		}
+		STRING_ALLOCATION_SIZE((STRING_MIN                      ),  8);
+		STRING_ALLOCATION_SIZE((STRING_MIN * 8                  ),  8);
+		STRING_ALLOCATION_SIZE((STRING_MIN * 8 * 8              ),  8);
+		STRING_ALLOCATION_SIZE((STRING_MIN * 8 * 8 * 8          ), 16);
+		STRING_ALLOCATION_SIZE((STRING_MIN * 8 * 8 * 8 * 16     ), 16);
+		STRING_ALLOCATION_SIZE((STRING_MIN * 8 * 8 * 8 * 16 * 16), 16);
 
 		siz = capacity_of(siz + 1);
 		if(siz < STRING_MAX) {
@@ -268,6 +197,7 @@ string_allocation_size(
 	}
 
 	return SSO_SIZE;
+#undef STRING_ALLOCATION_SIZE
 }
 
 static inline char const *
