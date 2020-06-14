@@ -82,6 +82,9 @@ trace(
 					fputc(' ', stdout);
 				}
 			}
+
+			last_source = this_source;
+			last_line   = this_line;
 		}
 	}
 

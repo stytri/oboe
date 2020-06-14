@@ -152,9 +152,7 @@ ENUM(Sequence)
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
 	)
 	EVAL(
-		TRACE(trace_global_indent, ast->m.lexpr);
 		eval(env, ast->m.lexpr);
-		TRACE_IF(ast_isnotSequence(ast->m.rexpr), trace_global_indent, ast->m.rexpr);
 		ast = eval(env, ast->m.rexpr);
 	)
 	SWEEP(
@@ -173,9 +171,7 @@ ENUM(Assemblage)
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
 	)
 	EVAL(
-		TRACE(trace_global_indent, ast->m.lexpr);
 		eval(env, ast->m.lexpr);
-		TRACE_IF(ast_isnotAssemblage(ast->m.rexpr), trace_global_indent, ast->m.rexpr);
 		ast = eval(env, ast->m.rexpr);
 	)
 	SWEEP(

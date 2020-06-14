@@ -119,8 +119,10 @@ subeval(
 ) {
 	size_t ts = gc_topof_stack();
 
-	for(Ast prev = ZEN; prev != ast; ) switch(ast_type(prev = ast)) {
-	default: {
+	for(Ast prev = ZEN; prev != ast; ) {
+		TRACE(trace_global_indent,ast);
+		switch(ast_type(prev = ast)) {
+		default: {
 #	define ENUM(Name)  } break; case AST_##Name: {
 #	define EVAL(...)    __VA_ARGS__;
 
@@ -133,7 +135,8 @@ subeval(
 #	undef RETURN
 #	undef REFERENCE
 #	undef OPERATOR
-	}}
+		}}
+	}
 
 return_ast:
 	return gc_return(ts, ast);
