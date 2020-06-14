@@ -137,7 +137,15 @@ parse_peek_primary(
 ) {
 	char const *cs = parse_peek(ps);
 	char32_t    c  = utf8chr(cs, &cs);
-	return is_Primary(c);
+	switch(c) {
+	case '(': case '[': case '{':
+		if(ps->len > 2) {
+			return 0;
+		}
+		nobreak;
+	default:
+		return is_Primary(c);
+	}
 }
 
 static bool
@@ -146,7 +154,15 @@ parse_peek_operate(
 ) {
 	char const *cs = parse_peek(ps);
 	char32_t    c  = utf8chr(cs, &cs);
-	return is_Operator(c);
+	switch(c) {
+	case '(': case '[': case '{':
+		if(ps->len > 2) {
+			return 1;
+		}
+		nobreak;
+	default:
+		return is_Operator(c);
+	}
 }
 
 static bool
