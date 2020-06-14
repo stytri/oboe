@@ -82,7 +82,7 @@ s:"FG+hj=12";
 );
 
 t:"Hello World";
-t[..]@println;
+t[ ..]@println;
 t[6..]@println;
 t[..4]@println;
 t[3..7]@println;

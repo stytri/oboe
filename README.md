@@ -113,6 +113,8 @@ Initiated by one of `(`, `[`,  `{`, terminated by the corresponding `)`, `]`, `}
 
 `{` `}` is currently unused.
 
+Where the bracketed expression is an _operand_-less **operator** sans space, then this forms a distinct **operator**.
+
 #### Arrays
 
 An **array** can be indexed, associative, or a mix of both. They can also act as an **environment** (aka Name-space or, scope).
@@ -144,6 +146,8 @@ An anonymous **environment** can be utilized to limit the scope of variables.
 ##### User-defined operators
 
 See `lex.h` for permitted lexeme characters.
+
+Where an _operand_-less **operator** is bracketed sans space, then this forms a distinct **operator**.
 
 #### Identifiers
 

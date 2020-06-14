@@ -351,6 +351,13 @@ new_ast_from_lexeme(
 				}
 			}
 		}
+		type = AST_Operator;
+		break;
+	case '(' :
+		if(len == 2) {
+			va_end(va);
+			return ZEN;
+		}
 		nobreak;
 	case '[' :
 	case '{' :
@@ -360,9 +367,6 @@ new_ast_from_lexeme(
 	case '"' : type = AST_String;     break;
 	case '\'': type = AST_String;     break;
 	case '`' : type = AST_Character;  break;
-	case '(' :
-		va_end(va);
-		return ZEN;
 	}
 
 	ast = alloc_ast();

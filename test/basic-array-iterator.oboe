@@ -1,6 +1,6 @@
 i:0, v:[..9]=(i+=1);
 v@println, (x:v[]) ?* x@println;
-v@println, (x:v[..]) ?* x@println;
+v@println, (x:v[.. ]) ?* x@println;
 v@println, (x:v[3..]) ?* x@println;
 v@println, (x:v[..6]) ?* x@println;
 v@println, (x:v[9..0]) ?* x@println;

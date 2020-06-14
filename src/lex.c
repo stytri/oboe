@@ -190,9 +190,28 @@ restart_continue:
 			;
 		goto restart_continue;
 
-	case '(': case ')':
-	case '[': case ']':
-	case '{': case '}':
+	case '(': case '[': case '{': {
+		char32_t const  ec = (c == '(') ? ')' : (c == '[') ? ']' : '}';
+		char     const *ct;
+		c = utf8chr(cs, &ct);
+		if(c == ec) {
+			*endp = ct;
+			break;
+		}
+		if(is_Operator(c)) {
+			do {
+				c = utf8chr(ct, &ct);
+			} while(is_Operator(c))
+				;
+			if(c == ec) {
+				*endp = ct;
+				break;
+			}
+		}
+		*endp = cs;
+		break;
+	}
+	case ')': case ']': case '}':
 	case ';': case ',':
 		*endp = cs;
 		break;

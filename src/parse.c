@@ -194,6 +194,10 @@ parse_primary(
 
 	switch(*leme) {
 	case '(':
+		if(ps->len > 1) {
+			leme = parse_get(ps, &len);
+			break;
+		}
 		parse_accept(ps);
 		if(!parse_peek_closing(ps, ')')) {
 			expr = parse_assemblage(ps, ast);
@@ -209,6 +213,10 @@ parse_primary(
 		len  = 2;
 		break;
 	case '[':
+		if(ps->len > 1) {
+			leme = parse_get(ps, &len);
+			break;
+		}
 		parse_accept(ps);
 		if(!parse_peek_closing(ps, ']')) {
 			expr = parse_assemblage(ps, ast);
@@ -220,6 +228,10 @@ parse_primary(
 		len  = 2;
 		break;
 	case '{':
+		if(ps->len > 1) {
+			leme = parse_get(ps, &len);
+			break;
+		}
 		parse_accept(ps);
 		if(!parse_peek_closing(ps, '}')) {
 			expr = parse_assemblage(ps, ast);
