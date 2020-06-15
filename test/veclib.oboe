@@ -1,0 +1,67 @@
+"=" "[=]"(L,R): (
+	L[L@length] = R
+);
+
+(_vec:[])(
+	op(L,Op,R): (
+		L@is_Environment ? ((
+			return:[],
+
+			R@is_Environment ? ((
+				Ln:L@length,
+				Rn:R@length,
+
+				(Ln <= Rn) ? ((
+					(Ln > 0) ? (
+						(i:0..(Ln-1)) ?* (
+							return[i] = _vec op(L[i], Op, R[i])
+						)
+					),
+					(Ln < Rn) ? (
+						(i:Ln..(Rn-1)) ?* (
+							return[i] = _vec op((), Op, R[i])
+						)
+					)
+				);(
+					(Rn > 0) ? (
+						(i:0..(Rn-1)) ?* (
+							return[i] = _vec op(L[i], Op, R[i])
+						)
+					),
+					(i:Rn..(Ln-1)) ?* (
+						return[i] = _vec op(L[i], Op, ())
+					)
+				))
+			);(
+				(x:L[..()]) ?* (
+					return [=] _vec op(x, Op, R)
+				)
+			))
+		);(
+			R@is_Environment ? ((
+				return:L,
+
+				(x:R[..()]) ?* (
+					return = _vec op(return, Op, x)
+				)
+			);(
+				return:Op(L, R)
+			))
+		)),
+
+		return
+	);
+
+	add(L,R): L +  R;
+	sub(L,R): L -  R;
+	mul(L,R): L *  R;
+	div(L,R): L /  R;
+	mod(L,R): L // R;
+);
+
+"+"  "[+]" (L,R): _vec op(L,_vec add,R);
+"-"  "[-]" (L,R): _vec op(L,_vec sub,R);
+"*"  "[*]" (L,R): _vec op(L,_vec mul,R);
+"/"  "[/]" (L,R): _vec op(L,_vec div,R);
+"//" "[//]"(L,R): _vec op(L,_vec mod,R);
+
