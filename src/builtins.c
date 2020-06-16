@@ -2462,7 +2462,20 @@ builtin_applicate(
 	Ast    lexpr,
 	Ast    rexpr
 ) {
-	lexpr = eval(env, lexpr);
+	if(ast_isApplicate(lexpr)) {
+		Ast ast = eval(env, lexpr->m.lexpr);
+
+		if(ast_isEnvironment(ast)) {
+			env = link_env(sloc, ast, env);
+
+			return builtin_applicate(env, sloc, lexpr->m.rexpr, rexpr);
+		}
+
+		lexpr = builtin_applicate(env, sloc, ast, lexpr->m.rexpr);
+
+	} else {
+		lexpr = eval(env, lexpr);
+	}
 
 	switch(ast_type(lexpr)) {
 	case AST_Zen:

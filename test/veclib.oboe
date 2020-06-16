@@ -14,27 +14,27 @@
 				(Ln <= Rn) ? ((
 					(Ln > 0) ? (
 						(i:0..(Ln-1)) ?* (
-							return[i] = _vec op(L[i], Op, R[i])
+							return[i] = op(L[i], Op, R[i])
 						)
 					),
 					(Ln < Rn) ? (
 						(i:Ln..(Rn-1)) ?* (
-							return[i] = _vec op((), Op, R[i])
+							return[i] = op((), Op, R[i])
 						)
 					)
 				);(
 					(Rn > 0) ? (
 						(i:0..(Rn-1)) ?* (
-							return[i] = _vec op(L[i], Op, R[i])
+							return[i] = op(L[i], Op, R[i])
 						)
 					),
 					(i:Rn..(Ln-1)) ?* (
-						return[i] = _vec op(L[i], Op, ())
+						return[i] = op(L[i], Op, ())
 					)
 				))
 			);(
 				(x:L[..()]) ?* (
-					return [=] _vec op(x, Op, R)
+					return [=] op(x, Op, R)
 				)
 			))
 		);(
@@ -42,7 +42,7 @@
 				return:L,
 
 				(x:R[..()]) ?* (
-					return = _vec op(return, Op, x)
+					return = op(return, Op, x)
 				)
 			);(
 				return:Op(L, R)
