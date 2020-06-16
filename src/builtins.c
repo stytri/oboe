@@ -1915,7 +1915,7 @@ builtin_decl_ref(
 	}
 }
 
-static Ast
+static inline Ast
 builtin_tag(
 	Ast    env,
 	sloc_t sloc,
@@ -1925,7 +1925,7 @@ builtin_tag(
 	return builtin_decl(env, sloc, lexpr, rexpr, false);
 }
 
-static Ast
+static inline Ast
 builtin_tag_ref(
 	Ast    env,
 	sloc_t sloc,
@@ -1935,7 +1935,7 @@ builtin_tag_ref(
 	return builtin_decl_ref(env, sloc, lexpr, rexpr, false);
 }
 
-static Ast
+static inline Ast
 builtin_const(
 	Ast    env,
 	sloc_t sloc,
@@ -1955,18 +1955,18 @@ builtin_array_push_back(
 	Ast    rexpr,
 	By     by
 ) {
-	if(ast_isTag(rexpr) || ast_isTagRef(rexpr)) {
-		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
-			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr, by);
-			rexpr = addenv(lexpr, sloc, rexpr->m.lexpr, def, 0);
-			return rexpr;
+	if(ast_isTag(rexpr) || ast_isTagRef(rexpr) || ast_isConst(rexpr)) {
+		env = link_env(sloc, lexpr, env);
+
+		if(ast_isTag(rexpr)) {
+			return builtin_tag(env, sloc, rexpr->m.lexpr, rexpr->m.rexpr);
 		}
-	} else if(ast_isConst(rexpr)) {
-		if(ast_isString(rexpr->m.lexpr) || ast_isIdentifier(rexpr->m.lexpr)) {
-			Ast def = evaluate_instance(env, sloc, rexpr->m.rexpr, by);
-			rexpr = addenv(lexpr, sloc, rexpr->m.lexpr, def, ATTR_NoAssign);
-			return rexpr;
+		if(ast_isTagRef(rexpr)) {
+			return builtin_tag_ref(env, sloc, rexpr->m.lexpr, rexpr->m.rexpr);
 		}
+
+		return builtin_const(env, sloc, rexpr->m.lexpr, rexpr->m.rexpr);
+
 	} else {
 		rexpr = evaluate_instance(env, sloc, rexpr, by);
 		bool appended = array_push_back(lexpr->m.env, Ast, rexpr);
@@ -2437,7 +2437,15 @@ builtin_array(
 
 	lexpr = new_env(sloc, NULL);
 
-	for(;
+	if(ast_isAssemblage(rexpr)) for(;
+		ast_isAssemblage(rexpr);
+		rexpr = rexpr->m.rexpr
+	) {
+		if(ast_isnotZen(rexpr->m.lexpr)) {
+			builtin_array_push_back(env, sloc, lexpr, rexpr->m.lexpr, BY_Value);
+		}
+	}
+	else for(;
 		ast_isSequence(rexpr);
 		rexpr = rexpr->m.rexpr
 	) {

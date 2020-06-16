@@ -2,7 +2,7 @@
 	L[L@length] = R
 );
 
-(_vec:[])(
+_vec:[
 	op(L,Op,R): (
 		L@is_Environment ? ((
 			return:[],
@@ -57,7 +57,7 @@
 	mul(L,R): L *  R;
 	div(L,R): L /  R;
 	mod(L,R): L // R;
-);
+];
 
 "+"  "[+]" (L,R): _vec op(L,_vec add,R);
 "-"  "[-]" (L,R): _vec op(L,_vec sub,R);
