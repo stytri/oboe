@@ -2885,7 +2885,9 @@ mapoboefilewithpath(
 		name = StringToCharLiteral(filepath_ext, &len);
 		s    = mapfile(name);
 
-		StringDelete(filepath_ext);
+		if(filepath_ext != filepath) {
+			StringDelete(filepath_ext);
+		}
 	}
 
 	StringDelete(filepath);
