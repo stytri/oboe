@@ -2563,11 +2563,16 @@ builtin_applicate(
 				return new_ast(sloc, AST_String, s);
 			}
 		case AST_Function: {
-				Ast locals = source_env(sloc_source(rexpr->sloc));
-				locals     = link_env(sloc, locals, env);
-				locals     = new_env(sloc, locals);
+				Array statics_env = statics->m.env;
+				Ast   locals      = source_env(sloc_source(rexpr->sloc));
+				statics->m.env    = locals->m.env;
+
+				locals = new_env(sloc, env);
 				addenv_args(locals, env, sloc, rexpr->m.lexpr, lexpr);
-				return refeval(locals, rexpr->m.rexpr);
+				rexpr = refeval(locals, rexpr->m.rexpr);
+
+				statics->m.env = statics_env;
+				return rexpr;
 			}
 		case AST_BuiltinFunction:
 			return rexpr->m.bfn(env, sloc, lexpr);
@@ -2588,11 +2593,16 @@ builtin_applicate(
 				return new_ast(sloc, AST_String, s);
 			}
 		case AST_Function: {
-				Ast locals = source_env(sloc_source(rexpr->sloc));
-				locals     = link_env(sloc, locals, env);
-				locals     = new_env(sloc, locals);
+				Array statics_env = statics->m.env;
+				Ast   locals      = source_env(sloc_source(rexpr->sloc));
+				statics->m.env    = locals->m.env;
+
+				locals = new_env(sloc, env);
 				addenv_args(locals, env, sloc, rexpr->m.lexpr, lexpr);
-				return eval(locals, rexpr->m.rexpr);
+				rexpr = eval(locals, rexpr->m.rexpr);
+
+				statics->m.env = statics_env;
+				return rexpr;
 			}
 		case AST_BuiltinFunction:
 			return rexpr->m.bfn(env, sloc, lexpr);
@@ -2600,11 +2610,16 @@ builtin_applicate(
 			return builtin_mul(env, sloc, lexpr, rexpr);
 		}
 	case AST_Function: {
-			Ast locals = source_env(sloc_source(lexpr->sloc));
-			locals     = link_env(sloc, locals, env);
-			locals     = new_env(sloc, locals);
+			Array statics_env = statics->m.env;
+			Ast   locals      = source_env(sloc_source(lexpr->sloc));
+			statics->m.env    = locals->m.env;
+
+			locals = new_env(sloc, env);
 			addenv_args(locals, env, sloc, lexpr->m.lexpr, rexpr);
-			return eval(locals, lexpr->m.rexpr);
+			rexpr = eval(locals, lexpr->m.rexpr);
+
+			statics->m.env = statics_env;
+			return rexpr;
 		}
 	case AST_Environment:
 		if(ast_isIdentifier(rexpr) || ast_isString(rexpr)) {

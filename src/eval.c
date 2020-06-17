@@ -88,21 +88,25 @@ evalop(
 	Ast ast = getopr(index);
 
 	switch(ast_type(ast)) {
-		Ast locals;
 	case AST_BuiltinOperator:
 		if(ast->m.bop) {
 			ast = ast->m.bop(env, sloc, lexpr, rexpr);
 			return ast;
 		}
 		break;
-	case AST_OperatorFunction:
-		locals = source_env(sloc_source(ast->sloc));
-		locals = link_env(sloc, locals, env);
-		locals = new_env(sloc, locals);
-		ast    = ast->m.rexpr;
-		addenv_operands(locals, env, sloc, ast->m.lexpr, lexpr, rexpr);
-		ast = refeval(locals, ast->m.rexpr);
-		return ast;
+	case AST_OperatorFunction: {
+			Array statics_env = statics->m.env;
+			Ast   locals      = source_env(sloc_source(ast->sloc));
+			statics->m.env    = locals->m.env;
+
+			ast = ast->m.rexpr;
+			locals = new_env(sloc, env);
+			addenv_operands(locals, env, sloc, ast->m.lexpr, lexpr, rexpr);
+			ast = refeval(locals, ast->m.rexpr);
+
+			statics->m.env = statics_env;
+			return ast;
+		}
 	case AST_Error:
 		return ast;
 	default:

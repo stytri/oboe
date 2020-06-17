@@ -972,11 +972,6 @@ builtin_import_1(
 			unsigned    line   = 0;
 			char const *cs     = StringToCharLiteral(s, NULL);
 
-			size_t gts = gc_topof_stack();
-
-			Ast locals = source_env(source);
-			env        = link_env(sloc, locals, env);
-
 			for(size_t ts = gc_topof_stack();
 				*cs;
 			) {
@@ -992,9 +987,6 @@ builtin_import_1(
 					break;
 				}
 			}
-
-			gc_return(gts, arg);
-			run_gc();
 
 			StringDelete(s);
 

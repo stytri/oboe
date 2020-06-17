@@ -148,6 +148,7 @@ addenv_named(
 
 extern Ast operators;
 extern Ast globals;
+extern Ast statics;
 
 int
 initialise_env(

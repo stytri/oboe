@@ -50,7 +50,6 @@ initialise_sources(
 		String s = CharLiteralToString("<>", 2);
 		assert(s != NULL);
 		add_source(0, s);
-		source_env(0);
 	}
 
 	return EXIT_SUCCESS;

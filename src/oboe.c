@@ -461,10 +461,7 @@ process(
 		t1 = clock();
 	}
 
-	size_t gts = gc_topof_stack();
-
 	Ast env = source_env(source);
-	env     = link_env(make_sloc(source, 0, 0 ,0), env, globals);
 
 	while(*args) {
 		size_t ts = gc_topof_stack();
@@ -483,9 +480,6 @@ process(
 		gc_revert(ts);
 		run_gc();
 	}
-
-	gc_revert(gts);
-	run_gc();
 
 	if(timed) {
 		clock_t     t2     = clock();

@@ -399,6 +399,7 @@ addenv_named(
 
 Ast operators = NULL;
 Ast globals   = NULL;
+Ast statics   = NULL;
 
 int
 initialise_env(
@@ -411,6 +412,8 @@ initialise_env(
 
 		operators = new_env(0, NULL);
 		globals   = new_env(0, NULL);
+		Ast env   = source_env(0);
+		statics   = new_ast(0, AST_Environment, env->m.env, globals);
 	}
 
 	return EXIT_SUCCESS;
@@ -433,7 +436,7 @@ Ast source_env(
 	assert(source <= array_length(source_environments->m.env));
 	if(source == array_length(source_environments->m.env)) {
 
-		Ast  sourcenv = new_env(make_sloc(source, 0, 0, 0), NULL);
+		Ast  sourcenv = new_env(make_sloc(source, 0, 0, 0), globals);
 		bool appended = array_push_back(source_environments->m.env, Ast, sourcenv);
 		assert(appended);
 	}
