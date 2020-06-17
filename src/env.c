@@ -433,7 +433,7 @@ Ast source_env(
 	assert(source <= array_length(source_environments->m.env));
 	if(source == array_length(source_environments->m.env)) {
 
-		Ast  sourcenv = new_env(make_sloc(source, 0, 0, 0), globals);
+		Ast  sourcenv = new_env(make_sloc(source, 0, 0, 0), NULL);
 		bool appended = array_push_back(source_environments->m.env, Ast, sourcenv);
 		assert(appended);
 	}

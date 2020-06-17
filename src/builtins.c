@@ -2564,7 +2564,7 @@ builtin_applicate(
 			}
 		case AST_Function: {
 				Ast locals = source_env(sloc_source(rexpr->sloc));
-				locals     = link_env(sloc, env, locals);
+				locals     = link_env(sloc, locals, env);
 				locals     = new_env(sloc, locals);
 				addenv_args(locals, env, sloc, rexpr->m.lexpr, lexpr);
 				return refeval(locals, rexpr->m.rexpr);
@@ -2589,7 +2589,7 @@ builtin_applicate(
 			}
 		case AST_Function: {
 				Ast locals = source_env(sloc_source(rexpr->sloc));
-				locals     = link_env(sloc, env, locals);
+				locals     = link_env(sloc, locals, env);
 				locals     = new_env(sloc, locals);
 				addenv_args(locals, env, sloc, rexpr->m.lexpr, lexpr);
 				return eval(locals, rexpr->m.rexpr);
@@ -2601,7 +2601,7 @@ builtin_applicate(
 		}
 	case AST_Function: {
 			Ast locals = source_env(sloc_source(lexpr->sloc));
-			locals     = link_env(sloc, env, locals);
+			locals     = link_env(sloc, locals, env);
 			locals     = new_env(sloc, locals);
 			addenv_args(locals, env, sloc, lexpr->m.lexpr, rexpr);
 			return eval(locals, lexpr->m.rexpr);

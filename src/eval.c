@@ -97,7 +97,7 @@ evalop(
 		break;
 	case AST_OperatorFunction:
 		locals = source_env(sloc_source(ast->sloc));
-		locals = link_env(sloc, env, locals);
+		locals = link_env(sloc, locals, env);
 		locals = new_env(sloc, locals);
 		ast    = ast->m.rexpr;
 		addenv_operands(locals, env, sloc, ast->m.lexpr, lexpr, rexpr);

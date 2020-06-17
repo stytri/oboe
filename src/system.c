@@ -975,7 +975,7 @@ builtin_import_1(
 			size_t gts = gc_topof_stack();
 
 			Ast locals = source_env(source);
-			env = link_env(sloc, env, locals);
+			env        = link_env(sloc, locals, env);
 
 			for(size_t ts = gc_topof_stack();
 				*cs;

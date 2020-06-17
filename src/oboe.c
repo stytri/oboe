@@ -464,6 +464,7 @@ process(
 	size_t gts = gc_topof_stack();
 
 	Ast env = source_env(source);
+	env     = link_env(make_sloc(source, 0, 0 ,0), env, globals);
 
 	while(*args) {
 		size_t ts = gc_topof_stack();
