@@ -98,58 +98,61 @@ typedef enum {
 
 // Operators
 
-static unsigned builtin_applicate_enum   = -1;
-static unsigned builtin_tag_enum         = -1;
-static unsigned builtin_tag_ref_enum     = -1;
-static unsigned builtin_const_enum       = -1;
-static unsigned builtin_assign_enum      = -1;
-static unsigned builtin_assign_ref_enum  = -1;
-static unsigned builtin_assign_land_enum = -1;
-static unsigned builtin_assign_lor_enum  = -1;
-static unsigned builtin_assign_and_enum  = -1;
-static unsigned builtin_assign_or_enum   = -1;
-static unsigned builtin_assign_xor_enum  = -1;
-static unsigned builtin_assign_add_enum  = -1;
-static unsigned builtin_assign_sub_enum  = -1;
-static unsigned builtin_assign_mul_enum  = -1;
-static unsigned builtin_assign_div_enum  = -1;
-static unsigned builtin_assign_mod_enum  = -1;
-static unsigned builtin_assign_shl_enum  = -1;
-static unsigned builtin_assign_shr_enum  = -1;
-static unsigned builtin_assign_exl_enum  = -1;
-static unsigned builtin_assign_exr_enum  = -1;
-static unsigned builtin_assign_rol_enum  = -1;
-static unsigned builtin_assign_ror_enum  = -1;
-static unsigned builtin_exchange_enum    = -1;
-static unsigned builtin_if_enum          = -1;
-static unsigned builtin_ifnot_enum       = -1;
-static unsigned builtin_case_enum        = -1;
-static unsigned builtin_while_enum       = -1;
-static unsigned builtin_until_enum       = -1;
-static unsigned builtin_land_enum        = -1;
-static unsigned builtin_lor_enum         = -1;
-static unsigned builtin_lt_enum          = -1;
-static unsigned builtin_lte_enum         = -1;
-static unsigned builtin_eq_enum          = -1;
-static unsigned builtin_neq_enum         = -1;
-static unsigned builtin_gte_enum         = -1;
-static unsigned builtin_gt_enum          = -1;
-static unsigned builtin_and_enum         = -1;
-static unsigned builtin_or_enum          = -1;
-static unsigned builtin_xor_enum         = -1;
-static unsigned builtin_add_enum         = -1;
-static unsigned builtin_sub_enum         = -1;
-static unsigned builtin_mul_enum         = -1;
-static unsigned builtin_div_enum         = -1;
-static unsigned builtin_mod_enum         = -1;
-static unsigned builtin_shl_enum         = -1;
-static unsigned builtin_shr_enum         = -1;
-static unsigned builtin_exl_enum         = -1;
-static unsigned builtin_exr_enum         = -1;
-static unsigned builtin_rol_enum         = -1;
-static unsigned builtin_ror_enum         = -1;
-static unsigned builtin_array_enum       = -1;
-static unsigned builtin_range_enum       = -1;
+static unsigned builtin_applicate_enum      = -1;
+static unsigned builtin_tag_enum            = -1;
+static unsigned builtin_tag_ref_enum        = -1;
+static unsigned builtin_const_enum          = -1;
+static unsigned builtin_global_tag_enum     = -1;
+static unsigned builtin_global_tag_ref_enum = -1;
+static unsigned builtin_global_const_enum   = -1;
+static unsigned builtin_assign_enum         = -1;
+static unsigned builtin_assign_ref_enum     = -1;
+static unsigned builtin_assign_land_enum    = -1;
+static unsigned builtin_assign_lor_enum     = -1;
+static unsigned builtin_assign_and_enum     = -1;
+static unsigned builtin_assign_or_enum      = -1;
+static unsigned builtin_assign_xor_enum     = -1;
+static unsigned builtin_assign_add_enum     = -1;
+static unsigned builtin_assign_sub_enum     = -1;
+static unsigned builtin_assign_mul_enum     = -1;
+static unsigned builtin_assign_div_enum     = -1;
+static unsigned builtin_assign_mod_enum     = -1;
+static unsigned builtin_assign_shl_enum     = -1;
+static unsigned builtin_assign_shr_enum     = -1;
+static unsigned builtin_assign_exl_enum     = -1;
+static unsigned builtin_assign_exr_enum     = -1;
+static unsigned builtin_assign_rol_enum     = -1;
+static unsigned builtin_assign_ror_enum     = -1;
+static unsigned builtin_exchange_enum       = -1;
+static unsigned builtin_if_enum             = -1;
+static unsigned builtin_ifnot_enum          = -1;
+static unsigned builtin_case_enum           = -1;
+static unsigned builtin_while_enum          = -1;
+static unsigned builtin_until_enum          = -1;
+static unsigned builtin_land_enum           = -1;
+static unsigned builtin_lor_enum            = -1;
+static unsigned builtin_lt_enum             = -1;
+static unsigned builtin_lte_enum            = -1;
+static unsigned builtin_eq_enum             = -1;
+static unsigned builtin_neq_enum            = -1;
+static unsigned builtin_gte_enum            = -1;
+static unsigned builtin_gt_enum             = -1;
+static unsigned builtin_and_enum            = -1;
+static unsigned builtin_or_enum             = -1;
+static unsigned builtin_xor_enum            = -1;
+static unsigned builtin_add_enum            = -1;
+static unsigned builtin_sub_enum            = -1;
+static unsigned builtin_mul_enum            = -1;
+static unsigned builtin_div_enum            = -1;
+static unsigned builtin_mod_enum            = -1;
+static unsigned builtin_shl_enum            = -1;
+static unsigned builtin_shr_enum            = -1;
+static unsigned builtin_exl_enum            = -1;
+static unsigned builtin_exr_enum            = -1;
+static unsigned builtin_rol_enum            = -1;
+static unsigned builtin_ror_enum            = -1;
+static unsigned builtin_array_enum          = -1;
+static unsigned builtin_range_enum          = -1;
 
 // Intrinsic Functions
 
@@ -192,12 +195,36 @@ ast_isConst(
 }
 
 inline bool
+ast_isGlobalTag(
+	Ast ast
+) {
+	return ast_isOp(ast, builtin_global_tag_enum);
+}
+
+inline bool
+ast_isGlobalTagRef(
+	Ast ast
+) {
+	return ast_isOp(ast, builtin_global_tag_ref_enum);
+}
+
+inline bool
+ast_isGlobalConst(
+	Ast ast
+) {
+	return ast_isOp(ast, builtin_global_const_enum);
+}
+
+inline bool
 ast_isDeclaration(
 	Ast ast
 ) {
 	return ast_isOp(ast, builtin_tag_enum)
 		|| ast_isOp(ast, builtin_tag_ref_enum)
 		|| ast_isOp(ast, builtin_const_enum)
+		|| ast_isOp(ast, builtin_global_tag_enum)
+		|| ast_isOp(ast, builtin_global_tag_ref_enum)
+		|| ast_isOp(ast, builtin_global_const_enum)
 	;
 }
 
@@ -1807,7 +1834,8 @@ builtin_decl(
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
-	bool   is_const
+	bool   is_const,
+	bool   is_global
 ) {
 	lexpr = unquote(lexpr);
 
@@ -1817,7 +1845,7 @@ builtin_decl(
 			&& ast_isParameters(lexpr->m.rexpr)
 		) {
 			rexpr = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
-			addenv(env, sloc, lexpr->m.lexpr, rexpr, ((is_const) ? ATTR_NoAssign : 0));
+			addenv((is_global ? globals : env), sloc, lexpr->m.lexpr, rexpr, (is_const ? ATTR_NoAssign : 0));
 			return rexpr;
 		}
 		// OperatorFunction with precedence
@@ -1833,7 +1861,7 @@ builtin_decl(
 			uint64_t    hash  = lexpr->m.lexpr->m.rexpr->m.hash;
 			rexpr             = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
 			rexpr             = new_ast(sloc, AST_OperatorFunction, s, rexpr, prec);
-			size_t      index = define(operators, hash, rexpr, ((is_const) ? ATTR_NoAssign : 0));
+			size_t      index = define(operators, hash, rexpr, (is_const ? ATTR_NoAssign : 0));
 			assert(~index != 0);
 			return rexpr;
 		}
@@ -1845,7 +1873,7 @@ builtin_decl(
 			uint64_t    hash  = lexpr->m.lexpr->m.hash;
 			rexpr             = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
 			rexpr             = new_ast(sloc, AST_OperatorFunction, s, rexpr, P_Assigning);
-			size_t      index = define(operators, hash, rexpr, ((is_const) ? ATTR_NoAssign : 0));
+			size_t      index = define(operators, hash, rexpr, (is_const ? ATTR_NoAssign : 0));
 			assert(~index != 0);
 			return rexpr;
 		}
@@ -1872,14 +1900,14 @@ builtin_decl(
 		);
 	case AST_Identifier:
 		rexpr = evaluate_instance(env, sloc, rexpr, BY_Value);
-		rexpr = addenv(env, sloc, lexpr, rexpr, ((is_const) ? ATTR_NoAssign : 0));
+		rexpr = addenv((is_global ? globals : env), sloc, lexpr, rexpr, (is_const ? ATTR_NoAssign : 0));
 		return rexpr;
 	case AST_String: // for OperatorAlias
 		if(ast_isString(rexpr)) {
 			String      s     = lexpr->m.sval;
 			uint64_t    hash  = lexpr->m.hash;
 			rexpr             = new_ast(sloc, AST_OperatorAlias, s, rexpr->m.sval);
-			size_t      index = define(operators, hash, rexpr, ((is_const) ? ATTR_NoAssign : 0));
+			size_t      index = define(operators, hash, rexpr, (is_const ? ATTR_NoAssign : 0));
 			assert(~index != 0);
 			return rexpr;
 		}
@@ -1895,7 +1923,8 @@ builtin_decl_ref(
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
-	bool   is_const
+	bool   is_const,
+	bool   is_global
 ) {
 	lexpr = unquote(lexpr);
 
@@ -1906,7 +1935,7 @@ builtin_decl_ref(
 			if(is_const) {
 				rexpr = dup_ref(sloc, rexpr);
 			}
-			addenv(env, sloc, lexpr, rexpr, ((is_const) ? ATTR_NoAssign : 0));
+			addenv((is_global ? globals : env), sloc, lexpr, rexpr, (is_const ? ATTR_NoAssign : 0));
 			return rexpr;
 		}
 		nobreak;
@@ -1922,7 +1951,7 @@ builtin_tag(
 	Ast    lexpr,
 	Ast    rexpr
 ) {
-	return builtin_decl(env, sloc, lexpr, rexpr, false);
+	return builtin_decl(env, sloc, lexpr, rexpr, false, false);
 }
 
 static inline Ast
@@ -1932,7 +1961,7 @@ builtin_tag_ref(
 	Ast    lexpr,
 	Ast    rexpr
 ) {
-	return builtin_decl_ref(env, sloc, lexpr, rexpr, false);
+	return builtin_decl_ref(env, sloc, lexpr, rexpr, false, false);
 }
 
 static inline Ast
@@ -1942,7 +1971,37 @@ builtin_const(
 	Ast    lexpr,
 	Ast    rexpr
 ) {
-	return builtin_decl(env, sloc, lexpr, rexpr, true);
+	return builtin_decl(env, sloc, lexpr, rexpr, true, false);
+}
+
+static inline Ast
+builtin_global_tag(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_decl(env, sloc, lexpr, rexpr, false, true);
+}
+
+static inline Ast
+builtin_global_tag_ref(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_decl_ref(env, sloc, lexpr, rexpr, false, true);
+}
+
+static inline Ast
+builtin_global_const(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_decl(env, sloc, lexpr, rexpr, true, true);
 }
 
 //------------------------------------------------------------------------------
@@ -2504,7 +2563,9 @@ builtin_applicate(
 				return new_ast(sloc, AST_String, s);
 			}
 		case AST_Function: {
-				Ast locals = new_env(sloc, env);
+				Ast locals = source_env(sloc_source(rexpr->sloc));
+				locals     = link_env(sloc, env, locals);
+				locals     = new_env(sloc, locals);
 				addenv_args(locals, env, sloc, rexpr->m.lexpr, lexpr);
 				return refeval(locals, rexpr->m.rexpr);
 			}
@@ -2527,7 +2588,9 @@ builtin_applicate(
 				return new_ast(sloc, AST_String, s);
 			}
 		case AST_Function: {
-				Ast locals = new_env(sloc, env);
+				Ast locals = source_env(sloc_source(rexpr->sloc));
+				locals     = link_env(sloc, env, locals);
+				locals     = new_env(sloc, locals);
 				addenv_args(locals, env, sloc, rexpr->m.lexpr, lexpr);
 				return eval(locals, rexpr->m.rexpr);
 			}
@@ -2537,7 +2600,9 @@ builtin_applicate(
 			return builtin_mul(env, sloc, lexpr, rexpr);
 		}
 	case AST_Function: {
-			Ast locals = new_env(sloc, env);
+			Ast locals = source_env(sloc_source(lexpr->sloc));
+			locals     = link_env(sloc, env, locals);
+			locals     = new_env(sloc, locals);
 			addenv_args(locals, env, sloc, lexpr->m.lexpr, rexpr);
 			return eval(locals, lexpr->m.rexpr);
 		}
@@ -2681,58 +2746,61 @@ initialise_builtin_operators(
 	void
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN(    "", applicate  , P_Binding)
-		BUILTIN(   ":", tag        , P_Declarative)
-		BUILTIN(  ":^", tag_ref    , P_Declarative)
-		BUILTIN(  "::", const      , P_Declarative)
-		BUILTIN(   "=", assign     , P_Assigning)
-		BUILTIN(  "=^", assign_ref , P_Assigning)
-		BUILTIN( "&&=", assign_land, P_Assigning)
-		BUILTIN( "||=", assign_lor , P_Assigning)
-		BUILTIN(  "&=", assign_and , P_Assigning)
-		BUILTIN(  "|=", assign_or  , P_Assigning)
-		BUILTIN(  "~=", assign_xor , P_Assigning)
-		BUILTIN(  "+=", assign_add , P_Assigning)
-		BUILTIN(  "-=", assign_sub , P_Assigning)
-		BUILTIN(  "*=", assign_mul , P_Assigning)
-		BUILTIN(  "/=", assign_div , P_Assigning)
-		BUILTIN( "//=", assign_mod , P_Assigning)
-		BUILTIN( "<<=", assign_shl , P_Assigning)
-		BUILTIN( ">>=", assign_shr , P_Assigning)
-		BUILTIN("<<<=", assign_exl , P_Assigning)
-		BUILTIN(">>>=", assign_exr , P_Assigning)
-		BUILTIN("<<>=", assign_rol , P_Assigning)
-		BUILTIN("<>>=", assign_ror , P_Assigning)
-		BUILTIN(  "><", exchange   , P_Assigning)
-		BUILTIN(   "?", if         , P_Conditional)
-		BUILTIN(   "!", ifnot      , P_Conditional)
-		BUILTIN(  "?:", case       , P_Conditional)
-		BUILTIN(  "?*", while      , P_Conditional)
-		BUILTIN(  "!*", until      , P_Conditional)
-		BUILTIN(  "&&", land       , P_Logical)
-		BUILTIN(  "||", lor        , P_Logical)
-		BUILTIN(   "<", lt         , P_Relational)
-		BUILTIN(  "<=", lte        , P_Relational)
-		BUILTIN(  "==", eq         , P_Relational)
-		BUILTIN(  "<>", neq        , P_Relational)
-		BUILTIN(  ">=", gte        , P_Relational)
-		BUILTIN(   ">", gt         , P_Relational)
-		BUILTIN(   "&", and        , P_Bitwise)
-		BUILTIN(   "|", or         , P_Bitwise)
-		BUILTIN(   "~", xor        , P_Bitwise)
-		BUILTIN(   "+", add        , P_Additive)
-		BUILTIN(   "-", sub        , P_Additive)
-		BUILTIN(   "*", mul        , P_Multiplicative)
-		BUILTIN(   "/", div        , P_Multiplicative)
-		BUILTIN(  "//", mod        , P_Multiplicative)
-		BUILTIN(  "<<", shl        , P_Exponential)
-		BUILTIN(  ">>", shr        , P_Exponential)
-		BUILTIN( "<<<", exl        , P_Exponential)
-		BUILTIN( ">>>", exr        , P_Exponential)
-		BUILTIN( "<<>", rol        , P_Exponential)
-		BUILTIN( "<>>", ror        , P_Exponential)
-		BUILTIN(  "[]", array      , P_Binding)
-		BUILTIN(  "..", range      , P_Binding)
+		BUILTIN(    "", applicate      , P_Binding)
+		BUILTIN(   ":", tag            , P_Declarative)
+		BUILTIN(  ":^", tag_ref        , P_Declarative)
+		BUILTIN(  "::", const          , P_Declarative)
+		BUILTIN( "(:)", global_tag     , P_Declarative)
+		BUILTIN("(:^)", global_tag_ref , P_Declarative)
+		BUILTIN("(::)", global_const   , P_Declarative)
+		BUILTIN(   "=", assign         , P_Assigning)
+		BUILTIN(  "=^", assign_ref     , P_Assigning)
+		BUILTIN( "&&=", assign_land    , P_Assigning)
+		BUILTIN( "||=", assign_lor     , P_Assigning)
+		BUILTIN(  "&=", assign_and     , P_Assigning)
+		BUILTIN(  "|=", assign_or      , P_Assigning)
+		BUILTIN(  "~=", assign_xor     , P_Assigning)
+		BUILTIN(  "+=", assign_add     , P_Assigning)
+		BUILTIN(  "-=", assign_sub     , P_Assigning)
+		BUILTIN(  "*=", assign_mul     , P_Assigning)
+		BUILTIN(  "/=", assign_div     , P_Assigning)
+		BUILTIN( "//=", assign_mod     , P_Assigning)
+		BUILTIN( "<<=", assign_shl     , P_Assigning)
+		BUILTIN( ">>=", assign_shr     , P_Assigning)
+		BUILTIN("<<<=", assign_exl     , P_Assigning)
+		BUILTIN(">>>=", assign_exr     , P_Assigning)
+		BUILTIN("<<>=", assign_rol     , P_Assigning)
+		BUILTIN("<>>=", assign_ror     , P_Assigning)
+		BUILTIN(  "><", exchange       , P_Assigning)
+		BUILTIN(   "?", if             , P_Conditional)
+		BUILTIN(   "!", ifnot          , P_Conditional)
+		BUILTIN(  "?:", case           , P_Conditional)
+		BUILTIN(  "?*", while          , P_Conditional)
+		BUILTIN(  "!*", until          , P_Conditional)
+		BUILTIN(  "&&", land           , P_Logical)
+		BUILTIN(  "||", lor            , P_Logical)
+		BUILTIN(   "<", lt             , P_Relational)
+		BUILTIN(  "<=", lte            , P_Relational)
+		BUILTIN(  "==", eq             , P_Relational)
+		BUILTIN(  "<>", neq            , P_Relational)
+		BUILTIN(  ">=", gte            , P_Relational)
+		BUILTIN(   ">", gt             , P_Relational)
+		BUILTIN(   "&", and            , P_Bitwise)
+		BUILTIN(   "|", or             , P_Bitwise)
+		BUILTIN(   "~", xor            , P_Bitwise)
+		BUILTIN(   "+", add            , P_Additive)
+		BUILTIN(   "-", sub            , P_Additive)
+		BUILTIN(   "*", mul            , P_Multiplicative)
+		BUILTIN(   "/", div            , P_Multiplicative)
+		BUILTIN(  "//", mod            , P_Multiplicative)
+		BUILTIN(  "<<", shl            , P_Exponential)
+		BUILTIN(  ">>", shr            , P_Exponential)
+		BUILTIN( "<<<", exl            , P_Exponential)
+		BUILTIN( ">>>", exr            , P_Exponential)
+		BUILTIN( "<<>", rol            , P_Exponential)
+		BUILTIN( "<>>", ror            , P_Exponential)
+		BUILTIN(  "[]", array          , P_Binding)
+		BUILTIN(  "..", range          , P_Binding)
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 

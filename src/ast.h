@@ -243,6 +243,21 @@ ast_isConst(
 );
 
 extern bool
+ast_isGlobalTag(
+	Ast ast
+);
+
+extern bool
+ast_isGlobalTagRef(
+	Ast ast
+);
+
+extern bool
+ast_isGlobalConst(
+	Ast ast
+);
+
+extern bool
 ast_isDeclaration(
 	Ast ast
 );

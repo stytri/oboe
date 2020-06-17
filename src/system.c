@@ -966,12 +966,17 @@ builtin_import_1(
 			unsigned    line   = 0;
 			char const *cs     = StringToCharLiteral(s, NULL);
 
+			size_t gts = gc_topof_stack();
+
+			Ast locals = source_env(source);
+			env = link_env(sloc, env, locals);
+
 			for(size_t ts = gc_topof_stack();
 				*cs;
 			) {
 				arg = parse(cs, &cs, source, &line, new_ast_from_lexeme, false);
 				if(ast_isnotZen(arg)) {
-					arg = eval(globals, arg);
+					arg = eval(env, arg);
 				}
 
 				gc_return(ts, arg);
@@ -981,6 +986,9 @@ builtin_import_1(
 					break;
 				}
 			}
+
+			gc_return(gts, arg);
+			run_gc();
 
 			StringDelete(s);
 

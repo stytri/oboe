@@ -418,6 +418,31 @@ initialise_env(
 
 //------------------------------------------------------------------------------
 
+Ast source_env(
+	unsigned source
+) {
+	static Ast source_environments =  NULL;
+
+	if(!source_environments) {
+		source_environments = new_env(0, NULL);
+
+		bool appended = array_push_back(globals->m.env, Ast, source_environments);
+		assert(appended);
+	}
+
+	assert(source <= array_length(source_environments->m.env));
+	if(source == array_length(source_environments->m.env)) {
+
+		Ast  sourcenv = new_env(make_sloc(source, 0, 0, 0), globals);
+		bool appended = array_push_back(source_environments->m.env, Ast, sourcenv);
+		assert(appended);
+	}
+
+	return array_at(source_environments->m.env, Ast, source);
+}
+
+//------------------------------------------------------------------------------
+
 Ast
 getopr(
 	size_t index

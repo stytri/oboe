@@ -461,6 +461,10 @@ process(
 		t1 = clock();
 	}
 
+	size_t gts = gc_topof_stack();
+
+	Ast env = source_env(source);
+
 	while(*args) {
 		size_t ts = gc_topof_stack();
 
@@ -469,7 +473,7 @@ process(
 			graph(gfile, gtitle, ast);
 		}
 		if(ast && doeval) {
-			ast = refeval(globals, ast);
+			ast = refeval(env, ast);
 			if(!quiet) {
 				print(ast);
 			}
@@ -478,6 +482,9 @@ process(
 		gc_revert(ts);
 		run_gc();
 	}
+
+	gc_revert(gts);
+	run_gc();
 
 	if(timed) {
 		clock_t     t2     = clock();
