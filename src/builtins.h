@@ -58,6 +58,11 @@ initialise_builtinfn(
 	size_t                 n_builtinfn
 );
 
+extern int
+initialise_builtin_math_functions(
+	Ast env
+);
+
 #define BUILTIN(Lexeme, Name, ...)  { Lexeme, builtin_##Name, &builtin_##Name##_enum, __VA_ARGS__ },
 
 //------------------------------------------------------------------------------

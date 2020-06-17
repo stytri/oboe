@@ -2815,9 +2815,11 @@ initialise_builtin_operators(
 	return EXIT_SUCCESS;
 }
 
-static int
+//------------------------------------------------------------------------------
+
+int
 initialise_builtin_math_functions(
-	void
+	Ast env
 ) {
 	static struct builtinfn const builtinfn[] = {
 #		undef  DOUBLE_MATH1_FN
@@ -2834,7 +2836,7 @@ initialise_builtin_math_functions(
 	if(initialise) {
 		initialise = false;
 
-		return initialise_builtinfn(globals, builtinfn, n_builtinfn);
+		return initialise_builtinfn(env, builtinfn, n_builtinfn);
 	}
 
 	return EXIT_SUCCESS;
@@ -2857,7 +2859,7 @@ initialise_builtins(
 ) {
 	initialise_builtin_datatypes();
 	initialise_builtin_operators();
-	if(has_math) initialise_builtin_math_functions();
+	if(has_math) initialise_builtin_math_functions(globals);
 
 	return EXIT_SUCCESS;
 }

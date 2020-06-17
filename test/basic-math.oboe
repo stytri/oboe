@@ -1,0 +1,45 @@
+math@import;
+
+e:(
+	1.0 + (
+		x:,
+		(n:1..9) ?* (
+			x += 1.0 / (
+				f:1.0,
+				(i:1..n) ?* (
+					f *= i
+				)
+			)
+		)
+	)
+);
+pi:245850922.0/78256779;
+
+(ceil  e    )@println;
+(floor e    )@println;
+(trunc e    )@println;
+(round e    )@println;
+(sin   e    )@println;
+(cos   e    )@println;
+(tan   e    )@println;
+(cosh (e/pi))@println;
+(sinh (e/pi))@println;
+(tanh (e/pi))@println;
+(acos (e/e) )@println;
+(asin (e/e) )@println;
+(atan (e/e) )@println;
+(atan2(e,pi))@println;
+(acosh   pi )@println;
+(asinh   pi )@println;
+(atanh(e/pi))@println;
+(exp   e    )@println;
+(exp2  e    )@println;
+(log   e    )@println;
+(log2  e    )@println;
+(log10 e    )@println;
+(sqrt  e    )@println;
+(cbrt  e    )@println;
+(fmin (e,pi))@println;
+(fmax (e,pi))@println;
+(pow  (e,pi )@println;
+(hypot(e,pi )@println;

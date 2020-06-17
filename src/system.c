@@ -954,8 +954,14 @@ builtin_import_1(
 	sloc_t sloc,
 	Ast    arg
 ) {
-	arg = eval(env, arg);
-	if(ast_isString(arg)) {
+	if(ast_isIdentifier(arg)) {
+
+		if(StringEqualCharLiteral(arg->m.sval, "math", 4)) {
+			initialise_builtin_math_functions(env);
+			return ZEN;
+		}
+
+	} else if(ast_isString(arg)) {
 
 		String file = arg->m.sval;
 		String s    = mapoboefile(file);
