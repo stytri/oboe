@@ -46,6 +46,17 @@ initialise_builtinop(
 	size_t                 n_builtinop
 );
 
+struct builtinalias {
+	char const *alias;
+	char const *op;
+};
+extern int
+initialise_builtinalias(
+	Ast                       env,
+	struct builtinalias const builtinalias[],
+	size_t                    n_builtinalias
+);
+
 struct builtinfn {
 	char const *leme;
 	BuiltinFn   func;

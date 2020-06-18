@@ -190,6 +190,22 @@ restart_continue:
 			;
 		goto restart_continue;
 
+	case '\\':
+		c = utf8chr(end = cs, &cs);
+		if(is_Operator(c)) {
+			do {
+				c = utf8chr(end = cs, &cs);
+			} while(is_Operator(c))
+				;
+		} else if(is_ID_Start(c)) {
+			do {
+				c = utf8chr(end = cs, &cs);
+			} while(is_ID_Continue(c))
+				;
+		}
+		*endp = end;
+		break;
+
 	case '(': case '[': case '{': {
 		char32_t const  ec = (c == '(') ? ')' : (c == '[') ? ']' : '}';
 		char     const *ct;

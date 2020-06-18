@@ -149,6 +149,10 @@ See `lex.h` for permitted lexeme characters.
 
 Where an _operand_-less **operator** is bracketed sans space, then this forms a distinct **operator**.
 
+##### Named operators
+
+User-defined operators can be named by prefixing an **identifier** with `\`.
+
 #### Identifiers
 
 See `lex.h` for permitted lexeme characters.

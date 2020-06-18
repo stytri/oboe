@@ -1040,9 +1040,14 @@ initialise_system_environment(
 	void
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN("@", sigil, P_Binding)
+		BUILTIN("\\sigil", sigil, P_Binding)
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
+
+	static struct builtinalias const builtinalias[] = {
+		{"@", "\\sigil" },
+	};
+	static size_t const n_builtinalias = sizeof(builtinalias) / sizeof(builtinalias[0]);
 
 	static struct builtinfn const builtinfn[] = {
 		BUILTIN("system"      , system)
@@ -1066,10 +1071,8 @@ initialise_system_environment(
 		BUILTIN("to_Literal"  , to_Literal)
 		BUILTIN("to_Integer"  , to_Integer)
 		BUILTIN("to_Float"    , to_Float)
-#if 1
 		BUILTIN("assert"      , assert)
 		BUILTIN("setlocale"   , setlocale)
-#endif
 		BUILTIN("getenv"      , getenv)
 		BUILTIN("clock"       , clock)
 		BUILTIN("time"        , time)
@@ -1103,8 +1106,9 @@ initialise_system_environment(
 		addenv_named(system_environment, 0, "CLOCKS_PER_SEC", var, ATTR_NoAssign);
 
 		initialise_datatypes();
-		initialise_builtinfn(system_environment, builtinfn, n_builtinfn);
-		initialise_builtinop(operators         , builtinop, n_builtinop);
+		initialise_builtinfn   (system_environment, builtinfn   , n_builtinfn);
+		initialise_builtinop   (operators         , builtinop   , n_builtinop);
+		initialise_builtinalias(operators         , builtinalias, n_builtinalias);
 		initialise_errors();
 	}
 

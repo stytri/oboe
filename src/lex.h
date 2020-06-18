@@ -87,6 +87,7 @@ is_Primary(
 	case '"': case '\'': case '`':
 	case '(': case '[': case '{':
 		return 1;
+	case '\\':
 	case ')': case ']': case '}':
 	case ';': case ',':
 	case '#':
@@ -101,6 +102,8 @@ is_Operator(
 	switch(c) {
 	default :
 		return is_UCS(UCS_Operator, c);
+	case '\\':
+		return 1;
 	case '"': case '\'': case '`':
 	case '(': case '[': case '{':
 	case ')': case ']': case '}':
@@ -117,6 +120,7 @@ is_Reserved(
 	switch(c) {
 	default :
 		return 0;
+	case '\\':
 	case '"': case '\'': case '`':
 	case '(': case '[': case '{':
 	case ')': case ']': case '}':

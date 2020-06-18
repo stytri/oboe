@@ -39,6 +39,12 @@ precedence(
 	size_t   index = locate(operators, hash, cs, n);
 
 	Ast opr = getopr(index);
+	while(ast_isOperatorAlias(opr)) {
+		cs    = StringToCharLiteral(opr->m.tval, &n);
+		hash  = memhash(cs, n, 0);
+		index = locate(operators, hash, cs, n);
+		opr   = getopr(index);
+	}
 
 	return (opr != ZEN) ? opr->qual : P_None;
 }

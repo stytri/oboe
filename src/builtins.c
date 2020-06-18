@@ -1828,6 +1828,20 @@ ast_isParameters(
 	}
 }
 
+static inline Ast
+operator_alias(
+	Ast      env,
+	sloc_t   sloc,
+	String   s,
+	uint64_t hash,
+	Ast      rexpr
+) {
+	rexpr             = new_ast(sloc, AST_OperatorAlias, s, rexpr->m.sval);
+	size_t      index = define(env, hash, rexpr, ATTR_NoAssign);
+	assert(~index != 0);
+	return rexpr;
+}
+
 static Ast
 builtin_decl(
 	Ast    env,
@@ -1873,7 +1887,7 @@ builtin_decl(
 			uint64_t    hash  = lexpr->m.lexpr->m.hash;
 			rexpr             = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
 			rexpr             = new_ast(sloc, AST_OperatorFunction, s, rexpr, P_Assigning);
-			size_t      index = define(operators, hash, rexpr, (is_const ? ATTR_NoAssign : 0));
+			size_t      index = define(operators, hash, rexpr, ATTR_NoAssign);
 			assert(~index != 0);
 			return rexpr;
 		}
@@ -1904,11 +1918,7 @@ builtin_decl(
 		return rexpr;
 	case AST_String: // for OperatorAlias
 		if(ast_isString(rexpr)) {
-			String      s     = lexpr->m.sval;
-			uint64_t    hash  = lexpr->m.hash;
-			rexpr             = new_ast(sloc, AST_OperatorAlias, s, rexpr->m.sval);
-			size_t      index = define(operators, hash, rexpr, (is_const ? ATTR_NoAssign : 0));
-			assert(~index != 0);
+			rexpr = operator_alias(operators, sloc, lexpr->m.sval, lexpr->m.hash, rexpr);
 			return rexpr;
 		}
 		nobreak;
@@ -2731,6 +2741,31 @@ initialise_builtinop(
 }
 
 int
+initialise_builtinalias(
+	Ast                       env,
+	struct builtinalias const builtinalias[],
+	size_t                    n_builtinalias
+) {
+	size_t ts = gc_topof_stack();
+
+	for(size_t i = 0; i < n_builtinalias; ++i) {
+		char const *cs   = builtinalias[i].alias;
+		size_t      n    = strlen(cs);
+		uint64_t    hash = memhash(cs, n, 0);
+		String      s    = CharLiteralToString(cs, n);
+		char const *ct   = builtinalias[i].op;
+		String      t    = CharLiteralToString(ct, strlen(ct));
+		Ast         ast  = new_ast(0, AST_String, t);
+
+		operator_alias(env, 0, s, hash, ast);
+	}
+
+	gc_revert(ts);
+
+	return EXIT_SUCCESS;
+}
+
+int
 initialise_builtinfn(
 	Ast                    env,
 	struct builtinfn const builtinfn[],
@@ -2761,70 +2796,130 @@ initialise_builtin_operators(
 	void
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN(    "", applicate      , P_Binding)
-		BUILTIN(   ":", tag            , P_Declarative)
-		BUILTIN(  ":^", tag_ref        , P_Declarative)
-		BUILTIN(  "::", const          , P_Declarative)
-		BUILTIN( "(:)", global_tag     , P_Declarative)
-		BUILTIN("(:^)", global_tag_ref , P_Declarative)
-		BUILTIN("(::)", global_const   , P_Declarative)
-		BUILTIN(   "=", assign         , P_Assigning)
-		BUILTIN(  "=^", assign_ref     , P_Assigning)
-		BUILTIN( "&&=", assign_land    , P_Assigning)
-		BUILTIN( "||=", assign_lor     , P_Assigning)
-		BUILTIN(  "&=", assign_and     , P_Assigning)
-		BUILTIN(  "|=", assign_or      , P_Assigning)
-		BUILTIN(  "~=", assign_xor     , P_Assigning)
-		BUILTIN(  "+=", assign_add     , P_Assigning)
-		BUILTIN(  "-=", assign_sub     , P_Assigning)
-		BUILTIN(  "*=", assign_mul     , P_Assigning)
-		BUILTIN(  "/=", assign_div     , P_Assigning)
-		BUILTIN( "//=", assign_mod     , P_Assigning)
-		BUILTIN( "<<=", assign_shl     , P_Assigning)
-		BUILTIN( ">>=", assign_shr     , P_Assigning)
-		BUILTIN("<<<=", assign_exl     , P_Assigning)
-		BUILTIN(">>>=", assign_exr     , P_Assigning)
-		BUILTIN("<<>=", assign_rol     , P_Assigning)
-		BUILTIN("<>>=", assign_ror     , P_Assigning)
-		BUILTIN(  "><", exchange       , P_Assigning)
-		BUILTIN(   "?", if             , P_Conditional)
-		BUILTIN(   "!", ifnot          , P_Conditional)
-		BUILTIN(  "?:", case           , P_Conditional)
-		BUILTIN(  "?*", while          , P_Conditional)
-		BUILTIN(  "!*", until          , P_Conditional)
-		BUILTIN(  "&&", land           , P_Logical)
-		BUILTIN(  "||", lor            , P_Logical)
-		BUILTIN(   "<", lt             , P_Relational)
-		BUILTIN(  "<=", lte            , P_Relational)
-		BUILTIN(  "==", eq             , P_Relational)
-		BUILTIN(  "<>", neq            , P_Relational)
-		BUILTIN(  ">=", gte            , P_Relational)
-		BUILTIN(   ">", gt             , P_Relational)
-		BUILTIN(   "&", and            , P_Bitwise)
-		BUILTIN(   "|", or             , P_Bitwise)
-		BUILTIN(   "~", xor            , P_Bitwise)
-		BUILTIN(   "+", add            , P_Additive)
-		BUILTIN(   "-", sub            , P_Additive)
-		BUILTIN(   "*", mul            , P_Multiplicative)
-		BUILTIN(   "/", div            , P_Multiplicative)
-		BUILTIN(  "//", mod            , P_Multiplicative)
-		BUILTIN(  "<<", shl            , P_Exponential)
-		BUILTIN(  ">>", shr            , P_Exponential)
-		BUILTIN( "<<<", exl            , P_Exponential)
-		BUILTIN( ">>>", exr            , P_Exponential)
-		BUILTIN( "<<>", rol            , P_Exponential)
-		BUILTIN( "<>>", ror            , P_Exponential)
-		BUILTIN(  "[]", array          , P_Binding)
-		BUILTIN(  "..", range          , P_Binding)
+		BUILTIN("\\applicate"      , applicate      , P_Binding)
+		BUILTIN("\\tag"            , tag            , P_Declarative)
+		BUILTIN("\\tag_ref"        , tag_ref        , P_Declarative)
+		BUILTIN("\\const"          , const          , P_Declarative)
+		BUILTIN("\\global_tag"     , global_tag     , P_Declarative)
+		BUILTIN("\\global_tag_ref" , global_tag_ref , P_Declarative)
+		BUILTIN("\\global_const"   , global_const   , P_Declarative)
+		BUILTIN("\\assign"         , assign         , P_Assigning)
+		BUILTIN("\\assign_ref"     , assign_ref     , P_Assigning)
+		BUILTIN("\\assign_land"    , assign_land    , P_Assigning)
+		BUILTIN("\\assign_lor"     , assign_lor     , P_Assigning)
+		BUILTIN("\\assign_and"     , assign_and     , P_Assigning)
+		BUILTIN("\\assign_or"      , assign_or      , P_Assigning)
+		BUILTIN("\\assign_xor"     , assign_xor     , P_Assigning)
+		BUILTIN("\\assign_add"     , assign_add     , P_Assigning)
+		BUILTIN("\\assign_sub"     , assign_sub     , P_Assigning)
+		BUILTIN("\\assign_mul"     , assign_mul     , P_Assigning)
+		BUILTIN("\\assign_div"     , assign_div     , P_Assigning)
+		BUILTIN("\\assign_mod"     , assign_mod     , P_Assigning)
+		BUILTIN("\\assign_shl"     , assign_shl     , P_Assigning)
+		BUILTIN("\\assign_shr"     , assign_shr     , P_Assigning)
+		BUILTIN("\\assign_exl"     , assign_exl     , P_Assigning)
+		BUILTIN("\\assign_exr"     , assign_exr     , P_Assigning)
+		BUILTIN("\\assign_rol"     , assign_rol     , P_Assigning)
+		BUILTIN("\\assign_ror"     , assign_ror     , P_Assigning)
+		BUILTIN("\\exchange"       , exchange       , P_Assigning)
+		BUILTIN("\\if"             , if             , P_Conditional)
+		BUILTIN("\\ifnot"          , ifnot          , P_Conditional)
+		BUILTIN("\\case"           , case           , P_Conditional)
+		BUILTIN("\\while"          , while          , P_Conditional)
+		BUILTIN("\\until"          , until          , P_Conditional)
+		BUILTIN("\\land"           , land           , P_Logical)
+		BUILTIN("\\lor"            , lor            , P_Logical)
+		BUILTIN("\\lt"             , lt             , P_Relational)
+		BUILTIN("\\lte"            , lte            , P_Relational)
+		BUILTIN("\\eq"             , eq             , P_Relational)
+		BUILTIN("\\neq"            , neq            , P_Relational)
+		BUILTIN("\\gte"            , gte            , P_Relational)
+		BUILTIN("\\gt"             , gt             , P_Relational)
+		BUILTIN("\\and"            , and            , P_Bitwise)
+		BUILTIN("\\or"             , or             , P_Bitwise)
+		BUILTIN("\\xor"            , xor            , P_Bitwise)
+		BUILTIN("\\add"            , add            , P_Additive)
+		BUILTIN("\\sub"            , sub            , P_Additive)
+		BUILTIN("\\mul"            , mul            , P_Multiplicative)
+		BUILTIN("\\div"            , div            , P_Multiplicative)
+		BUILTIN("\\mod"            , mod            , P_Multiplicative)
+		BUILTIN("\\shl"            , shl            , P_Exponential)
+		BUILTIN("\\shr"            , shr            , P_Exponential)
+		BUILTIN("\\exl"            , exl            , P_Exponential)
+		BUILTIN("\\exr"            , exr            , P_Exponential)
+		BUILTIN("\\rol"            , rol            , P_Exponential)
+		BUILTIN("\\ror"            , ror            , P_Exponential)
+		BUILTIN("\\array"          , array          , P_Binding)
+		BUILTIN("\\range"          , range          , P_Binding)
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
+
+	static struct builtinalias const builtinalias[] = {
+		{    "", "\\applicate"      },
+		{   ":", "\\tag"            },
+		{  ":^", "\\tag_ref"        },
+		{  "::", "\\const"          },
+		{ "(:)", "\\global_tag"     },
+		{"(:^)", "\\global_tag_ref" },
+		{"(::)", "\\global_const"   },
+		{   "=", "\\assign"         },
+		{  "=^", "\\assign_ref"     },
+		{ "&&=", "\\assign_land"    },
+		{ "||=", "\\assign_lor"     },
+		{  "&=", "\\assign_and"     },
+		{  "|=", "\\assign_or"      },
+		{  "~=", "\\assign_xor"     },
+		{  "+=", "\\assign_add"     },
+		{  "-=", "\\assign_sub"     },
+		{  "*=", "\\assign_mul"     },
+		{  "/=", "\\assign_div"     },
+		{ "//=", "\\assign_mod"     },
+		{ "<<=", "\\assign_shl"     },
+		{ ">>=", "\\assign_shr"     },
+		{"<<<=", "\\assign_exl"     },
+		{">>>=", "\\assign_exr"     },
+		{"<<>=", "\\assign_rol"     },
+		{"<>>=", "\\assign_ror"     },
+		{  "><", "\\exchange"       },
+		{   "?", "\\if"             },
+		{   "!", "\\ifnot"          },
+		{  "?:", "\\case"           },
+		{  "?*", "\\while"          },
+		{  "!*", "\\until"          },
+		{  "&&", "\\land"           },
+		{  "||", "\\lor"            },
+		{   "<", "\\lt"             },
+		{  "<=", "\\lte"            },
+		{  "==", "\\eq"             },
+		{  "<>", "\\neq"            },
+		{  ">=", "\\gte"            },
+		{   ">", "\\gt"             },
+		{   "&", "\\and"            },
+		{   "|", "\\or"             },
+		{   "~", "\\xor"            },
+		{   "+", "\\add"            },
+		{   "-", "\\sub"            },
+		{   "*", "\\mul"            },
+		{   "/", "\\div"            },
+		{  "//", "\\mod"            },
+		{  "<<", "\\shl"            },
+		{  ">>", "\\shr"            },
+		{ "<<<", "\\exl"            },
+		{ ">>>", "\\exr"            },
+		{ "<<>", "\\rol"            },
+		{ "<>>", "\\ror"            },
+		{  "[]", "\\array"          },
+		{  "..", "\\range"          },
+	};
+	static size_t const n_builtinalias = sizeof(builtinalias) / sizeof(builtinalias[0]);
 
 	static bool initialise = true;
 
 	if(initialise) {
 		initialise = false;
 
-		return initialise_builtinop(operators, builtinop, n_builtinop);
+		initialise_builtinop   (operators, builtinop   , n_builtinop);
+		initialise_builtinalias(operators, builtinalias, n_builtinalias);
 	}
 
 	return EXIT_SUCCESS;
