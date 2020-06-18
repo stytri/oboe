@@ -6,7 +6,7 @@ a /= 2,              a@println;
 @RAND_MAX /= 2,      @RAND_MAX@println;
 assign(@RAND_MAX,a), @RAND_MAX@println;
 
-c::(@RAND_MAX*2),    c@println;
+c(:)(@RAND_MAX*2),   c@println;
 c  = @RAND_MAX,      c@println;
 c /= 2,              c@println;
 assign(c,@RAND_MAX), c@println;
@@ -18,7 +18,7 @@ v[1] = 7,            v@println;
 assign(v[1],9),      v@println;
 v[3] = 10,           v@println;
 
-u::[1,2,3],          u@println;
+u(:)[1,2,3],         u@println;
 u = [4,5,6],         u@println;
 u[1] = 7,            u@println;
 assign(u[1],9),      u@println;
@@ -26,13 +26,13 @@ u[3] = 10,           u@println;
 u >< v,              (u, ` `)@print, v@println;
 u[1] >< v[1],        (u, ` `)@print, v@println;
 
-e:[one:1,two::2,three:3],            e@println;
+e:[one:1,two(:)2,three:3],           e@println;
 e one = 11, e two = 22, e three = 33,e@println;
 e[0] = 111, e[1] = 222, e[2] = 333,  e@println;
 assign(e two, 2222),                 e@println;
 assign(e[1], 22222),                 e@println;
 
-f::[one:1,two:2,three:3],            f@println;
+f(:)[one:1,two:2,three:3],           f@println;
 f one = 11, f two = 22, f three = 33,f@println;
 f[0] = 111, f[1] = 222, f[2] = 333,  f@println;
 assign(f two, 2222),                 f@println;

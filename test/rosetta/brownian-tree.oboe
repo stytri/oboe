@@ -18,12 +18,12 @@ main(argc, argv): (
 		)
 	),
 
-	NPARTICLES::COVERAGE % (SIDE * SIDE),
+	NPARTICLES(:)COVERAGE % (SIDE * SIDE),
 
 	W:bitmap(SIDE, SIDE),
 	W[SIDE/2][SIDE/2] = 1,
 
-	(i::0..(NPARTICLES-1)) ?* (
+	(i(:)0..(NPARTICLES-1)) ?* (
 		y:, x:,
 
 		(do_over:1; do_over) ?* (
@@ -50,8 +50,8 @@ main(argc, argv): (
 	),
 
 	('P1\n', SIDE, ` `, SIDE, `\n`)@print,
-	(Wy::W[]) ?* (
-		(Wyx::Wy[]) ?* (
+	(Wy(:)W[]) ?* (
+		(Wyx(:)Wy[]) ?* (
 			(Wyx, ` `)@print
 		),
 		`\n`@print

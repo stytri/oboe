@@ -228,13 +228,13 @@ or:
 
 _operator-string_ `:` _operator-string_
 
-**N.B.** Normally, non-**operator** declarations are made in the local environment (_source-file_, _function_, ...); when the declaration **operator** is enclosed in parenthesis - i.e. `(:)`, `(:^)` or `(::)` - then the declaration is made in the global environment. **Operator** declarations are always made in the global environment.
+##### global declaration
+
+Normally, non-operator declarations are made in the local environment (_source-file_, _function_, ...); when the declaration operator is prefixed with an additional `:` - i.e. `::` and `::^` - then the declaration is made in the global environment. Operator declarations are always made in the global environment.
 
 ##### constant
 
-_referent_ `::` _operand_
-
-See also note above.
+Non-operator declarations can be made constant (i.e. non-assignable), by enclosing the declaration operator in parenthesis; i.e. `(:)` and `(::)`.
 
 ##### assignment
 
