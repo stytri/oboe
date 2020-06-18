@@ -101,6 +101,7 @@ print_entry(
 static void
 initialise(
 	char const *generator,
+	bool        no_alias,
 	bool        has_math,
 	bool        list_builtins
 ) {
@@ -110,11 +111,11 @@ initialise(
 	initialise_env();
 	initialise_sources();
 	initialise_searchpaths();
-	initialise_builtins(has_math);
-	initialise_system_environment();
-	initialise_system_stdio();
-	initialise_system_ctype();
-	initialise_system_bits();
+	initialise_builtins(no_alias, has_math);
+	initialise_system_environment(no_alias);
+	initialise_system_stdio(no_alias);
+	initialise_system_ctype(no_alias);
+	initialise_system_bits(no_alias);
 
 	if(list_builtins) {
 		array_foreach(operators->m.env         , print_entry, operators);
@@ -170,6 +171,7 @@ main(
 		{10, "-q, --quiet",                     "suppress result output" },
 		{11, "-t, --trace",                     "enable basic trace output" },
 		{12, "-v, --verbose",                   "enable verbose trace output" },
+
 		{13, "    --list-builtins",             "output names of all builtins" },
 		{19, "-n, --noeval",                    "parse, but do not evaluate" },
 		{ 9, "-g, --graph FILE",                "output graphs of the AST to FILE in DOT format" },
@@ -177,6 +179,8 @@ main(
 
 		{20, "-m, --math",                      "enable math functions in the global namespace" },
 		{21, "-r, --rand GENERATOR",            "select random number GENERATOR" },
+		{22, "-A, --no-alias",                  "do not create operator aliases, use names only" },
+
 		{90, "-x, --evaluate EXPRESSION*",      "evaluates EXPRESSIONs up to -" },
 		{92, "-I, --import-path PATH",          "add search PATH for import" },
 		{91, "-i, --import FILE",               "imports FILE" },
@@ -188,6 +192,7 @@ main(
 
 	unsigned    line          = 1;
 	char const *generator     = NULL;
+	bool        no_alias      = false;
 	bool        has_math      = false;
 	bool        list_builtins = false;
 	bool        timed         = false;
@@ -288,10 +293,14 @@ main(
 				puts("xsm");
 				goto end;
 
+			case 22:
+				no_alias = true;
+				break;
+
 			case 90:
 				unprocessed = false;
 
-				initialise(generator, has_math, list_builtins);
+				initialise(generator, no_alias, has_math, list_builtins);
 
 				for(;
 					(argi < argc) && (strcmp(argv[argi], "-") != 0);
@@ -305,7 +314,7 @@ main(
 				break;
 
 			case 0:
-				initialise(generator, has_math, list_builtins);
+				initialise(generator, no_alias, has_math, list_builtins);
 
 				--argi;
 				addenv_argv(system_environment, 0, argc - argi, &argv[argi]);
@@ -313,7 +322,7 @@ main(
 				unprocessed = false;
 				nobreak;
 			case 91: {
-				initialise(generator, has_math, list_builtins);
+				initialise(generator, no_alias, has_math, list_builtins);
 
 				size_t ts   = gc_topof_stack();
 				size_t n    = strlen(argv[argi]);
@@ -339,7 +348,7 @@ main(
 				break;
 			}
 			case 92: {
-				initialise(generator, has_math, list_builtins);
+				initialise(generator, no_alias, has_math, list_builtins);
 
 				size_t ts   = gc_topof_stack();
 				size_t n    = strlen(argv[argi]);
@@ -367,7 +376,7 @@ main(
 	}
 
 	if(unprocessed) {
-		initialise(generator, has_math, list_builtins);
+		initialise(generator, no_alias, has_math, list_builtins);
 
 		exit_status = interactive(&line, timed, quiet, doeval, gfile);
 	}

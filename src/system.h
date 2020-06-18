@@ -36,22 +36,22 @@ extern Ast system_environment;
 
 extern int
 initialise_system_environment(
-	void
+	bool no_alias
 );
 
 extern int
 initialise_system_stdio(
-	void
+	bool no_alias
 );
 
 extern int
 initialise_system_ctype(
-	void
+	bool no_alias
 );
 
 extern int
 initialise_system_bits(
-	void
+	bool no_alias
 );
 
 //------------------------------------------------------------------------------

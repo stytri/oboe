@@ -1037,7 +1037,7 @@ builtin_exit(
 
 int
 initialise_system_environment(
-	void
+	bool no_alias
 ) {
 	static struct builtinop const builtinop[] = {
 		BUILTIN("\\sigil", sigil, P_Binding)
@@ -1106,9 +1106,11 @@ initialise_system_environment(
 		addenv_named(system_environment, 0, "CLOCKS_PER_SEC", var, ATTR_NoAssign);
 
 		initialise_datatypes();
-		initialise_builtinfn   (system_environment, builtinfn   , n_builtinfn);
-		initialise_builtinop   (operators         , builtinop   , n_builtinop);
-		initialise_builtinalias(operators         , builtinalias, n_builtinalias);
+		initialise_builtinfn(system_environment, builtinfn, n_builtinfn);
+		initialise_builtinop(operators         , builtinop, n_builtinop);
+		if(!no_alias) {
+			initialise_builtinalias(operators, builtinalias, n_builtinalias);
+		}
 		initialise_errors();
 	}
 

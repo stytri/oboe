@@ -2793,7 +2793,7 @@ initialise_builtinfn(
 
 static int
 initialise_builtin_operators(
-	void
+	bool no_alias
 ) {
 	static struct builtinop const builtinop[] = {
 		BUILTIN("\\applicate"      , applicate      , P_Binding)
@@ -2918,8 +2918,10 @@ initialise_builtin_operators(
 	if(initialise) {
 		initialise = false;
 
-		initialise_builtinop   (operators, builtinop   , n_builtinop);
-		initialise_builtinalias(operators, builtinalias, n_builtinalias);
+		initialise_builtinop(operators, builtinop, n_builtinop);
+		if(!no_alias) {
+			initialise_builtinalias(operators, builtinalias, n_builtinalias);
+		}
 	}
 
 	return EXIT_SUCCESS;
@@ -2965,10 +2967,11 @@ initialise_builtin_datatypes(
 
 int
 initialise_builtins(
+	bool no_alias,
 	bool has_math
 ) {
 	initialise_builtin_datatypes();
-	initialise_builtin_operators();
+	initialise_builtin_operators(no_alias);
 	if(has_math) initialise_builtin_math_functions(globals);
 
 	return EXIT_SUCCESS;

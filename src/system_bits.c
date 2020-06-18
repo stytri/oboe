@@ -166,7 +166,7 @@ builtin_msbit(
 
 int
 initialise_system_bits(
-	void
+	bool no_alias
 ) {
 	static struct builtinfn const builtinfn[] = {
 		BUILTIN("popcount", popcount)
@@ -192,5 +192,6 @@ initialise_system_bits(
 	}
 
 	return EXIT_SUCCESS;
+	(void)no_alias;
 }
 

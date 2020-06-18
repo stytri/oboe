@@ -1337,7 +1337,7 @@ builtin_getln(
 
 int
 initialise_system_stdio(
-	void
+	bool no_alias
 ) {
 	static struct builtinfn const builtinfn[] = {
 		BUILTIN("tmpname" , tmpname)
@@ -1390,5 +1390,6 @@ initialise_system_stdio(
 	}
 
 	return EXIT_SUCCESS;
+	(void)no_alias;
 }
 

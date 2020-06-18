@@ -378,7 +378,7 @@ builtin_to_Lowercase(
 
 int
 initialise_system_ctype(
-	void
+	bool no_alias
 ) {
 	static struct builtinfn const builtinfn[] = {
 #	define STR(X)         #X
@@ -408,5 +408,6 @@ initialise_system_ctype(
 	}
 
 	return EXIT_SUCCESS;
+	(void)no_alias;
 }
 

@@ -80,6 +80,7 @@ initialise_builtin_math_functions(
 
 extern int
 initialise_builtins(
+	bool no_alias,
 	bool has_math
 );
 
