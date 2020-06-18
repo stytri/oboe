@@ -139,10 +139,7 @@ parse_peek_primary(
 	char32_t    c  = utf8chr(cs, &cs);
 	switch(c) {
 	case '(': case '[': case '{':
-		if(ps->len > 2) {
-			return 0;
-		}
-		nobreak;
+		return (ps->len <= 2);
 	default:
 		return is_Primary(c);
 	}
@@ -156,10 +153,7 @@ parse_peek_operate(
 	char32_t    c  = utf8chr(cs, &cs);
 	switch(c) {
 	case '(': case '[': case '{':
-		if(ps->len > 2) {
-			return 1;
-		}
-		nobreak;
+		return (ps->len > 2);
 	default:
 		return is_Operator(c);
 	}
