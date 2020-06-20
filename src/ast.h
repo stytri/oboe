@@ -298,6 +298,11 @@ ast_isnotRange(
 );
 
 extern bool
+ast_isRelational(
+	Ast ast
+);
+
+extern bool
 ast_isBracketed(
 	Ast ast
 );

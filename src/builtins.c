@@ -284,6 +284,16 @@ ast_isnotRange(
 	return ast_isnotOp(ast, builtin_range_enum);
 }
 
+inline bool
+ast_isRelational(
+	Ast ast
+) {
+	return ast_isOperator(ast)
+		&& (ast->qual >= builtin_lt_enum)
+		&& (ast->qual <= builtin_gt_enum)
+	;
+}
+
 //------------------------------------------------------------------------------
 
 #define TYPE(L,R)  (((L) << TYPE_BIT) | (R))
@@ -712,6 +722,15 @@ builtin_case_equal(
 		}
 
 		expr = expr->m.rexpr;
+	}
+
+
+	if(ast_isRelational(expr) && ast_isZen(expr->m.lexpr)) {
+		Ast ast = dup_ast(expr->sloc, expr);
+		ast->m.lexpr = cond;
+		expr = eval(env, ast);
+
+		return ast_toBool(expr);
 	}
 
 	expr = eval(env, expr);
