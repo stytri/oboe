@@ -2694,7 +2694,7 @@ builtin_global(
 	} else {
 		lexpr = eval(env, lexpr);
 		if(ast_isEnvironment(lexpr)) {
-			env = link_env(sloc, lexpr, globals);
+			env = link_env(sloc, globals, lexpr);
 
 			if(ast_isZen(rexpr)) {
 				return env;
