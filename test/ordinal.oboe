@@ -1,0 +1,37 @@
+# https://leancrew.com/all-this/2020/06/ordinal-numerals-and-javascript/
+
+"[]" "[?]"(a,x): (
+	(x < a@length) ? (
+		a[x]
+	;
+		0
+	)
+);
+
+"//" "(//)"(L,R): (
+	v:L,
+	(v > -v) ? (
+		-((-v) // R)
+	;
+		v // R
+	)
+);
+
+suffix:["th", "st", "nd", "rd"];
+
+ordinal(n): (
+	v:n // 100,
+	x:(v - 20) (//) 10,
+	(n@to_String) (suffix[?]x ! suffix[?]v ! suffix[0])
+);
+
+main(argc, argv): (
+	(i:2; i < argc; i += 2) ?* (
+		(n:(argv[i-1]@to_Integer)..(argv[i]@to_Integer)) ?* (
+			(ordinal n)@println
+		)
+	)
+);
+
+main(@argc, @argv)
+
