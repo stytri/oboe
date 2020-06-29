@@ -40,6 +40,30 @@ lex(
 	char const   **linep,
 	unsigned long *linop
 ) {
+#	define CASE_EOL(Next) \
+	case '\n': \
+		if(*cs == '\r') { \
+			++cs; \
+		} \
+		*linep = cs; \
+		++*linop; \
+		Next; \
+	case '\r': \
+		if(*cs == '\n') { \
+			++cs; \
+		} \
+		*linep = cs; \
+		++*linop; \
+		Next; \
+	case '\f':   \
+	case '\v':   \
+	case 0x85:   \
+	case 0x2028: \
+	case 0x2029: \
+		*linep = cs; \
+		++*linop; \
+		Next; \
+
 	char const *start, *end;
 	char32_t    c;
 
@@ -126,28 +150,9 @@ restart_continue:
 		*endp = cs;
 		break;
 
-	case '\n':
-		if(*cs == '\r') {
-			++cs;
-		}
-		*linep = cs;
-		++*linop;
-		goto restart;
-	case '\r':
-		if(*cs == '\n') {
-			++cs;
-		}
-		*linep = cs;
-		++*linop;
-		goto restart;
-	case '\f':
-	case '\v':
-	case 0x85:   // NEL
-	case 0x2028: // LS
-	case 0x2029: // PS
-		*linep = cs;
-		++*linop;
-		goto restart;
+	CASE_EOL(
+			goto restart;
+		)
 
 	case '#':
 		c = utf8chr(cs, &cs);
@@ -166,28 +171,9 @@ restart_continue:
 				} else switch(c) {
 				default:
 					continue;
-				case '\n':
-					if(*cs == '\r') {
-						++cs;
-					}
-					*linep = cs;
-					++*linop;
-					continue;
-				case '\r':
-					if(*cs == '\n') {
-						++cs;
-					}
-					*linep = cs;
-					++*linop;
-					continue;
-				case '\f':
-				case '\v':
-				case 0x85:   // NEL
-				case 0x2028: // LS
-				case 0x2029: // PS
-					*linep = cs;
-					++*linop;
-					continue;
+				CASE_EOL(
+						continue;
+					)
 				}
 			}
 			goto restart;
@@ -240,8 +226,15 @@ restart_continue:
 		break;
 
 	case '"':
-		for(c = char32(cs); c && (c != '"'); c = char32(++cs))
-			;
+		for(c = char32(cs); c && (c != '"'); c = char32(++cs)) {
+			switch(c) {
+			default:
+				continue;
+			CASE_EOL(
+					continue;
+				)
+			}
+		}
 		if(c) {
 			++cs;
 		}
@@ -256,6 +249,12 @@ restart_continue:
 					if(!c) {
 						break;
 					}
+				} else switch(c) {
+				default:
+					continue;
+				CASE_EOL(
+						continue;
+					)
 				}
 			}
 		}
@@ -268,5 +267,7 @@ restart_continue:
 
 done:
 	return start;
+
+#	undef CASE_EOL
 }
 
