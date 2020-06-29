@@ -84,7 +84,7 @@ optcmp(
 
 static int
 do_optget(
-	int                    optc,
+	size_t                 optc,
 	struct optget const    optv[optc],
 	char const  **restrict argp,
 	char const   *restrict args,
@@ -108,7 +108,7 @@ do_optget(
 		}
 	}
 
-	for(int i = 0; optc > i; ++i) {
+	for(size_t i = 0; optc > i; ++i) {
 		struct optget const *const optp = &optv[i];
 
 		if(optp->x > 0) {
@@ -144,7 +144,7 @@ do_optget(
 
 int
 optget(
-	int                    optc,
+	size_t                 optc,
 	struct optget const    optv[optc],
 	char const  **restrict argp,
 	char const   *restrict args,
@@ -215,7 +215,7 @@ optputs(
 
 void
 optuse(
-	int                    optc,
+	size_t                 optc,
 	struct optget const    optv[optc],
 	FILE         *restrict outf
 ) {
@@ -225,7 +225,7 @@ optuse(
 	) {
 		size_t stop = 0;
 
-		for(int i = 0; optc > i; ++i) {
+		for(size_t i = 0; optc > i; ++i) {
 			if(optv[i].x) {
 				char const *const s = optv[i].s;
 				size_t      const n = s ? strlen(s) : 0;
@@ -236,7 +236,7 @@ optuse(
 			}
 		}
 
-		for(int i = 0; optc > i; ++i) {
+		for(size_t i = 0; optc > i; ++i) {
 			if(EOF == optputs(&optv[i], stop, outf)) {
 				break;
 			}

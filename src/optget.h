@@ -68,7 +68,7 @@ struct optget
 
 extern int
 optget(
-	int                    optc,
+	size_t                 optc,
 	struct optget const    optv[optc],
 	char const  **restrict argp,
 	char const   *restrict args,
@@ -78,7 +78,7 @@ optget(
 
 extern void
 optuse(
-	int                    optc,
+	size_t                 optc,
 	struct optget const    optv[optc],
 	FILE         *restrict outf
 );
