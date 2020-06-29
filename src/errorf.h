@@ -35,9 +35,9 @@ extern "C" {
 
 #ifdef __GNUC__
 #	if __USE_MINGW_ANSI_STDIO
-#		define ERRORF_ATTRIBUTES(F,V)	__attribute__((format(__MINGW_PRINTF_FORMAT,F,V)));
+#		define ERRORF_ATTRIBUTES(F,V)	__attribute__((format(__MINGW_PRINTF_FORMAT,F,V)))
 #	else
-#		define ERRORF_ATTRIBUTES(F,V)	__attribute__((format(printf,F,V)));
+#		define ERRORF_ATTRIBUTES(F,V)	__attribute__((format(printf,F,V)))
 #	endif
 #else
 #	define ERRORF_ATTRIBUTES(F,V)
