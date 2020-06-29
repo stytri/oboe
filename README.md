@@ -230,7 +230,7 @@ _operator-string_ `:` _operator-string_
 
 ##### global declaration
 
-Normally, non-operator declarations are made in the local environment (_source-file_, _function_, ...); when the declaration operator is prefixed with an additional `:` - i.e. `::` and `::^` - then the declaration is made in the global environment. Operator declarations are always made in the global environment.
+Normally, non-operator declarations are made in the local environment (_source-file_, _function_, ...); if the global environment operator `[:]` is applied to the declaration then it is made in the global environment. Operator declarations are always made in the global environment.
 
 ##### constant
 
