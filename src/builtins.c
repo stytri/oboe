@@ -99,12 +99,10 @@ typedef enum {
 // Operators
 
 static unsigned builtin_applicate_enum      = -1u;
+static unsigned builtin_global_enum         = -1u;
 static unsigned builtin_tag_enum            = -1u;
 static unsigned builtin_tag_ref_enum        = -1u;
 static unsigned builtin_const_enum          = -1u;
-static unsigned builtin_global_tag_enum     = -1u;
-static unsigned builtin_global_tag_ref_enum = -1u;
-static unsigned builtin_global_const_enum   = -1u;
 static unsigned builtin_assign_enum         = -1u;
 static unsigned builtin_assign_ref_enum     = -1u;
 static unsigned builtin_assign_land_enum    = -1u;
@@ -195,36 +193,12 @@ ast_isConst(
 }
 
 inline bool
-ast_isGlobalTag(
-	Ast ast
-) {
-	return ast_isOp(ast, builtin_global_tag_enum);
-}
-
-inline bool
-ast_isGlobalTagRef(
-	Ast ast
-) {
-	return ast_isOp(ast, builtin_global_tag_ref_enum);
-}
-
-inline bool
-ast_isGlobalConst(
-	Ast ast
-) {
-	return ast_isOp(ast, builtin_global_const_enum);
-}
-
-inline bool
 ast_isDeclaration(
 	Ast ast
 ) {
 	return ast_isOp(ast, builtin_tag_enum)
 		|| ast_isOp(ast, builtin_tag_ref_enum)
 		|| ast_isOp(ast, builtin_const_enum)
-		|| ast_isOp(ast, builtin_global_tag_enum)
-		|| ast_isOp(ast, builtin_global_tag_ref_enum)
-		|| ast_isOp(ast, builtin_global_const_enum)
 	;
 }
 
@@ -1867,8 +1841,7 @@ builtin_decl(
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
-	bool   is_const,
-	bool   is_global
+	bool   is_const
 ) {
 	lexpr = unquote(lexpr);
 
@@ -1878,7 +1851,7 @@ builtin_decl(
 			&& ast_isParameters(lexpr->m.rexpr)
 		) {
 			rexpr = new_ast(sloc, AST_Function, lexpr->m.rexpr, rexpr);
-			addenv((is_global ? globals : env), sloc, lexpr->m.lexpr, rexpr, (is_const ? ATTR_NoAssign : 0));
+			addenv(env, sloc, lexpr->m.lexpr, rexpr, (is_const ? ATTR_NoAssign : 0));
 			return rexpr;
 		}
 		// OperatorFunction with precedence
@@ -1933,7 +1906,7 @@ builtin_decl(
 		);
 	case AST_Identifier:
 		rexpr = evaluate_instance(env, sloc, rexpr, BY_Value);
-		rexpr = addenv((is_global ? globals : env), sloc, lexpr, rexpr, (is_const ? ATTR_NoAssign : 0));
+		rexpr = addenv(env, sloc, lexpr, rexpr, (is_const ? ATTR_NoAssign : 0));
 		return rexpr;
 	case AST_String: // for OperatorAlias
 		if(ast_isString(rexpr)) {
@@ -1952,8 +1925,7 @@ builtin_decl_ref(
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
-	bool   is_const,
-	bool   is_global
+	bool   is_const
 ) {
 	lexpr = unquote(lexpr);
 
@@ -1964,7 +1936,7 @@ builtin_decl_ref(
 			if(is_const) {
 				rexpr = dup_ref(sloc, rexpr);
 			}
-			addenv((is_global ? globals : env), sloc, lexpr, rexpr, (is_const ? ATTR_NoAssign : 0));
+			addenv(env, sloc, lexpr, rexpr, (is_const ? ATTR_NoAssign : 0));
 			return rexpr;
 		}
 		nobreak;
@@ -1980,7 +1952,7 @@ builtin_tag(
 	Ast    lexpr,
 	Ast    rexpr
 ) {
-	return builtin_decl(env, sloc, lexpr, rexpr, false, false);
+	return builtin_decl(env, sloc, lexpr, rexpr, false);
 }
 
 static inline Ast
@@ -1990,7 +1962,7 @@ builtin_tag_ref(
 	Ast    lexpr,
 	Ast    rexpr
 ) {
-	return builtin_decl_ref(env, sloc, lexpr, rexpr, false, false);
+	return builtin_decl_ref(env, sloc, lexpr, rexpr, false);
 }
 
 static inline Ast
@@ -2000,37 +1972,7 @@ builtin_const(
 	Ast    lexpr,
 	Ast    rexpr
 ) {
-	return builtin_decl(env, sloc, lexpr, rexpr, true, false);
-}
-
-static inline Ast
-builtin_global_tag(
-	Ast    env,
-	sloc_t sloc,
-	Ast    lexpr,
-	Ast    rexpr
-) {
-	return builtin_decl(env, sloc, lexpr, rexpr, false, true);
-}
-
-static inline Ast
-builtin_global_tag_ref(
-	Ast    env,
-	sloc_t sloc,
-	Ast    lexpr,
-	Ast    rexpr
-) {
-	return builtin_decl_ref(env, sloc, lexpr, rexpr, false, true);
-}
-
-static inline Ast
-builtin_global_const(
-	Ast    env,
-	sloc_t sloc,
-	Ast    lexpr,
-	Ast    rexpr
-) {
-	return builtin_decl(env, sloc, lexpr, rexpr, true, true);
+	return builtin_decl(env, sloc, lexpr, rexpr, true);
 }
 
 //------------------------------------------------------------------------------
@@ -2735,6 +2677,40 @@ builtin_applicate(
 
 //------------------------------------------------------------------------------
 
+static Ast
+builtin_global(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	if(ast_isZen(lexpr)) {
+		if(ast_isZen(rexpr)) {
+			return globals;
+		}
+
+		env = globals;
+
+	} else {
+		lexpr = eval(env, lexpr);
+		if(ast_isEnvironment(lexpr)) {
+			env = link_env(sloc, lexpr, globals);
+
+			if(ast_isZen(rexpr)) {
+				return env;
+			}
+
+		} else {
+			env = globals;
+		}
+	}
+
+	rexpr = eval(env, rexpr);
+	return rexpr;
+}
+
+//------------------------------------------------------------------------------
+
 int
 initialise_builtinop(
 	Ast                    env,
@@ -2816,12 +2792,10 @@ initialise_builtin_operators(
 ) {
 	static struct builtinop const builtinop[] = {
 		BUILTIN("\\applicate"      , applicate      , P_Binding)
+		BUILTIN("\\global"         , global         , P_Declarative)
 		BUILTIN("\\tag"            , tag            , P_Declarative)
 		BUILTIN("\\tag_ref"        , tag_ref        , P_Declarative)
 		BUILTIN("\\const"          , const          , P_Declarative)
-		BUILTIN("\\global_tag"     , global_tag     , P_Declarative)
-		BUILTIN("\\global_tag_ref" , global_tag_ref , P_Declarative)
-		BUILTIN("\\global_const"   , global_const   , P_Declarative)
 		BUILTIN("\\assign"         , assign         , P_Assigning)
 		BUILTIN("\\assign_ref"     , assign_ref     , P_Assigning)
 		BUILTIN("\\assign_land"    , assign_land    , P_Assigning)
@@ -2875,12 +2849,10 @@ initialise_builtin_operators(
 
 	static struct builtinalias const builtinalias[] = {
 		{    "", "\\applicate"      },
+		{ "[:]", "\\global"         },
 		{   ":", "\\tag"            },
 		{  ":^", "\\tag_ref"        },
 		{ "(:)", "\\const"          },
-		{  "::", "\\global_tag"     },
-		{ "::^", "\\global_tag_ref" },
-		{"(::)", "\\global_const"   },
 		{   "=", "\\assign"         },
 		{  "=^", "\\assign_ref"     },
 		{ "&&=", "\\assign_land"    },
