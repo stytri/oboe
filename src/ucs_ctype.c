@@ -17578,9 +17578,9 @@ is_UCS(
 	char32_t c
 ) {
 	if(c < 1114112) {
-		int      i2 = (c >>  9);
-		int      i1 = (c >>  4) & 0x1f;
-		int      i0 = (c      ) & 0xf;
+		size_t   i2 = (size_t)(c >>  9);
+		size_t   i1 = (size_t)(c >>  4) & 0x1f;
+		size_t   i0 = (size_t)(c      ) & 0xf;
 		uint32_t gc = level_0_table[level_1_table[level_2_table[0].entry[i2]].entry[i1]].entry[i0].General_Category;
 		return (gc & test) != 0;
 	};
@@ -17593,9 +17593,9 @@ to_Uppercase(
 	char32_t c
 ) {
 	if(c < 1114112) {
-		int      i2 = (c >>  9);
-		int      i1 = (c >>  4) & 0x1f;
-		int      i0 = (c      ) & 0xf;
+		size_t   i2 = (size_t)(c >>  9);
+		size_t   i1 = (size_t)(c >>  4) & 0x1f;
+		size_t   i0 = (size_t)(c      ) & 0xf;
 		char32_t uc = level_0_cc_table[level_1_cc_table[level_2_cc_table[0].entry[i2]].entry[i1]].entry[i0].Uppercase;
 		return uc ? uc : c;
 	};
@@ -17607,9 +17607,9 @@ to_Lowercase(
 	char32_t c
 ) {
 	if(c < 1114112) {
-		int      i2 = (c >>  9);
-		int      i1 = (c >>  4) & 0x1f;
-		int      i0 = (c      ) & 0xf;
+		size_t   i2 = (size_t)(c >>  9);
+		size_t   i1 = (size_t)(c >>  4) & 0x1f;
+		size_t   i0 = (size_t)(c      ) & 0xf;
 		char32_t lc = level_0_cc_table[level_1_cc_table[level_2_cc_table[0].entry[i2]].entry[i1]].entry[i0].Lowercase;
 		return lc ? lc : c;
 	};

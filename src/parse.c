@@ -75,12 +75,12 @@ assemblage: sequence  [ ';' sequence ]*
 
 typedef struct parse_state *ParseState;
 struct parse_state {
-	char const  *leme;
-	size_t       len;
-	char const  *cs;
-	unsigned     source;
-	char const  *startofline;
-	unsigned    *linop;
+	char const    *leme;
+	size_t         len;
+	char const    *cs;
+	unsigned long  source;
+	char const    *startofline;
+	unsigned long *linop;
 };
 
 //------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ static inline sloc_t
 parse_sloc(
 	ParseState ps
 ) {
-	return make_sloc(ps->source, *ps->linop, ps->leme - ps->startofline, ps->len);
+	return make_sloc(ps->source, *ps->linop, (unsigned)(ps->leme - ps->startofline), (unsigned)ps->len);
 }
 
 static char const *
@@ -98,7 +98,7 @@ parse_peek(
 ) {
 	if(!ps->leme) {
 		ps->leme = lex(ps->cs, &ps->cs, &ps->startofline, ps->linop);
-		ps->len  = ps->cs - ps->leme;
+		ps->len  = (size_t)(ps->cs - ps->leme);
 	}
 
 	return ps->leme;
@@ -395,17 +395,17 @@ parse_assemblage(
 
 Ast
 parse(
-	char const   *cs,
-	char const  **endp,
-	unsigned      source,
-	unsigned     *linop,
-	Ast         (*ast)(
+	char const    *cs,
+	char const   **endp,
+	unsigned long  source,
+	unsigned long *linop,
+	Ast          (*ast)(
 		sloc_t      sloc,
 		char const *leme,
 		size_t      len,
 		...
 	),
-	bool          all
+	bool           all
 ) {
 	struct parse_state ps = {
 		NULL, 0,

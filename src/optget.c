@@ -35,9 +35,9 @@ optcmp(
 	char const *restrict args,
 	int        *restrict params
 ) {
-	bool      found = false;
-	int       i     = 0;
-	int const n     = onec ? 1 : strlen(args);
+	bool         found = false;
+	size_t       i     = 0;
+	size_t const n     = onec ? 1 : strlen(args);
 
 	for(; isspace(opts[i]); ++i)
 		;
@@ -45,9 +45,9 @@ optcmp(
 	while(isgraph(opts[i])) {
 
 		if('-' == opts[i]) {
-			i += onec;
+			i += !!onec;
 
-			int const x = i++;
+			size_t const x = i++;
 
 			for(; isalnum(opts[i]) || ('-' == opts[i]); ++i)
 				;
@@ -180,10 +180,10 @@ optget(
 static int
 optputs(
 	struct optget const    *optp,
-	int                     stop,
+	size_t                  stop,
 	FILE          *restrict outf
 ) {
-	int n = 0;
+	size_t n = 0;
 
 	if(optp->s) {
 		if(optp->x != 0) {
@@ -223,12 +223,12 @@ optuse(
 		&& optv
 		&& outf
 	) {
-		int stop = 0;
+		size_t stop = 0;
 
 		for(int i = 0; optc > i; ++i) {
 			if(optv[i].x) {
 				char const *const s = optv[i].s;
-				int         const n = s ? strlen(s) : 0;
+				size_t      const n = s ? strlen(s) : 0;
 
 				if(n > stop) {
 					stop = n;

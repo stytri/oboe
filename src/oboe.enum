@@ -58,7 +58,7 @@ ENUM(Zen)
 ENUM(Boolean)
 	STR(INTEGER("", ast->m.ival, ""))
 	NEW(
-		ast->m.ival = INTEGER() != 0;
+		ast->m.ival = (uint64_t)(INTEGER() != 0);
 	)
 	EVAL(
 		RETURN();
@@ -85,7 +85,7 @@ ENUM(Float)
 ENUM(Character)
 	STR(CHARACTER("", ast->m.ival, ""))
 	NEW(
-		ast->m.ival = CHARACTER();
+		ast->m.ival = (uint64_t)CHARACTER();
 	)
 	EVAL(
 		RETURN();

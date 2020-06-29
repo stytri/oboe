@@ -30,11 +30,11 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
-static unsigned builtin_popcount_enum = -1;
-static unsigned builtin_bitmask_enum  = -1;
-static unsigned builtin_lzcount_enum  = -1;
-static unsigned builtin_tzcount_enum  = -1;
-static unsigned builtin_msbit_enum    = -1;
+static unsigned builtin_popcount_enum = -1u;
+static unsigned builtin_bitmask_enum  = -1u;
+static unsigned builtin_lzcount_enum  = -1u;
+static unsigned builtin_tzcount_enum  = -1u;
+static unsigned builtin_msbit_enum    = -1u;
 
 //------------------------------------------------------------------------------
 

@@ -98,70 +98,70 @@ typedef enum {
 
 // Operators
 
-static unsigned builtin_applicate_enum      = -1;
-static unsigned builtin_tag_enum            = -1;
-static unsigned builtin_tag_ref_enum        = -1;
-static unsigned builtin_const_enum          = -1;
-static unsigned builtin_global_tag_enum     = -1;
-static unsigned builtin_global_tag_ref_enum = -1;
-static unsigned builtin_global_const_enum   = -1;
-static unsigned builtin_assign_enum         = -1;
-static unsigned builtin_assign_ref_enum     = -1;
-static unsigned builtin_assign_land_enum    = -1;
-static unsigned builtin_assign_lor_enum     = -1;
-static unsigned builtin_assign_and_enum     = -1;
-static unsigned builtin_assign_or_enum      = -1;
-static unsigned builtin_assign_xor_enum     = -1;
-static unsigned builtin_assign_add_enum     = -1;
-static unsigned builtin_assign_sub_enum     = -1;
-static unsigned builtin_assign_mul_enum     = -1;
-static unsigned builtin_assign_div_enum     = -1;
-static unsigned builtin_assign_mod_enum     = -1;
-static unsigned builtin_assign_shl_enum     = -1;
-static unsigned builtin_assign_shr_enum     = -1;
-static unsigned builtin_assign_exl_enum     = -1;
-static unsigned builtin_assign_exr_enum     = -1;
-static unsigned builtin_assign_rol_enum     = -1;
-static unsigned builtin_assign_ror_enum     = -1;
-static unsigned builtin_exchange_enum       = -1;
-static unsigned builtin_if_enum             = -1;
-static unsigned builtin_ifnot_enum          = -1;
-static unsigned builtin_case_enum           = -1;
-static unsigned builtin_while_enum          = -1;
-static unsigned builtin_until_enum          = -1;
-static unsigned builtin_land_enum           = -1;
-static unsigned builtin_lor_enum            = -1;
-static unsigned builtin_lt_enum             = -1;
-static unsigned builtin_lte_enum            = -1;
-static unsigned builtin_eq_enum             = -1;
-static unsigned builtin_neq_enum            = -1;
-static unsigned builtin_gte_enum            = -1;
-static unsigned builtin_gt_enum             = -1;
-static unsigned builtin_and_enum            = -1;
-static unsigned builtin_or_enum             = -1;
-static unsigned builtin_xor_enum            = -1;
-static unsigned builtin_add_enum            = -1;
-static unsigned builtin_sub_enum            = -1;
-static unsigned builtin_mul_enum            = -1;
-static unsigned builtin_div_enum            = -1;
-static unsigned builtin_mod_enum            = -1;
-static unsigned builtin_shl_enum            = -1;
-static unsigned builtin_shr_enum            = -1;
-static unsigned builtin_exl_enum            = -1;
-static unsigned builtin_exr_enum            = -1;
-static unsigned builtin_rol_enum            = -1;
-static unsigned builtin_ror_enum            = -1;
-static unsigned builtin_array_enum          = -1;
-static unsigned builtin_range_enum          = -1;
+static unsigned builtin_applicate_enum      = -1u;
+static unsigned builtin_tag_enum            = -1u;
+static unsigned builtin_tag_ref_enum        = -1u;
+static unsigned builtin_const_enum          = -1u;
+static unsigned builtin_global_tag_enum     = -1u;
+static unsigned builtin_global_tag_ref_enum = -1u;
+static unsigned builtin_global_const_enum   = -1u;
+static unsigned builtin_assign_enum         = -1u;
+static unsigned builtin_assign_ref_enum     = -1u;
+static unsigned builtin_assign_land_enum    = -1u;
+static unsigned builtin_assign_lor_enum     = -1u;
+static unsigned builtin_assign_and_enum     = -1u;
+static unsigned builtin_assign_or_enum      = -1u;
+static unsigned builtin_assign_xor_enum     = -1u;
+static unsigned builtin_assign_add_enum     = -1u;
+static unsigned builtin_assign_sub_enum     = -1u;
+static unsigned builtin_assign_mul_enum     = -1u;
+static unsigned builtin_assign_div_enum     = -1u;
+static unsigned builtin_assign_mod_enum     = -1u;
+static unsigned builtin_assign_shl_enum     = -1u;
+static unsigned builtin_assign_shr_enum     = -1u;
+static unsigned builtin_assign_exl_enum     = -1u;
+static unsigned builtin_assign_exr_enum     = -1u;
+static unsigned builtin_assign_rol_enum     = -1u;
+static unsigned builtin_assign_ror_enum     = -1u;
+static unsigned builtin_exchange_enum       = -1u;
+static unsigned builtin_if_enum             = -1u;
+static unsigned builtin_ifnot_enum          = -1u;
+static unsigned builtin_case_enum           = -1u;
+static unsigned builtin_while_enum          = -1u;
+static unsigned builtin_until_enum          = -1u;
+static unsigned builtin_land_enum           = -1u;
+static unsigned builtin_lor_enum            = -1u;
+static unsigned builtin_lt_enum             = -1u;
+static unsigned builtin_lte_enum            = -1u;
+static unsigned builtin_eq_enum             = -1u;
+static unsigned builtin_neq_enum            = -1u;
+static unsigned builtin_gte_enum            = -1u;
+static unsigned builtin_gt_enum             = -1u;
+static unsigned builtin_and_enum            = -1u;
+static unsigned builtin_or_enum             = -1u;
+static unsigned builtin_xor_enum            = -1u;
+static unsigned builtin_add_enum            = -1u;
+static unsigned builtin_sub_enum            = -1u;
+static unsigned builtin_mul_enum            = -1u;
+static unsigned builtin_div_enum            = -1u;
+static unsigned builtin_mod_enum            = -1u;
+static unsigned builtin_shl_enum            = -1u;
+static unsigned builtin_shr_enum            = -1u;
+static unsigned builtin_exl_enum            = -1u;
+static unsigned builtin_exr_enum            = -1u;
+static unsigned builtin_rol_enum            = -1u;
+static unsigned builtin_ror_enum            = -1u;
+static unsigned builtin_array_enum          = -1u;
+static unsigned builtin_range_enum          = -1u;
 
 // Intrinsic Functions
 
 #undef  DOUBLE_MATH1_FN
 #define DOUBLE_MATH1_FN(Name)  \
-static unsigned builtin_##Name##_enum = -1;
+static unsigned builtin_##Name##_enum = -1u;
 #undef  DOUBLE_MATH2_FN
 #define DOUBLE_MATH2_FN(Name)  \
-static unsigned builtin_##Name##_enum = -1;
+static unsigned builtin_##Name##_enum = -1u;
 DOUBLE_BUILTINS
 
 //------------------------------------------------------------------------------
@@ -576,10 +576,10 @@ in_range_1(
 	Ast rexpr
 ) {
 	if(ast_isEnvironment(expr)) {
-		Array     arr = expr->m.env;
-		int const N   = array_length(arr);
+		Array        arr = expr->m.env;
+		size_t const N   = array_length(arr);
 
-		for(int i = 0; i < N; i++) {
+		for(size_t i = 0; i < N; i++) {
 			expr = array_at(arr, Ast, i);
 
 			if(!in_range_1(lexpr, expr, rexpr)) {
@@ -878,7 +878,7 @@ builtin_loop_array(
 					index = last;
 				}
 				if(index > end) {
-					step = -1;
+					step = SIZE_C(-1);
 				}
 			} else {
 				if(index > last) {
@@ -931,7 +931,7 @@ builtin_loop_range(
 		uint64_t next = ast_toInteger(eval(env, iexpr->m.lexpr));
 		Ast      ast  = eval(env, iexpr->m.rexpr);
 		uint64_t end  = ast_isZen(ast) ? UINT64_MAX : ast_toInteger(ast);
-		uint64_t step = (next > end) ? -1 : 1;
+		uint64_t step = (next > end) ? UINT64_C(-1) : 1;
 
 		iexpr = new_ast(sloc, AST_Integer, next);
 
@@ -1198,37 +1198,37 @@ compare_delegate(
 	case TYPE(AST_Character, AST_Boolean):
 	case TYPE(AST_Character, AST_Integer):
 	case TYPE(AST_Character, AST_Character):
-		return integercmp(lexpr->m.ival, rexpr->m.ival);
+		return (int)integercmp(lexpr->m.ival, rexpr->m.ival);
 	case TYPE(AST_Boolean, AST_Float):
 	case TYPE(AST_Integer, AST_Float):
 	case TYPE(AST_Character, AST_Float):
-		return floatcmp((double)lexpr->m.ival, rexpr->m.fval);
+		return (int)floatcmp((double)lexpr->m.ival, rexpr->m.fval);
 	case TYPE(AST_Float, AST_Boolean):
 	case TYPE(AST_Float, AST_Integer):
 	case TYPE(AST_Float, AST_Character):
-		return floatcmp(lexpr->m.fval, (double)rexpr->m.ival);
+		return (int)floatcmp(lexpr->m.fval, (double)rexpr->m.ival);
 	case TYPE(AST_Float, AST_Float):
-		return floatcmp(lexpr->m.fval, rexpr->m.fval);
+		return (int)floatcmp(lexpr->m.fval, rexpr->m.fval);
 	case TYPE(AST_String, AST_String):
-		return stringcmp(lexpr->m.sval, rexpr->m.sval);
+		return (int)stringcmp(lexpr->m.sval, rexpr->m.sval);
 	case TYPE(AST_Boolean, AST_Zen):
 	case TYPE(AST_Integer, AST_Zen):
 	case TYPE(AST_Character, AST_Zen):
-		return integercmp(lexpr->m.ival, 0);
+		return (int)integercmp(lexpr->m.ival, 0);
 	case TYPE(AST_Float, AST_Zen):
-		return floatcmp(lexpr->m.fval, 0.0);
+		return (int)floatcmp(lexpr->m.fval, 0.0);
 	case TYPE(AST_String, AST_Zen):
-		return stringcmp(lexpr->m.sval, NullString());
+		return (int)stringcmp(lexpr->m.sval, NullString());
 	case TYPE(AST_Zen, AST_Boolean):
 	case TYPE(AST_Zen, AST_Integer):
 	case TYPE(AST_Zen, AST_Character):
-		return integercmp(0, rexpr->m.ival);
+		return (int)integercmp(0, rexpr->m.ival);
 	case TYPE(AST_Zen, AST_Float):
-		return floatcmp(0.0, rexpr->m.fval);
+		return (int)floatcmp(0.0, rexpr->m.fval);
 	case TYPE(AST_Zen, AST_String):
-		return stringcmp(NullString(), rexpr->m.sval);
+		return (int)stringcmp(NullString(), rexpr->m.sval);
 	case TYPE(AST_Error, AST_Error):
-		return integercmp(lexpr->qual, rexpr->qual);
+		return (int)integercmp(lexpr->qual, rexpr->qual);
 	default:
 		return -1;
 	}
@@ -1284,8 +1284,8 @@ static FLOATCMP(gt,    return !isunordered(lval, rval) &&  isgreater     (lval, 
 
 static STRINGCMP(lt,   return (StringCompare(lval, rval) <  0))
 static STRINGCMP(lte,  return (StringCompare(lval, rval) <= 0))
-static STRINGCMP(eq,   return StringEqual   (lval, rval))
-static STRINGCMP(neq,  return StringNotEqual(lval, rval))
+static STRINGCMP(eq,   return (uint64_t)StringEqual   (lval, rval))
+static STRINGCMP(neq,  return (uint64_t)StringNotEqual(lval, rval))
 static STRINGCMP(gte,  return (StringCompare(lval, rval) >= 0))
 static STRINGCMP(gt,   return (StringCompare(lval, rval) >  0))
 
@@ -2460,7 +2460,7 @@ builtin_array(
 		case TYPE(AST_String, AST_Character): {
 				char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
 				utf8off(cs, &cs, rexpr->m.ival);
-				int  const  c = utf8chr(cs, NULL);
+				char32_t const c = utf8chr(cs, NULL);
 				if(~c) {
 					return new_ast(rexpr->sloc, AST_Character, c);
 				}
@@ -2582,7 +2582,7 @@ builtin_applicate(
 		rexpr = eval(env, rexpr);
 		switch(ast_type(rexpr)) {
 		case AST_Character: {
-				String s = RepeatedCharToString(rexpr->m.ival, lexpr->m.ival);
+				String s = RepeatedCharToString((int)rexpr->m.ival, (size_t)lexpr->m.ival);
 				assert(s != NULL);
 				return new_ast(sloc, AST_String, s);
 			}
@@ -2612,7 +2612,7 @@ builtin_applicate(
 		rexpr = eval(env, rexpr);
 		switch(ast_type(rexpr)) {
 		case AST_Character: {
-				String s = RepeatedCharToString(rexpr->m.ival, (uint64_t)lexpr->m.fval);
+				String s = RepeatedCharToString((int)rexpr->m.ival, (size_t)lexpr->m.fval);
 				assert(s != NULL);
 				return new_ast(sloc, AST_String, s);
 			}
@@ -2668,22 +2668,22 @@ builtin_applicate(
 		switch(ast_type(rexpr)) {
 		case AST_Boolean:
 		case AST_Integer: {
-				String s = RepeatedCharToString(lexpr->m.ival, rexpr->m.ival);
+				String s = RepeatedCharToString((int)lexpr->m.ival, (size_t)rexpr->m.ival);
 				assert(s != NULL);
 				return new_ast(sloc, AST_String, s);
 			}
 		case AST_Float: {
-				String s = RepeatedCharToString(lexpr->m.ival, (uint64_t)rexpr->m.fval);
+				String s = RepeatedCharToString((int)lexpr->m.ival, (size_t)rexpr->m.fval);
 				assert(s != NULL);
 				return new_ast(sloc, AST_String, s);
 			}
 		case AST_Character: {
-				String s = CharsToString(lexpr->m.ival, rexpr->m.ival);
+				String s = CharsToString((int)lexpr->m.ival, (int)rexpr->m.ival);
 				assert(s != NULL);
 				return new_ast(sloc, AST_String, s);
 			}
 		case AST_String: {
-				String s = StringConcatenate(CharToString(lexpr->m.ival), rexpr->m.sval);
+				String s = StringConcatenate(CharToString((int)lexpr->m.ival), rexpr->m.sval);
 				assert(s != NULL);
 				return new_ast(sloc, AST_String, s);
 			}
@@ -2707,7 +2707,7 @@ builtin_applicate(
 					return new_ast(sloc, AST_String, s);
 				}
 			case AST_Character: {
-				String s = StringConcatenate(lexpr->m.sval, CharToString(rexpr->m.ival));
+				String s = StringConcatenate(lexpr->m.sval, CharToString((int)rexpr->m.ival));
 				assert(s != NULL);
 				return new_ast(sloc, AST_String, s);
 			}
@@ -2751,7 +2751,7 @@ initialise_builtinop(
 		Ast         oper  = new_ast(0, AST_BuiltinOperator, s, builtinop[i].func, builtinop[i].prec);
 		size_t      index = define(env, hash, oper, ATTR_NoAssign);
 		assert(~index != 0);
-		*builtinop[i].enup = index;
+		*builtinop[i].enup = (unsigned)index;
 	}
 
 	gc_revert(ts);
@@ -2800,7 +2800,7 @@ initialise_builtinfn(
 		Ast         oper  = new_ast(0, AST_BuiltinFunction, s, builtinfn[i].func);
 		size_t      index = define(env, hash, oper, ATTR_NoAssign);
 		assert(~index != 0);
-		*builtinfn[i].enup = index;
+		*builtinfn[i].enup = (unsigned)index;
 	}
 
 	gc_revert(ts);

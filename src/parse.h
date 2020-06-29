@@ -57,17 +57,17 @@ precedence(
 
 extern Ast
 parse(
-	char const   *cs,
-	char const  **endp,
-	unsigned      source,
-	unsigned     *linop,
-	Ast         (*ast)(
+	char const    *cs,
+	char const   **endp,
+	unsigned long  source,
+	unsigned long *linop,
+	Ast          (*ast)(
 		sloc_t      sloc,
 		char const *leme,
 		size_t      len,
 		...
 	),
-	bool          all
+	bool           all
 );
 
 //------------------------------------------------------------------------------

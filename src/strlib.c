@@ -88,7 +88,7 @@ strtoc(
 	char      **endp
 ) {
 	if(*cs != '\\') {
-		return utf8chr(cs, (char const **)endp);
+		return (int)utf8chr(cs, (char const **)endp);
 	}
 
 	return esctoc(cs + 1, (char const **)endp);
@@ -105,8 +105,8 @@ strtou(
 	uintmax_t u = strtoumax(cs, &s, 0);
 
 	if(*s) {
-		int      c = *s;
-		unsigned e = strtoumax(s+1, &s, 0);
+		int       c = *s;
+		uintmax_t e = strtoumax(s+1, &s, 0);
 
 		switch(c) {
 		default:
@@ -117,12 +117,16 @@ strtou(
 					;
 				for(; e-- > 0; u *= 10)
 					;
+				break;
 			}
+			u = ~(uintmax_t)0;
 			break;
 		case 'P': case 'p':
 			if(e < 64) {
 				u <<= e;
+				break;
 			}
+			u = ~(uintmax_t)0;
 			break;
 		}
 	}
@@ -154,7 +158,7 @@ UnEscapeString(
 			if(c == '\\') {
 				char  sc[4], *sp;
 				int   cc = esctoc(cs + 1, &cs);
-				size_t n = utf8encode(sc, &sp, cc);
+				size_t n = utf8encode(sc, &sp, (char32_t)cc);
 				s = StringAppendCharLiteral(t, sc, n);
 				if(!s) break;
 				t = s;
@@ -191,7 +195,7 @@ EscapeString(
 		String s;
 
 		for(int c = *cs; c && (c != q); c = *++cs) {
-			int n = 0;
+			size_t n = 0;
 			switch(c) {
 				static const char hex[] = "0123456789ABCDEF";
 				char l[4];
@@ -204,7 +208,7 @@ EscapeString(
 						continue;
 					}
 					l[n++] = '\\';
-					l[n++] = c;
+					l[n++] = (char)c;
 					goto common;
 				}
 				l[n++] = '\\';

@@ -37,9 +37,9 @@ marray_expand(
 	size_t       capacity = arr ? arr->capacity : buf_max;
 
 	if((0 < count) && (count <= (buf_max - capacity))) {
-		size_t new_capacity      = capacity_of(capacity + count);
-		size_t tail              = msbitz     (capacity);
-		size_t new_tail          = msbitz     (new_capacity);
+		size_t new_capacity      = capacity_of   (capacity + count);
+		size_t tail              = (size_t)msbitz(capacity);
+		size_t new_tail          = (size_t)msbitz(new_capacity);
 		void **slot              = arr->base;
 
 		if(!slot || (tail < new_tail)) {
@@ -81,7 +81,7 @@ marray_free(
 	if(arr) {
 		void **const slot = arr->base;
 		if(slot) {
-			size_t n = msbitz(arr->capacity);
+			size_t n = (size_t)msbitz(arr->capacity);
 			for(size_t i = 0; i < n; ++i) {
 				free(slot[i]);
 			}
@@ -99,7 +99,7 @@ marray_element_pointer(
 	size_t size,
 	size_t index
 ) {
-	size_t const i = msbitz(index);
+	size_t const i = (size_t)msbitz(index);
 	size_t const m = (~SIZE_C(0) >> 1) >> ((CHAR_BIT * sizeof(index)) - i);
 	size_t const x = index & m;
 	void **const s = arr->base;

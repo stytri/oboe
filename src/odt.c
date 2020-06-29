@@ -87,7 +87,7 @@ odt_of(
 
 //------------------------------------------------------------------------------
 
-size_t
+unsigned
 add_odt(
 	char const *name,
 	Ast       (*new)(
@@ -119,14 +119,14 @@ add_odt(
 		};
 		size_t next_index = array_length(&odt_map);
 		if(array_push_back(&odt_map, struct odt, odt)) {
-			return array_map_index(&odt_map, hash, next_index);
+			index = array_map_index(&odt_map, hash, next_index);
 		}
 	}
 
-	return index;
+	return (unsigned)index;
 }
 
-size_t
+unsigned
 get_odt(
 	char const *name
 ) {
@@ -134,7 +134,7 @@ get_odt(
 	uint64_t hash  = memhash(name, len, 0);
 	size_t   index = lookup_odt(name, hash);
 
-	return index;
+	return (unsigned)index;
 }
 
 char const *

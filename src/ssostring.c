@@ -176,8 +176,8 @@ string_allocation_size(
 	size_t siz
 ) {
 #	define STRING_ALLOCATION_SIZE(U,M) do {\
-		if(siz < (((U) * (M)) - 1)) { \
-			return ((siz + 1) + ((U) - 1)) & ~((U) - 1); \
+		if(siz < (((size_t)(U) * (size_t)(M)) - 1)) { \
+			return ((siz + 1) + ((size_t)(U) - 1)) & ~((size_t)(U) - 1); \
 		} \
 	} while(0)
 	if(siz >= SSO_SIZE) {
@@ -350,7 +350,7 @@ StringBuild(
 			}
 		}
 
-		t.ptr[t.len++] = c;
+		t.ptr[t.len++] = (char)c;
 	}
 
 	t.ptr[t.len] = '\0';
@@ -413,7 +413,7 @@ CharToString(
 	int c
 ) {
 	if(c > 0) {
-		char const cs[2] = { c, '\0' };
+		char const cs[2] = { (char)c, '\0' };
 
 		return CharLiteralToString(cs, 1);
 	}
@@ -441,7 +441,7 @@ CharsToString(
 ) {
 	if(c1 > 0) {
 		if(c2 > 0) {
-			char const cs[3] = { c1, c2, '\0' };
+			char const cs[3] = { (char)c1, (char)c2, '\0' };
 
 			return CharLiteralToString(cs, 2);
 		}
@@ -505,7 +505,7 @@ StringAppendChar(
 		unpack_string(s, &t);
 
 		if(expand_unpacked_string(&t, 1)) {
-			t.ptr[t.len++] = c;
+			t.ptr[t.len++] = (char)c;
 			t.ptr[t.len]   = '\0';
 
 			return pack_string(s, &t);

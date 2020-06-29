@@ -247,7 +247,7 @@ initialise_rand(
 	rand_seed = table[i].seed;
 	rand_next = table[i].next;
 
-	unsigned s = time(NULL);
+	unsigned s = (unsigned)time(NULL);
 	rand_seed(s);
 }
 
@@ -277,6 +277,6 @@ rand_to_float(
 	uint64_t r,
 	double   range
 ) {
-	return (r >> 11) * range * (1.0 / ((uint64_t)1 << 53));
+	return (double)(r >> 11) * range * (1.0 / (double)((uint64_t)1 << 53));
 }
 

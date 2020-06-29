@@ -38,6 +38,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <locale.h>
 #include <stdio.h>
+#include <uchar.h>
 #include <time.h>
 
 //------------------------------------------------------------------------------
@@ -46,10 +47,10 @@ Ast system_environment = NULL;
 
 //------------------------------------------------------------------------------
 
-static unsigned builtin_sigil_enum         = -1;
-static unsigned builtin_system_enum        = -1;
+static unsigned builtin_sigil_enum         = -1u;
+static unsigned builtin_system_enum        = -1u;
 #define ENUM(Name,...) \
-static unsigned builtin_is_##Name##_enum   = -1;
+static unsigned builtin_is_##Name##_enum   = -1u;
 ENUM(Tag)
 ENUM(TagRef)
 ENUM(Const)
@@ -60,30 +61,30 @@ ENUM(Assign)
 ENUM(Array)
 ENUM(Range)
 #include "oboe.enum"
-static unsigned builtin_type_enum          = -1;
-static unsigned builtin_typename_enum      = -1;
-static unsigned builtin_length_enum        = -1;
-static unsigned builtin_to_String_enum     = -1;
-static unsigned builtin_to_Literal_enum    = -1;
-static unsigned builtin_to_Character_enum  = -1;
-static unsigned builtin_to_Integer_enum    = -1;
-static unsigned builtin_to_Float_enum      = -1;
-static unsigned builtin_assert_enum        = -1;
-static unsigned builtin_getenv_enum        = -1;
-static unsigned builtin_setlocale_enum     = -1;
-static unsigned builtin_clock_enum         = -1;
-static unsigned builtin_time_enum          = -1;
-static unsigned builtin_difftime_enum      = -1;
-static unsigned builtin_localtime_enum     = -1;
-static unsigned builtin_utctime_enum       = -1;
-static unsigned builtin_seed_enum          = -1;
-static unsigned builtin_rand_enum          = -1;
-static unsigned builtin_randf_enum         = -1;
-static unsigned builtin_eval_enum          = -1;
-static unsigned builtin_parse_enum         = -1;
-static unsigned builtin_load_enum          = -1;
-static unsigned builtin_import_enum        = -1;
-static unsigned builtin_exit_enum          = -1;
+static unsigned builtin_type_enum          = -1u;
+static unsigned builtin_typename_enum      = -1u;
+static unsigned builtin_length_enum        = -1u;
+static unsigned builtin_to_String_enum     = -1u;
+static unsigned builtin_to_Literal_enum    = -1u;
+static unsigned builtin_to_Character_enum  = -1u;
+static unsigned builtin_to_Integer_enum    = -1u;
+static unsigned builtin_to_Float_enum      = -1u;
+static unsigned builtin_assert_enum        = -1u;
+static unsigned builtin_getenv_enum        = -1u;
+static unsigned builtin_setlocale_enum     = -1u;
+static unsigned builtin_clock_enum         = -1u;
+static unsigned builtin_time_enum          = -1u;
+static unsigned builtin_difftime_enum      = -1u;
+static unsigned builtin_localtime_enum     = -1u;
+static unsigned builtin_utctime_enum       = -1u;
+static unsigned builtin_seed_enum          = -1u;
+static unsigned builtin_rand_enum          = -1u;
+static unsigned builtin_randf_enum         = -1u;
+static unsigned builtin_eval_enum          = -1u;
+static unsigned builtin_parse_enum         = -1u;
+static unsigned builtin_load_enum          = -1u;
+static unsigned builtin_import_enum        = -1u;
+static unsigned builtin_exit_enum          = -1u;
 
 //------------------------------------------------------------------------------
 
@@ -387,14 +388,14 @@ builtin_to_Character(
 	arg = eval(env, arg);
 	switch(ast_type(arg)) {
 	case AST_Zen:
-		return new_ast(sloc, AST_Character, (int)'\0');
+		return new_ast(sloc, AST_Character, (char32_t)'\0');
 	case AST_Boolean:
 	case AST_Integer:
-		return new_ast(sloc, AST_Character, (int)arg->m.ival);
+		return new_ast(sloc, AST_Character, (char32_t)arg->m.ival);
 	case AST_Character:
 		return arg;
 	case AST_Float:
-		return new_ast(sloc, AST_Character, (int)arg->m.fval);
+		return new_ast(sloc, AST_Character, (char32_t)arg->m.fval);
 	default:
 		break;
 	}
@@ -500,7 +501,7 @@ builtin_assert(
 		String      srcs   = get_source(sloc_source(sloc));
 		char const *source = StringToCharLiteral(srcs, NULL);
 		char        line[(CHAR_BIT * sizeof(unsigned)) + 1];
-		snprintf(line, sizeof(line), ":%u: ", sloc_line(sloc));
+		snprintf(line, sizeof(line), ":%lu: ", sloc_line(sloc));
 
 		s = StringAppendCharLiteral(s, source , strlen(source));
 		s = StringAppendCharLiteral(s, line   , strlen(line));
@@ -656,37 +657,37 @@ builtin_time(
 		ast = eval_named(arg, sloc, "seconds");
 		ok  = ast_isInteger(ast);
 		if(ok) {
-			tm.tm_sec = ast->m.ival;
+			tm.tm_sec = (int)ast->m.ival;
 
 			ast = eval_named(arg, sloc, "minutes");
 			ok  = ast_isInteger(ast);
 		}
 		if(ok) {
-			tm.tm_min = ast->m.ival;
+			tm.tm_min = (int)ast->m.ival;
 
 			ast = eval_named(arg, sloc, "hour");
 			ok  = ast_isInteger(ast);
 		}
 		if(ok) {
-			tm.tm_hour = ast->m.ival;
+			tm.tm_hour = (int)ast->m.ival;
 
 			ast = eval_named(arg, sloc, "day");
 			ok  = ast_isInteger(ast);
 		}
 		if(ok) {
-			tm.tm_mday = ast->m.ival;
+			tm.tm_mday = (int)ast->m.ival;
 
 			ast = eval_named(arg, sloc, "month");
 			ok  = ast_isInteger(ast);
 		}
 		if(ok) {
-			tm.tm_mon = ast->m.ival - 1;
+			tm.tm_mon = (int)ast->m.ival - 1;
 
 			ast = eval_named(arg, sloc, "year");
 			ok  = ast_isInteger(ast) && (ast->m.ival >= 1900);
 		}
 		if(ok) {
-			tm.tm_year = ast->m.ival - 1900;
+			tm.tm_year = (int)ast->m.ival - 1900;
 
 			ast = eval_named(arg, sloc, "is_DST");
 			ok  = ast_isInteger(ast);
@@ -696,7 +697,7 @@ builtin_time(
 			}
 		}
 		if(ok) {
-			tm.tm_isdst = ast->m.ival;
+			tm.tm_isdst = (int)ast->m.ival;
 
 			t = mktime(&tm);
 
@@ -886,9 +887,9 @@ builtin_randf(
 		range = ast_toFloat(arg);
 	}
 
-	r = rand_to_float(r, range);
+	double d = rand_to_float(r, range);
 
-	return new_ast(sloc, AST_Float, r);
+	return new_ast(sloc, AST_Float, d);
 }
 
 //------------------------------------------------------------------------------
@@ -913,9 +914,9 @@ builtin_parse(
 		arg = eval(env, arg);
 		if(ast_isString(arg)) {
 
-			char const *args   = StringToCharLiteral(arg->m.sval, NULL);
-			unsigned    source = sloc_source(sloc);
-			unsigned    line   = sloc_line(sloc);
+			char const   *args   = StringToCharLiteral(arg->m.sval, NULL);
+			unsigned long source = sloc_source(sloc);
+			unsigned long line   = sloc_line(sloc);
 
 			arg = parse(args, &args, source, &line, new_ast_from_lexeme, true);
 
@@ -968,9 +969,9 @@ builtin_import_1(
 		if(s) {
 			arg = ZEN;
 
-			unsigned    source = add_source(0, file);
-			unsigned    line   = 0;
-			char const *cs     = StringToCharLiteral(s, NULL);
+			unsigned long source = add_source(0, file);
+			unsigned long line   = 0;
+			char const   *cs     = StringToCharLiteral(s, NULL);
 
 			for(size_t ts = gc_topof_stack();
 				*cs;

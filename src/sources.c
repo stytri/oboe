@@ -55,7 +55,7 @@ initialise_sources(
 	return EXIT_SUCCESS;
 }
 
-size_t
+unsigned long
 add_source(
 	sloc_t sloc,
 	String s
@@ -70,12 +70,12 @@ add_source(
 	size_t      index = locate(sources, ast->m.hash, cs, n);
 	if(!~index) {
 		index = define(sources, ast->m.hash, ast, ATTR_NoAssign);
-		assert(~index != 0);
+		assert(~index != 0 && (index < ULONG_MAX));
 	}
 
 	gc_revert(ts);
 
-	return index;
+	return (unsigned long)index;
 }
 
 String

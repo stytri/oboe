@@ -39,56 +39,59 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
-static unsigned builtin_file_type      = -1;
-static unsigned builtin_fpos_type      = -1;
+static unsigned builtin_file_type      = -1u;
+static unsigned builtin_fpos_type      = -1u;
 
-static unsigned builtin_tmpname_enum   = -1;
-static unsigned builtin_rename_enum    = -1;
-static unsigned builtin_remove_enum    = -1;
-static unsigned builtin_is_File_enum   = -1;
-static unsigned builtin_is_Fpos_enum   = -1;
-static unsigned builtin_open_enum      = -1;
-static unsigned builtin_close_enum     = -1;
-static unsigned builtin_flush_enum     = -1;
-static unsigned builtin_rewind_enum    = -1;
-static unsigned builtin_getpos_enum    = -1;
-static unsigned builtin_setpos_enum    = -1;
-static unsigned builtin_ferror_enum    = -1;
-static unsigned builtin_fclear_enum    = -1;
-static unsigned builtin_eof_enum       = -1;
-static unsigned builtin_wr_u8_enum     = -1;
-static unsigned builtin_wr_u16_enum    = -1;
-static unsigned builtin_wr_u32_enum    = -1;
-static unsigned builtin_wr_u64_enum    = -1;
-static unsigned builtin_wr_f32_enum    = -1;
-static unsigned builtin_wr_f64_enum    = -1;
-static unsigned builtin_wr_str_enum    = -1;
-static unsigned builtin_rd_u8_enum     = -1;
-static unsigned builtin_rd_u16_enum    = -1;
-static unsigned builtin_rd_u32_enum    = -1;
-static unsigned builtin_rd_u64_enum    = -1;
-static unsigned builtin_rd_f32_enum    = -1;
-static unsigned builtin_rd_f64_enum    = -1;
-static unsigned builtin_rd_str_enum    = -1;
-static unsigned builtin_write_enum     = -1;
-static unsigned builtin_read_enum      = -1;
-static unsigned builtin_fprint_enum    = -1;
-static unsigned builtin_fprintln_enum  = -1;
-static unsigned builtin_fgetln_enum    = -1;
-static unsigned builtin_print_enum     = -1;
-static unsigned builtin_println_enum   = -1;
-static unsigned builtin_printerr_enum  = -1;
-static unsigned builtin_getln_enum     = -1;
+static unsigned builtin_tmpname_enum   = -1u;
+static unsigned builtin_rename_enum    = -1u;
+static unsigned builtin_remove_enum    = -1u;
+static unsigned builtin_is_File_enum   = -1u;
+static unsigned builtin_is_Fpos_enum   = -1u;
+static unsigned builtin_open_enum      = -1u;
+static unsigned builtin_close_enum     = -1u;
+static unsigned builtin_flush_enum     = -1u;
+static unsigned builtin_rewind_enum    = -1u;
+static unsigned builtin_getpos_enum    = -1u;
+static unsigned builtin_setpos_enum    = -1u;
+static unsigned builtin_ferror_enum    = -1u;
+static unsigned builtin_fclear_enum    = -1u;
+static unsigned builtin_eof_enum       = -1u;
+static unsigned builtin_wr_u8_enum     = -1u;
+static unsigned builtin_wr_u16_enum    = -1u;
+static unsigned builtin_wr_u32_enum    = -1u;
+static unsigned builtin_wr_u64_enum    = -1u;
+static unsigned builtin_wr_f32_enum    = -1u;
+static unsigned builtin_wr_f64_enum    = -1u;
+static unsigned builtin_wr_str_enum    = -1u;
+static unsigned builtin_rd_u8_enum     = -1u;
+static unsigned builtin_rd_u16_enum    = -1u;
+static unsigned builtin_rd_u32_enum    = -1u;
+static unsigned builtin_rd_u64_enum    = -1u;
+static unsigned builtin_rd_f32_enum    = -1u;
+static unsigned builtin_rd_f64_enum    = -1u;
+static unsigned builtin_rd_str_enum    = -1u;
+static unsigned builtin_write_enum     = -1u;
+static unsigned builtin_read_enum      = -1u;
+static unsigned builtin_fprint_enum    = -1u;
+static unsigned builtin_fprintln_enum  = -1u;
+static unsigned builtin_fgetln_enum    = -1u;
+static unsigned builtin_print_enum     = -1u;
+static unsigned builtin_println_enum   = -1u;
+static unsigned builtin_printerr_enum  = -1u;
+static unsigned builtin_getln_enum     = -1u;
 
 //------------------------------------------------------------------------------
 
+typedef float  float32_t;
+typedef double float64_t;
+
 union btypes {
-	uint8_t  u8;
-	uint16_t u16;
-	uint32_t u32;
-	uint64_t u64;
-	float    f32;
-	double   f64;
+	uint8_t  uint8;
+	uint16_t uint16;
+	uint32_t uint32;
+	uint64_t uint64;
+	float    float32;
+	double   float64;
 };
 
 //------------------------------------------------------------------------------
@@ -529,7 +532,7 @@ builtin_ferror(
 ) {
 	arg = eval_file(env, arg);
 	if(ast_isFileType(arg) && (arg->m.lptr != NULL)) {
-		uint64_t is_error = ferror(arg->m.lptr);
+		uint64_t is_error = (uint64_t)ferror(arg->m.lptr);
 		return new_ast(sloc, AST_Boolean, is_error);
 	}
 
@@ -559,7 +562,7 @@ builtin_eof(
 ) {
 	arg = eval_file(env, arg);
 	if(ast_isFileType(arg) && (arg->m.lptr != NULL)) {
-		uint64_t is_eof = feof(arg->m.lptr);
+		uint64_t is_eof = (uint64_t)feof(arg->m.lptr);
 		return new_ast(sloc, AST_Boolean, is_eof);
 	}
 
@@ -569,7 +572,7 @@ builtin_eof(
 //------------------------------------------------------------------------------
 
 #define WR1(Type,Value) {\
-	bval.Type = Value; \
+	bval.Type = (Type##_t)Value; \
 	res = fwrite(&bval.Type, sizeof(bval.Type), 1, file->m.lptr); \
 }
 
@@ -591,20 +594,20 @@ builtin_wr_u_1(
 	case AST_Integer:
 	case AST_Character:
 		switch(bits) {
-		case 8 : WR1(u8 , arg->m.ival); break;
-		case 16: WR1(u16, arg->m.ival); break;
-		case 32: WR1(u32, arg->m.ival); break;
+		case 8 : WR1(uint8 , arg->m.ival); break;
+		case 16: WR1(uint16, arg->m.ival); break;
+		case 32: WR1(uint32, arg->m.ival); break;
 		default:
-		case 64: WR1(u64, arg->m.ival); break;
+		case 64: WR1(uint64, arg->m.ival); break;
 		}
 		break;
 	case AST_Float:
 		switch(bits) {
-		case 8 : WR1(u8 , arg->m.fval); break;
-		case 16: WR1(u16, arg->m.fval); break;
-		case 32: WR1(u32, arg->m.fval); break;
+		case 8 : WR1(uint8 , arg->m.fval); break;
+		case 16: WR1(uint16, arg->m.fval); break;
+		case 32: WR1(uint32, arg->m.fval); break;
 		default:
-		case 64: WR1(u64, arg->m.fval); break;
+		case 64: WR1(uint64, arg->m.fval); break;
 		}
 		break;
 	default:
@@ -636,16 +639,16 @@ builtin_wr_f_1(
 	case AST_Integer:
 	case AST_Character:
 		switch(bits) {
-		case 32: WR1(f32, arg->m.ival); break;
+		case 32: WR1(float32, arg->m.ival); break;
 		default:
-		case 64: WR1(f64, arg->m.ival); break;
+		case 64: WR1(float64, arg->m.ival); break;
 		}
 		break;
 	case AST_Float:
 		switch(bits) {
-		case 32: WR1(f32, arg->m.fval); break;
+		case 32: WR1(float32, arg->m.fval); break;
 		default:
-		case 64: WR1(f64, arg->m.fval); break;
+		case 64: WR1(float64, arg->m.fval); break;
 		}
 		break;
 	default:
@@ -690,9 +693,9 @@ builtin_wr_s_1(
 			s = arg->m.sval;
 		}
 		cs = StringToCharLiteral(s, &len);
-		WR1(u32, (uint32_t)len);
+		WR1(uint32, len);
 		if(res > 0 && len > 0) {
-			int res1 = res;
+			size_t res1 = res;
 			res = fwrite(cs, sizeof(*cs), len, file->m.lptr);
 			if(res > 0) {
 				res += res1;
@@ -829,21 +832,21 @@ builtin_rd_u_1(
 	union btypes bval;
 
 	switch(bits) {
-	case 8 : RD1(u8 , bval.u64); break;
-	case 16: RD1(u16, bval.u64); break;
-	case 32: RD1(u32, bval.u64); break;
+	case 8 : RD1(uint8 , bval.uint64); break;
+	case 16: RD1(uint16, bval.uint64); break;
+	case 32: RD1(uint32, bval.uint64); break;
 	default:
-	case 64: RD1(u64, bval.u64); break;
+	case 64: RD1(uint64, bval.uint64); break;
 	}
 
 	if(res > 0) {
 		if(ast_isZen(arg)) {
-			return new_ast(sloc, AST_Integer, bval.u64);
+			return new_ast(sloc, AST_Integer, bval.uint64);
 		}
 
 		Ast ast = subeval(env, arg);
 		if(ast_isReference(ast)) {
-			arg = new_ast(sloc, AST_Integer, bval.u64);
+			arg = new_ast(sloc, AST_Integer, bval.uint64);
 			ast = unwrapref(ast);
 
 			return assign(sloc, &ast->m.rexpr, arg);
@@ -867,19 +870,19 @@ builtin_rd_f_1(
 	union btypes bval;
 
 	switch(bits) {
-	case 32: RD1(f32, bval.f64); break;
+	case 32: RD1(float32, bval.float64); break;
 	default:
-	case 64: RD1(f64, bval.f64); break;
+	case 64: RD1(float64, bval.float64); break;
 	}
 
 	if(res > 0) {
 		if(ast_isZen(arg)) {
-			return new_ast(sloc, AST_Float, bval.f64);
+			return new_ast(sloc, AST_Float, bval.float64);
 		}
 
 		Ast ast = subeval(env, arg);
 		if(ast_isReference(ast)) {
-			arg = new_ast(sloc, AST_Float, bval.f64);
+			arg = new_ast(sloc, AST_Float, bval.float64);
 			ast = unwrapref(ast);
 
 			return assign(sloc, &ast->m.rexpr, arg);
@@ -904,14 +907,14 @@ builtin_rd_s_1(
 	size_t       len;
 	String       s;
 
-	RD1(u32, len);
+	RD1(uint32, len);
 	if(res > 0) {
 		s = StringReserve(len);
 		assert(s != NULL);
 
 		if(len > 0) {
-			char *cs   = (char *)StringToCharLiteral(s, &len);
-			int   res1 = res;
+			char  *cs   = (char *)StringToCharLiteral(s, &len);
+			size_t res1 = res;
 			res = fread(cs, sizeof(*cs), len, file->m.lptr);
 			if(res > 0) {
 				res += res1;
@@ -1120,8 +1123,8 @@ builtin_read_1_parse(
 ) {
 	Ast ast = ZEN;
 
-	char const *args = StringToCharLiteral(s, NULL);
-	unsigned    line = 1;
+	char const   *args = StringToCharLiteral(s, NULL);
+	unsigned long line = 1;
 
 	size_t ts = gc_topof_stack();
 

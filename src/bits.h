@@ -363,7 +363,8 @@ static inline void *
 untag_pointer(
 	uintptr_t ptr
 ) {
-	return (void *)untag(ptr);
+	ptr = untag(ptr);
+	return (void *)ptr;
 }
 
 static inline bool

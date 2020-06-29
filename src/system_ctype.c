@@ -40,17 +40,17 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
-#define ENUM(Name,...)  static unsigned builtin_##Name##_enum = -1;
+#define ENUM(Name,...)  static unsigned builtin_##Name##_enum = -1u;
 	ENUM(to_Uppercase)
 	ENUM(to_Lowercase)
 #undef ENUM
-#define ENUM(Name,...)  static unsigned builtin_span_##Name##_enum = -1;
+#define ENUM(Name,...)  static unsigned builtin_span_##Name##_enum = -1u;
 	ENUM(InSet)
 #include "system_ctype.enum"
-#define ENUM(Name,...)  static unsigned builtin_span_Not##Name##_enum = -1;
+#define ENUM(Name,...)  static unsigned builtin_span_Not##Name##_enum = -1u;
 	ENUM(InSet)
 #include "system_ctype.enum"
-#define ENUM(Name,...)  static unsigned builtin_is_##Name##_enum = -1;
+#define ENUM(Name,...)  static unsigned builtin_is_##Name##_enum = -1u;
 	ENUM(CharInSet)
 #include "system_ctype.enum"
 
@@ -327,7 +327,7 @@ builtin_convert_ctype(
 	case AST_Boolean:
 	case AST_Integer:
 	case AST_Character:
-		return new_ast(sloc, AST_Character, (int)to_ctype((char32_t)arg->m.ival));
+		return new_ast(sloc, AST_Character, to_ctype((char32_t)arg->m.ival));
 	case AST_String: {
 		String s = StringCreate();
 		assert(s != NULL);

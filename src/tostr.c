@@ -280,7 +280,7 @@ toString_error(
 	char        count [(CHAR_BIT * sizeof(unsigned)) + 1];
 
 	char const *source = StringToCharLiteral(srcs, NULL);
-	snprintf(line  , sizeof(line)  , ":%u"  , sloc_line  (err->sloc));
+	snprintf(line  , sizeof(line)  , ":%lu" , sloc_line  (err->sloc));
 	snprintf(offset, sizeof(offset), ":%u"  , sloc_offset(err->sloc)+1u);
 	snprintf(count , sizeof(count) , ":%u: ", sloc_count (err->sloc));
 

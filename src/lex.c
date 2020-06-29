@@ -26,12 +26,19 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
+static inline char32_t
+char32(
+	char const *cs
+) {
+	return (char32_t)*(unsigned char *)cs;
+}
+
 char const *
 lex(
-	char const  *cs,
-	char const **endp,
-	char const **linep,
-	unsigned    *linop
+	char const    *cs,
+	char const   **endp,
+	char const   **linep,
+	unsigned long *linop
 ) {
 	char const *start, *end;
 	char32_t    c;
@@ -233,7 +240,7 @@ restart_continue:
 		break;
 
 	case '"':
-		for(c = *cs; c && (c != '"'); c = *++cs)
+		for(c = char32(cs); c && (c != '"'); c = char32(++cs))
 			;
 		if(c) {
 			++cs;
@@ -243,9 +250,9 @@ restart_continue:
 	case '\'': case '`':
 		{
 			char32_t const e = c;
-			for(c = *cs; c && (c != e); c = *++cs) {
+			for(c = char32(cs); c && (c != e); c = char32(++cs)) {
 				if(c == '\\') {
-					c = *++cs;
+					c = char32(++cs);
 					if(!c) {
 						break;
 					}

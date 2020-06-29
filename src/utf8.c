@@ -30,6 +30,13 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
+static inline char32_t
+utf8char32(
+	char const *cs
+) {
+	return (char32_t)*(unsigned char *)cs;
+}
+
 size_t
 utf8off(
 	char const  *cs,
@@ -39,7 +46,7 @@ utf8off(
 	size_t off = 0;
 
 	for(size_t i = 0; i++ < index; ) {
-		char32_t const c = *cs;
+		char32_t const c = utf8char32(cs);
 		if(!c) goto end;
 
 		size_t const n = UTF8LEN(c);
@@ -60,7 +67,7 @@ utf8len(
 	size_t len = 0;
 
 	for(; len < maxlen; ++len) {
-		char32_t  c = *cs;
+		char32_t  c = utf8char32(cs);
 		int const n = UTF8LEN(c);
 		switch(n) {
 		case 1:
@@ -69,30 +76,30 @@ utf8len(
 			++cs;
 			continue;
 		case 2:
-			c = *++cs;
+			c = utf8char32(++cs);
 			if((c & 0xC0) != 0x80) goto err;
 			++cs;
 			continue;
 		case 3:
-			c = *++cs;
+			c = utf8char32(++cs);
 			if((c & 0xC0) != 0x80) goto err;
-			c = *++cs;
+			c = utf8char32(++cs);
 			if((c & 0xC0) != 0x80) goto err;
 			++cs;
 			continue;
 		case 4:
 			if(c > 0xF7)           goto err;
-			c = *++cs;
+			c = utf8char32(++cs);
 			if((c & 0xC0) != 0x80) goto err;
-			c = *++cs;
+			c = utf8char32(++cs);
 			if((c & 0xC0) != 0x80) goto err;
-			c = *++cs;
+			c = utf8char32(++cs);
 			if((c & 0xC0) != 0x80) goto err;
 			++cs;
 			continue;
 		case 0:
 		default:
-			for(c = *++cs; (c & 0xC0) == 0x80; c = *++cs)
+			for(c = utf8char32(++cs); (c & 0xC0) == 0x80; c = utf8char32(++cs))
 				;
 		err:
 			if(endp) *endp = cs;
@@ -109,7 +116,7 @@ utf8chr(
 	char const  *cs,
 	char const **endp
 ) {
-	char32_t  c = *cs;
+	char32_t  c = utf8char32(cs);
 	int const n = UTF8LEN(c);
 	switch(n) {
 		char32_t cc;
@@ -118,17 +125,17 @@ utf8chr(
 		return c;
 	case 2:
 		cc = (c & 0x1F) << 6;
-		c = *++cs;
+		c = utf8char32(++cs);
 		if((c & 0xC0) != 0x80) goto err;
 		cc |= (c & 0x3F);
 		if(endp) *endp = cs + 1;
 		return cc;
 	case 3:
 		cc = (c & 0x0F) << 12;
-		c = *++cs;
+		c = utf8char32(++cs);
 		if((c & 0xC0) != 0x80) goto err;
 		cc |= (c & 0x3F) << 6;
-		c = *++cs;
+		c = utf8char32(++cs);
 		if((c & 0xC0) != 0x80) goto err;
 		cc |= (c & 0x3F);
 		if(endp) *endp = cs + 1;
@@ -136,20 +143,20 @@ utf8chr(
 	case 4:
 		if(c > 0xF7)           goto err;
 		cc = (c & 0x07) << 18;
-		c = *++cs;
+		c = utf8char32(++cs);
 		if((c & 0xC0) != 0x80) goto err;
 		cc |= (c & 0x3F) << 12;
-		c = *++cs;
+		c = utf8char32(++cs);
 		if((c & 0xC0) != 0x80) goto err;
 		cc |= (c & 0x3F) << 6;
-		c = *++cs;
+		c = utf8char32(++cs);
 		if((c & 0xC0) != 0x80) goto err;
 		cc |= (c & 0x3F);
 		if(endp) *endp = cs + 1;
 		return cc;
 	case 0:
 	default:
-		for(c = *++cs; (c & 0xC0) == 0x80; c = *++cs)
+		for(c = utf8char32(++cs); (c & 0xC0) == 0x80; c = utf8char32(++cs))
 			;
 	err:
 		if(endp) *endp = cs;
@@ -161,7 +168,7 @@ size_t
 utf8enlen(
 	char32_t cc
 ) {
-	return (cc < 0x110000) + (cc > 0x000080) + (cc > 0x000800) + (cc > 0x0001000);
+	return (size_t)((cc < 0x110000) + (cc > 0x000080) + (cc > 0x000800) + (cc > 0x0001000));
 }
 
 size_t
@@ -173,22 +180,22 @@ utf8encode(
 	size_t const n = utf8enlen(cc);
 	switch(n) {
 	case 1:
-		*s++ = cc;
+		*s++ = (char)(cc);
 		break;
 	case 2:
-		*s++ = 0xC0 | ((cc >>  6) & 0x1F);
-		*s++ = 0x80 | ( cc        & 0x3F);
+		*s++ = (char)(0xC0 | ((cc >>  6) & 0x1F));
+		*s++ = (char)(0x80 | ( cc        & 0x3F));
 		break;
 	case 3:
-		*s++ = 0xE0 | ((cc >> 12) & 0x0F);
-		*s++ = 0x80 | ((cc >>  6) & 0x3F);
-		*s++ = 0x80 | ( cc        & 0x3F);
+		*s++ = (char)(0xE0 | ((cc >> 12) & 0x0F));
+		*s++ = (char)(0x80 | ((cc >>  6) & 0x3F));
+		*s++ = (char)(0x80 | ( cc        & 0x3F));
 		break;
 	case 4:
-		*s++ = 0xF0 | ((cc >> 18) & 0x07);
-		*s++ = 0x80 | ((cc >> 12) & 0x3F);
-		*s++ = 0x80 | ((cc >>  6) & 0x3F);
-		*s++ = 0x80 | ( cc        & 0x3F);
+		*s++ = (char)(0xF0 | ((cc >> 18) & 0x07));
+		*s++ = (char)(0x80 | ((cc >> 12) & 0x3F));
+		*s++ = (char)(0x80 | ((cc >>  6) & 0x3F));
+		*s++ = (char)(0x80 | ( cc        & 0x3F));
 		break;
 	case 0:
 	default:

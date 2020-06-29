@@ -41,7 +41,7 @@ initialise_sources(
 	void
 );
 
-extern size_t
+extern unsigned long
 add_source(
 	sloc_t sloc,
 	String s

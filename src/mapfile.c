@@ -46,12 +46,12 @@ mapfile(
 		if(0 == fseek(fp, 0, SEEK_END)) {
 			long n = ftell(fp);
 			if((n > 0) && LTLZ(n, STRING_MAX)) {
-				String s = StringReserve(n);
+				String s = StringReserve((size_t)n);
 				if(s) {
 					rewind(fp);
 					void  *p    = (void *)StringToCharLiteral(s, NULL);
-					size_t size = fread(p, 1, n, fp);
-					if(EQLZ(n, size)) {
+					size_t size = fread(p, 1, (size_t)n, fp);
+					if(EQLZ(n,size)) {
 						fclose(fp);
 						return s;
 					}

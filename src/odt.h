@@ -33,7 +33,7 @@ extern "C" {
 
 //------------------------------------------------------------------------------
 
-extern size_t
+extern unsigned
 add_odt(
 	char const *name,
 	Ast       (*new)(
@@ -52,7 +52,7 @@ add_odt(
 	)
 );
 
-extern size_t
+extern unsigned
 get_odt(
 	char const *name
 );

@@ -47,23 +47,23 @@ SOFTWARE.
 
 static int
 interactive(
-	unsigned *linop,
-	bool      timed,
-	bool      quiet,
-	bool      doeval,
-	FILE     *gfile
+	unsigned long *linop,
+	bool           timed,
+	bool           quiet,
+	bool           doeval,
+	FILE          *gfile
 );
 
 static int
 process(
-	char const *cs,
-	unsigned    source,
-	unsigned   *linop,
-	bool        timed,
-	bool        quiet,
-	bool        doeval,
-	char const *gtitle,
-	FILE       *gfile
+	char const    *args,
+	unsigned long  source,
+	unsigned long *linop,
+	bool           timed,
+	bool           quiet,
+	bool           doeval,
+	char const    *gtitle,
+	FILE          *gfile
 );
 
 static char *
@@ -190,16 +190,16 @@ main(
 
 	int exit_status = EXIT_SUCCESS;
 
-	unsigned    line          = 1;
-	char const *generator     = NULL;
-	bool        no_alias      = false;
-	bool        has_math      = false;
-	bool        list_builtins = false;
-	bool        timed         = false;
-	bool        quiet         = false;
-	bool        doeval        = true;
-	FILE       *gfile         = NULL;
-	bool        unprocessed   = true;
+	unsigned long line          = 1;
+	char const   *generator     = NULL;
+	bool          no_alias      = false;
+	bool          has_math      = false;
+	bool          list_builtins = false;
+	bool          timed         = false;
+	bool          quiet         = false;
+	bool          doeval        = true;
+	FILE         *gfile         = NULL;
+	bool          unprocessed   = true;
 
 	for(int argi = 1; argi < argc;) {
 		char const *args = argv[argi++];
@@ -333,7 +333,7 @@ main(
 					args = StringToCharLiteral(s, NULL);
 					line = 1;
 
-					unsigned source = add_source(0, file);
+					unsigned long source = add_source(0, file);
 					exit_status = process(args, source, &line, timed, true, doeval, argv[argi], gfile);
 
 					StringDelete(s);
@@ -420,11 +420,11 @@ is_command(
 
 static int
 interactive(
-	unsigned *linop,
-	bool      timed,
-	bool      quiet,
-	bool      doeval,
-	FILE     *gfile
+	unsigned long *linop,
+	bool           timed,
+	bool           quiet,
+	bool           doeval,
+	FILE          *gfile
 ) {
 	for(;;) {
 		size_t mem_used    = gc_total_size();
@@ -456,14 +456,14 @@ interactive(
 
 static int
 process(
-	char const *args,
-	unsigned    source,
-	unsigned   *linop,
-	bool        timed,
-	bool        quiet,
-	bool        doeval,
-	char const *gtitle,
-	FILE       *gfile
+	char const    *args,
+	unsigned long  source,
+	unsigned long *linop,
+	bool           timed,
+	bool           quiet,
+	bool           doeval,
+	char const    *gtitle,
+	FILE          *gfile
 ) {
 	clock_t t1;
 	if(timed) {
@@ -561,7 +561,7 @@ readline(
 			}
 		}
 
-		if(!array_push_back(&buf, char, c)) {
+		if(!array_push_back(&buf, char, (char)c)) {
 			return NULL;
 		}
 	}

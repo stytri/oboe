@@ -104,7 +104,7 @@ makdbl(
 	return val;
 }
 
-static int
+static char32_t
 makchr(
 	char const *cs,
 	size_t      n
@@ -113,7 +113,7 @@ makchr(
 		return 0;
 	}
 
-	return strtoc(cs+1, NULL);
+	return (char32_t)strtoc(cs+1, NULL);
 }
 
 static String
@@ -153,7 +153,7 @@ makopr(
 		ast   = getopr(index);
 	}
 
-	return index;
+	return (unsigned)index;
 }
 
 //------------------------------------------------------------------------------
@@ -380,12 +380,12 @@ new_ast_from_lexeme(
 #	define ENUM(Name)       } break; case AST_##Name: {
 #	define NEW(...)         __VA_ARGS__;
 
-#	define INTEGER(...)     (ast->attr |= ATTR_CopyOnAssign, makint(leme, len)   )
-#	define FLOAT(...)       (ast->attr |= ATTR_CopyOnAssign, makdbl(leme, len)   )
-#	define CHARACTER(...)   (ast->attr |= ATTR_CopyOnAssign, makchr(leme, len)   )
-#	define STRING(...)      (ast->attr |= ATTR_CopyOnAssign, makstr(leme, len, c))
-#	define IDENTIFIER(...)  (                                dupstr(leme, len)   )
-#	define OPERATOR(...)    (                                makopr(leme, len)   )
+#	define INTEGER(...)     (ast->attr |= ATTR_CopyOnAssign, makint(leme, len)        )
+#	define FLOAT(...)       (ast->attr |= ATTR_CopyOnAssign, makdbl(leme, len)        )
+#	define CHARACTER(...)   (ast->attr |= ATTR_CopyOnAssign, makchr(leme, len)        )
+#	define STRING(...)      (ast->attr |= ATTR_CopyOnAssign, makstr(leme, len, (int)c))
+#	define IDENTIFIER(...)  (                                dupstr(leme, len)        )
+#	define OPERATOR(...)    (                                makopr(leme, len)        )
 
 #	include "oboe.enum"
 
@@ -429,7 +429,7 @@ new_ast(
 
 #	define INTEGER(...)     va_arg(va, uint64_t)
 #	define FLOAT(...)       va_arg(va, double)
-#	define CHARACTER(...)   va_arg(va, int)
+#	define CHARACTER(...)   va_arg(va, char32_t)
 #	define STRING(...)      va_arg(va, String)
 #	define IDENTIFIER(...)  va_arg(va, String)
 #	define OPERATOR(...)    va_arg(va, unsigned)

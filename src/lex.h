@@ -25,6 +25,7 @@ SOFTWARE.
 */
 
 #include "ucs_ctype.h"
+#include <limits.h>
 #include <ctype.h>
 
 #ifdef __cplusplus
@@ -53,14 +54,14 @@ static inline int
 is_Digit(
 	char32_t c
 ) {
-	return isdigit(c);
+	return (c < INT_MAX) && isdigit((int)c);
 }
 
 static inline int
 is_XDigit(
 	char32_t c
 ) {
-	return isxdigit(c);
+	return (c < INT_MAX) && isxdigit((int)c);
 }
 
 static inline int
@@ -148,10 +149,10 @@ is_EOL(
 
 extern char const *
 lex(
-	char const  *cs,
-	char const **endp,
-	char const **linep,
-	unsigned    *linop
+	char const    *cs,
+	char const   **endp,
+	char const   **linep,
+	unsigned long *linop
 );
 
 //------------------------------------------------------------------------------
