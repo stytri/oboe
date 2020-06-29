@@ -65,7 +65,7 @@ popcount32(
 	return x & 0x7f;
 }
 
-static inline size_t
+static inline int
 popcountz(
 	size_t x
 ) {
@@ -137,7 +137,7 @@ lzcount64(
 	x *= 4;
 	x  = UINT64_C(0x4444444433332210) >> x;
 	x &= 0xf;
-	n -= x;
+	n -= (int)x;
 
 	return n;
 }
@@ -161,14 +161,14 @@ lzcount32(
 		n -= 4;
 	}
 	x *= 4;
-	x  = UINT64_C(0x4444444433332210) >> x;
+	x  = (uint32_t)(UINT64_C(0x4444444433332210) >> x);
 	x &= 0xf;
-	n -= x;
+	n -= (int)x;
 
 	return n;
 }
 
-static inline size_t
+static inline int
 lzcountz(
 	size_t x
 ) {
@@ -216,7 +216,7 @@ tzcount32(
 	return n;
 }
 
-static inline size_t
+static inline int
 tzcountz(
 	size_t x
 ) {
@@ -250,7 +250,7 @@ msbit64(
 	shift = MSBIT_SHIFT(v,1);
 	v   >>= shift;
 	n    |= shift;
-	n    |= (v >> 1);
+	n    |= (int)(v >> 1);
 
 	return n + (x > 0);
 
@@ -277,14 +277,14 @@ msbit32(
 	shift = MSBIT_SHIFT(v,1);
 	v   >>= shift;
 	n    |= shift;
-	n    |= (v >> 1);
+	n    |= (int)(v >> 1);
 
 	return n + (x > 0);
 
 #	undef MSBIT_SHIFT
 }
 
-static inline size_t
+static inline int
 msbitz(
 	size_t x
 ) {

@@ -44,7 +44,7 @@ memhash(
 	uint64_t const *w = (uint64_t const *)buf;
 	uint64_t        x1, x2, x3, x4;
 
-	for(uint64_t const *const end = w + ((len & ~31) >> 3); w != end; ) {
+	for(uint64_t const *const end = w + ((len & ~31u) >> 3); w != end; ) {
 		x1  = *w++;
 		x2  = *w++;
 		x3  = *w++;
@@ -63,7 +63,7 @@ memhash(
 		h  += x4;
 	}
 
-	if(len & 16) {
+	if(len & 16u) {
 		x1  = *w++;
 		x2  = *w++;
 		h  *= M;
@@ -74,7 +74,7 @@ memhash(
 		h  += x2;
 	}
 
-	if(len & 8) {
+	if(len & 8u) {
 		x1  = *w++;
 		h  *= M;
 		x1 *= M;
@@ -82,7 +82,7 @@ memhash(
 	}
 
 	x1 = 0;
-	switch(len & 7) {
+	switch(len & 7u) {
 	case 7: x1 |= (uint64_t)*(((uint8_t const *)w) + 6) << 48; nobreak;
 	case 6: x1 |= (uint64_t)*(((uint8_t const *)w) + 5) << 40; nobreak;
 	case 5: x1 |= (uint64_t)*(((uint8_t const *)w) + 4) << 32; nobreak;

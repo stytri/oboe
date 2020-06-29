@@ -46,10 +46,10 @@ sloc_max(
 
 static inline sloc_t
 make_sloc(
-	unsigned source,
-	unsigned line,
-	unsigned offset,
-	unsigned count
+	unsigned long source,
+	unsigned long line,
+	unsigned      offset,
+	unsigned      count
 ) {
 	return sloc_max(0x000FFFu, count)
 		| (sloc_max(0x000FFFu, offset) << 12)
@@ -58,32 +58,32 @@ make_sloc(
 	;
 }
 
-static inline unsigned
+static inline unsigned long
 sloc_source(
 	sloc_t sloc
 ) {
-	return (sloc >> 44) & 0x0FFFFFu;
+	return (unsigned long)(sloc >> 44) & 0x0FFFFFlu;
 }
 
-static inline unsigned
+static inline unsigned long
 sloc_line(
 	sloc_t sloc
 ) {
-	return (sloc >> 24) & 0x0FFFFFu;
+	return (unsigned long)(sloc >> 24) & 0x0FFFFFlu;
 }
 
 static inline unsigned
 sloc_offset(
 	sloc_t sloc
 ) {
-	return (sloc >> 12) & 0x000FFFu;
+	return (unsigned)(sloc >> 12) & 0x000FFFu;
 }
 
 static inline unsigned
 sloc_count(
 	sloc_t sloc
 ) {
-	return sloc & 0x000FFFu;
+	return (unsigned)sloc & 0x000FFFu;
 }
 
 //------------------------------------------------------------------------------

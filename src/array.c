@@ -170,7 +170,7 @@ array_map_index(
 					// we have found our leaf node
 					// so we need to append an entry,
 					// unless it already exists
-					int i;
+					size_t i;
 
 					for(i = 0; i < LEAF_MAX_SIZE; ++i) {
 						if(untag(leaf->ptr[i]) == uip) {
@@ -228,12 +228,12 @@ array_map_index(
 			int      const i = (hash >> o) & NODE_BIT_MASK;
 			uint64_t const b = UINT64_C(1) << i;
 			uint64_t const x = node->map & (b - 1);
-			int      const j = popcount64(x);
+			size_t   const j = (size_t)popcount64(x);
 
 			if(!(node->map & b)) {
 				// unoccupied slot
 
-				int k = popcount64(node->map);
+				size_t k = (size_t)popcount64(node->map);
 				if(is_at_capacity(k)) {
 					// expand node if filled to capacity
 					z    = sizeof(struct node) + ((k * 2) * sizeof(uintptr_t));
