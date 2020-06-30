@@ -153,6 +153,10 @@ Where an _operand_-less **operator** is bracketed sans space, then this forms a 
 
 User-defined operators can be named by prefixing an **identifier** with `\`.
 
+##### Unary operators
+
+All operators are inherently binary; when used as a unary operator, the operator is still parsed at the same precedence level; therefore, when an operator is used as a unary operator in a sub-expression, the sub-expression should be parenthesized.
+
 #### Identifiers
 
 See `lex.h` for permitted lexeme characters.

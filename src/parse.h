@@ -44,7 +44,8 @@ typedef enum {
 	P_Additive,
 	P_Multiplicative,
 	P_Exponential,
-	P_Binding
+	P_Binding,
+	P_Applicate
 
 } Precedence;
 

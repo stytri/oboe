@@ -1041,7 +1041,7 @@ initialise_system_environment(
 	bool no_alias
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN("\\sigil", sigil, P_Binding)
+		BUILTIN("\\sigil", sigil, P_Applicate)
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 

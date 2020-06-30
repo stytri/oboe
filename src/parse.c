@@ -210,6 +210,9 @@ parse_primary(
 
 	switch(*leme) {
 	case '(':
+		if(ps->len > 2) {
+			return ZEN;
+		}
 		if(ps->len > 1) {
 			leme = parse_get(ps, &len);
 			break;
@@ -229,6 +232,9 @@ parse_primary(
 		len  = 2;
 		break;
 	case '[':
+		if(ps->len > 2) {
+			return ZEN;
+		}
 		if(ps->len > 1) {
 			leme = parse_get(ps, &len);
 			break;
@@ -244,6 +250,9 @@ parse_primary(
 		len  = 2;
 		break;
 	case '{':
+		if(ps->len > 2) {
+			return ZEN;
+		}
 		if(ps->len > 1) {
 			leme = parse_get(ps, &len);
 			break;
@@ -264,6 +273,13 @@ parse_primary(
 		return ZEN;
 
 	default:
+		{
+			char32_t c = utf8chr(leme, &leme);
+			if(is_Operator(c)) {
+				return ZEN;
+			}
+		}
+
 		leme = parse_get(ps, &len);
 		break;
 	}
@@ -283,9 +299,23 @@ parse_applicate(
 ) {
 	Ast expr = parse_primary(ps, ast);
 
-	while(parse_peek_primary(ps)) {
-		Ast rexpr = parse_primary(ps, ast);
-		expr      = ast(rexpr->sloc, "", 0, expr, rexpr);
+	for(;;) {
+		if(parse_peek_primary(ps)) {
+			Ast rexpr = parse_primary(ps, ast);
+			expr      = ast(rexpr->sloc, "", 0, expr, rexpr);
+			continue;
+		}
+
+		if(parse_peek_operate(ps) && (precedence(ps->leme, ps->len) == P_Applicate)) {
+			size_t      len;
+			sloc_t      sloc  = parse_sloc(ps);
+			char const *op    = parse_get(ps, &len);
+			Ast         rexpr = parse_primary(ps, ast);
+			expr              = ast(sloc, op, len, expr, rexpr);
+			continue;
+		}
+
+		break;
 	}
 
 	return expr;

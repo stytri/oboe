@@ -38,7 +38,7 @@ process(s): (
 	(i:0..(len-1)) ?* (
 		cs :s[i]@to_String,
 		uniq:is_unique(cs, i),
-		(!uniq && unique) ? (
+		((!uniq) && unique) ? (
 			unique = 0,
 			diff1 = cs
 		)
