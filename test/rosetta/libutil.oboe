@@ -3,173 +3,147 @@
 "++"(X):(X+=1);
 "--"(X):(X-=1);
 
-[:](
-	min(a:,b:): (
-		(a < b) ? (a ; b)
-	)
+[:] min(a:,b:): (
+	(a < b) ? (a ; b)
 );
 
-[:](
-	max(a:,b:): (
-		(a > b) ? (a ; b)
-	)
+[:] max(a:,b:): (
+	(a > b) ? (a ; b)
 );
 
-[:](
-	spad(n, s, c): (
-		m:s@length,
-		((-m >= m) && (n > m)) ? (
-			(-n < n) ? (
-				s((-n - m)c)
-			;
-				((n - m)c)s
-			)
+[:] spad(n, s, c): (
+	m:s@length,
+	((-m >= m) && (n > m)) ? (
+		(-n < n) ? (
+			s((-n - m)c)
 		;
-			s
+			((n - m)c)s
 		)
+	;
+		s
 	)
 );
 
-[:](
-	itos(n, i): (
-		s:i@to_String,
-		spad(n, s, ` `)
-	)
+[:] itos(n, i): (
+	s:i@to_String,
+	spad(n, s, ` `)
 );
 
-[:](
-	ndigits(i:0): (
-		n:1,
-		(i > 9) ?* (
-			i = i/10,
-			n++
-		),
-		n
-	)
+[:] ndigits(i:0): (
+	n:1,
+	(i > 9) ?* (
+		i = i/10,
+		n++
+	),
+	n
 );
 
-[:](
-	select(N): (
-		N@rand
-	)
+[:] select(N): (
+	N@rand
 );
 
-[:](
-	shuffle(a): (
-		(n:a@length; n > 0) ?* (
-			i:select(n),
-			n--,
-			(n <> i) ? (
-				a[n] >< a[i]
-			)
-		),
+[:] shuffle(a): (
+	(n:a@length; n > 0) ?* (
+		i:select(n),
+		n--,
+		(n <> i) ? (
+			a[n] >< a[i]
+		)
+	),
 
-		a
-	)
+	a
 );
 
-[:](
-	getcmd(): (
-		"> "@print, @flush(),
-		@getln()
-	)
+[:] getcmd(): (
+	"> "@print, @flush(),
+	@getln()
 );
 
-[:](
-	calloc(n:): (
-		[0..(n-1)] = 0
-	)
+[:] calloc(n:): (
+	[0..(n-1)] = 0
 );
 
-[:](
-	pqheap(node): [
-		length: 0,
-		nodes : [
-			node
-		]
+[:] pqheap(node): [
+	length: 0,
+	nodes : [
+		node
 	]
+];
+
+[:] pqpush(h, d, cmp): (
+	i: h length + 1,
+	h(
+		(j: i / 2; i > 1 && cmp(nodes[j], d); j /= 2) ?* (
+			nodes[i] =^ nodes[j],
+			i = j
+		),
+		nodes[i] =^ d,
+		length++
+	),
 );
 
-[:](
-	pqpush(h, d, cmp): (
-		i: h length + 1,
-		h(
-			(j: i / 2; i > 1 && cmp(nodes[j], d); j /= 2) ?* (
-				nodes[i] =^ nodes[j],
-				i = j
+[:] pqpop(h, cmp): (
+	return:(),
+
+	n: h length,
+	(n > 0) ? h(
+		return =^ nodes[1],
+
+		nodes[1] =^ nodes[n],
+		length--,
+
+		(i:1; i <> n) ?* (
+			k:n,
+			j:2 * i,
+
+			(j <= length && cmp(nodes[k], nodes[j])) ? (
+				k = j
 			),
-			nodes[i] =^ d,
-			length++
-		),
-	)
+			j++,
+			(j <= length && cmp(nodes[k], nodes[j])) ? (
+				k = j
+			),
+			nodes[i] =^ nodes[k],
+
+			i = k
+		)
+	),
+
+	return
 );
 
-[:](
-	pqpop(h, cmp): (
-		return:(),
-
-		n: h length,
-		(n > 0) ? h(
-			return =^ nodes[1],
-
-			nodes[1] =^ nodes[n],
-			length--,
-
-			(i:1; i <> n) ?* (
-				k:n,
-				j:2 * i,
-
-				(j <= length && cmp(nodes[k], nodes[j])) ? (
-					k = j
-				),
-				j++,
-				(j <= length && cmp(nodes[k], nodes[j])) ? (
-					k = j
-				),
-				nodes[i] =^ nodes[k],
-
-				i = k
-			)
-		),
-
-		return
-	)
-);
-
-[:](
-	timing(t1,t2): (
-		tx:(t2 - t1) / @CLOCKS_PER_SEC,
-		prefix:"",
-		units:"seconds",
-		(tx >= 300) ? ((
+[:] timing(t1,t2): (
+	tx:(t2 - t1) / @CLOCKS_PER_SEC,
+	prefix:"",
+	units:"seconds",
+	(tx >= 300) ? ((
+		tx /= 60,
+		units = "minutes",
+		(tx >= 180) ? (
 			tx /= 60,
-			units = "minutes",
-			(tx >= 180) ? (
-				tx /= 60,
-				units = "hours",
-				(tx >= 48) ? (
-					tx /= 24,
-					units = "days"
-				)
+			units = "hours",
+			(tx >= 48) ? (
+				tx /= 24,
+				units = "days"
 			)
-		) ; (
-			(tx < 1) ? (
-				tx    *= 1000,
-				prefix = "milli"
-			)
-			(tx < 1) ? (
-				tx    *= 1000,
-				prefix = "micro"
-			)
-			(tx < 1) ? (
-				tx    *= 1000,
-				prefix = "nano"
-			)
-			(tx < 1) ? (
-				tx    *= 1000,
-				prefix = "pico"
-			)
-		)),
-		(tx@to_String) ` ` prefix units
-	)
+		)
+	) ; (
+		(tx < 1) ? (
+			tx    *= 1000,
+			prefix = "milli"
+		)
+		(tx < 1) ? (
+			tx    *= 1000,
+			prefix = "micro"
+		)
+		(tx < 1) ? (
+			tx    *= 1000,
+			prefix = "nano"
+		)
+		(tx < 1) ? (
+			tx    *= 1000,
+			prefix = "pico"
+		)
+	)),
+	(tx@to_String) ` ` prefix units
 );

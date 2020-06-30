@@ -2792,7 +2792,7 @@ initialise_builtin_operators(
 ) {
 	static struct builtinop const builtinop[] = {
 		BUILTIN("\\applicate"      , applicate      , P_Binding)
-		BUILTIN("\\global"         , global         , P_Declarative)
+		BUILTIN("\\global"         , global         , P_Interstitial)
 		BUILTIN("\\tag"            , tag            , P_Declarative)
 		BUILTIN("\\tag_ref"        , tag_ref        , P_Declarative)
 		BUILTIN("\\const"          , const          , P_Declarative)

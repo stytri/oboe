@@ -181,6 +181,7 @@ Precedence levels, in decreasing order, are:
 - Conditional
 - Assigning
 - Declarative
+- Interstitial
 - Sequence
 - Assemblage
 

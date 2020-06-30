@@ -35,6 +35,7 @@ extern "C" {
 
 typedef enum {
 	P_None,
+	P_Interstitial,
 	P_Declarative,
 	P_Assigning,
 	P_Conditional,
