@@ -1,8 +1,13 @@
 unable_to_open(file): ("unable to open ", file)@printerr;
 unable_to_read(file): ("unable to read ", file)@printerr;
 
+"&&" "&!"(L,R): (L && (!R));
+
+FALSE(:)?;
+TRUE (:)!;
+
 catword(s): (
-	n:(@span_NotInSet(s, "#%/[]{}")),
+	n:(s, "#%/[]{}")@span_NotInSet,
 	(; n > 1 && s[n-1]@is_Space; n-=1) ?*,
 	(n > 0) ? (s <<< n)@println
 );
@@ -15,7 +20,7 @@ catfile(file, verbose): (
 		verbose ? (file, " [", s@to_Integer, "]")@printerr,
 
 		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
-			(s@length && !(s[0]@is_Space)) ? (
+			(s@length &! s[0]@is_Space) ? (
 				catword(s)
 			)
 		),
@@ -44,7 +49,7 @@ catfiles(file, verbose): (
 	)
 );
 
-help::"
+help(:)"
 dict [options] FILE...
 options:
 	-h, --help           display this help
@@ -58,14 +63,14 @@ with one file per line.
 ";
 
 main(argc, argv) : (
-	verbose:0,
+	verbose:FALSE,
 
 	(i:1; i < argc; i+=1) ?* (
 		args:argv[i],
 
 		args ?: (
 		"-h": "--help": help@printerr;
-		"-v": "--verbose": verbose = 1;
+		"-v": "--verbose": verbose = TRUE;
 		(args[0] == `@`) ? (
 			catfiles(args << 1, verbose)
 		;
