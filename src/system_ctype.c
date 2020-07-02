@@ -44,12 +44,19 @@ SOFTWARE.
 	ENUM(to_Uppercase)
 	ENUM(to_Lowercase)
 #undef ENUM
+
 #define ENUM(Name,...)  static unsigned builtin_span_##Name##_enum = -1u;
 	ENUM(InSet)
 #include "system_ctype.enum"
+#define ENUM(Name,...)  static unsigned builtin_span_Rev##Name##_enum = -1u;
+#include "system_ctype.enum"
+
 #define ENUM(Name,...)  static unsigned builtin_span_Not##Name##_enum = -1u;
 	ENUM(InSet)
 #include "system_ctype.enum"
+#define ENUM(Name,...)  static unsigned builtin_span_RevNot##Name##_enum = -1u;
+#include "system_ctype.enum"
+
 #define ENUM(Name,...)  static unsigned builtin_is_##Name##_enum = -1u;
 	ENUM(CharInSet)
 #include "system_ctype.enum"
@@ -229,6 +236,65 @@ builtin_span_##Name( \
 #include "system_ctype.enum"
 
 static Ast
+builtin_span_rev_ctype(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       arg,
+	is_CType  is_ctype
+) {
+	arg = eval(env, arg);
+	if(ast_isString(arg)) {
+
+		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
+		char const *ct;
+		bool        inset;
+		uint64_t    span;
+
+		do {
+			inset = true;
+			span  = 0;
+
+			for(char32_t c; *(ct = cs) && ~(c = utf8chr(cs, &cs)); ) {
+
+				inset = is_ctype(c);
+				if(inset) {
+					cs = ct;
+					break;
+				}
+			}
+
+			for(char32_t c; *(ct = cs) && ~(c = utf8chr(cs, &cs)); ) {
+
+				inset = is_ctype(c);
+				if(!inset) {
+					cs = ct;
+					break;
+				}
+
+				span++;
+			}
+
+		} while(!inset)
+			;
+
+		return new_ast(sloc, AST_Integer, span);
+	}
+
+	return oboerr(sloc, ERR_InvalidOperand);
+}
+
+#define ENUM(Name,...) \
+static Ast \
+builtin_span_Rev##Name( \
+	Ast       env, \
+	sloc_t    sloc, \
+	Ast       arg \
+) { \
+	return builtin_span_rev_ctype(env, sloc, arg, is_##Name); \
+}
+#include "system_ctype.enum"
+
+static Ast
 builtin_span_NotInSet(
 	Ast       env,
 	sloc_t    sloc,
@@ -309,6 +375,65 @@ builtin_span_Not##Name( \
 }
 #include "system_ctype.enum"
 
+static Ast
+builtin_span_rev_not_ctype(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       arg,
+	is_CType  is_ctype
+) {
+	arg = eval(env, arg);
+	if(ast_isString(arg)) {
+
+		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
+		char const *ct;
+		bool        inset;
+		uint64_t    span;
+
+		do {
+			inset = false;
+			span  = 0;
+
+			for(char32_t c; *(ct = cs) && ~(c = utf8chr(cs, &cs)); ) {
+
+				inset = is_ctype(c);
+				if(!inset) {
+					cs = ct;
+					break;
+				}
+			}
+
+			for(char32_t c; *(ct = cs) && ~(c = utf8chr(cs, &cs)); ) {
+
+				inset = is_ctype(c);
+				if(inset) {
+					cs = ct;
+					break;
+				}
+
+				span++;
+			}
+
+		} while(inset)
+			;
+
+		return new_ast(sloc, AST_Integer, span);
+	}
+
+	return oboerr(sloc, ERR_InvalidOperand);
+}
+
+#define ENUM(Name,...) \
+static Ast \
+builtin_span_RevNot##Name( \
+	Ast       env, \
+	sloc_t    sloc, \
+	Ast       arg \
+) { \
+	return builtin_span_rev_not_ctype(env, sloc, arg, is_##Name); \
+}
+#include "system_ctype.enum"
+
 //------------------------------------------------------------------------------
 
 typedef char32_t (*to_CType)(char32_t);
@@ -386,12 +511,19 @@ initialise_system_ctype(
 		ENUM(to_Uppercase)
 		ENUM(to_Lowercase)
 #	undef ENUM
+
 #	define ENUM(Name,...) BUILTIN(STR(span_##Name), span_##Name)
 		ENUM(InSet)
 #	include "system_ctype.enum"
+#	define ENUM(Name,...) BUILTIN(STR(span_Rev##Name), span_Rev##Name)
+#	include "system_ctype.enum"
+
 #	define ENUM(Name,...) BUILTIN(STR(span_Not##Name), span_Not##Name)
 		ENUM(InSet)
 #	include "system_ctype.enum"
+#	define ENUM(Name,...) BUILTIN(STR(span_RevNot##Name), span_RevNot##Name)
+#	include "system_ctype.enum"
+
 #	define ENUM(Name,...) BUILTIN(STR(is_##Name), is_##Name)
 		ENUM(CharInSet)
 #	include "system_ctype.enum"
