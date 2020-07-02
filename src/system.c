@@ -35,6 +35,7 @@ SOFTWARE.
 #include "eval.h"
 #include "env.h"
 #include "gc.h"
+#include "utf8.h"
 #include <stdlib.h>
 #include <locale.h>
 #include <stdio.h>
@@ -331,8 +332,10 @@ builtin_length(
 	arg = eval(env, arg);
 	size_t len = 0;
 	switch(ast_type(arg)) {
-	case AST_String: case AST_Identifier:
-		len = StringLength(arg->m.sval);
+	case AST_String: case AST_Identifier: {
+			char const *cs = StringToCharLiteral(arg->m.sval, &len);
+			len = utf8len(cs, &cs, len);
+		}
 		break;
 	case AST_Sequence:
 		for(len = 1; ast_isSequence(arg); arg = arg->m.rexpr) {
