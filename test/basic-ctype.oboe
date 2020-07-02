@@ -1,0 +1,17 @@
+﻿cs(:)"123456ABCDEFG4321";
+cs@to_Lowercase@println;
+cs@to_Uppercase@println;
+cs@span_Digit@println;
+cs@span_RevDigit@println;
+cs@span_NotLetter@println;
+cs@span_RevNotLetter@println;
+(cs, "0123456789")@span_InSet@println;
+(cs, "0123456789")@span_RevInSet@println;
+(cs, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")@span_NotInSet@println;
+(cs, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")@span_RevNotInSet@println;
+"0123456789"@is_Digit@println;
+"0123456789"@is_Letter@println;
+"123456"@is_Digit@println;
+"123456"@is_NotDigit@println;
+"123456"@is_NotLetter@println;
+"123456"@is_Letter@println;

@@ -56,6 +56,15 @@ ENUM(Separator)
 ENUM(Other)
 #undef ENUM
 
+#define ENUM(Name,...)  \
+static inline int \
+is_Not##Name( \
+	char32_t c \
+) { \
+	return !is_##Name(c); \
+}
+#include "system_ctype.enum"
+
 //------------------------------------------------------------------------------
 
 #define ENUM(Name,...)  static unsigned builtin_##Name##_enum = -1u;
@@ -66,16 +75,24 @@ ENUM(Other)
 #define ENUM(Name,...)  static unsigned builtin_span_##Name##_enum = -1u;
 	ENUM(InSet)
 #include "system_ctype.enum"
+
 #define ENUM(Name,...)  static unsigned builtin_span_Rev##Name##_enum = -1u;
+	ENUM(InSet)
 #include "system_ctype.enum"
 
 #define ENUM(Name,...)  static unsigned builtin_span_Not##Name##_enum = -1u;
 	ENUM(InSet)
 #include "system_ctype.enum"
+
 #define ENUM(Name,...)  static unsigned builtin_span_RevNot##Name##_enum = -1u;
+	ENUM(InSet)
 #include "system_ctype.enum"
 
 #define ENUM(Name,...)  static unsigned builtin_is_##Name##_enum = -1u;
+	ENUM(CharInSet)
+#include "system_ctype.enum"
+
+#define ENUM(Name,...)  static unsigned builtin_is_Not##Name##_enum = -1u;
 	ENUM(CharInSet)
 #include "system_ctype.enum"
 
@@ -130,11 +147,25 @@ builtin_is_##Name( \
 }
 #include "system_ctype.enum"
 
+#define ENUM(Name,...) \
+static Ast \
+builtin_is_Not##Name( \
+	Ast       env, \
+	sloc_t    sloc, \
+	Ast       arg \
+) { \
+	return builtin_is_ctype(env, sloc, arg, is_Not##Name); \
+}
+#include "system_ctype.enum"
+
+//------------------------------------------------------------------------------
+
 static Ast
-builtin_is_CharInSet(
+builtin_is_CharInSet_delegate(
 	Ast       env,
 	sloc_t    sloc,
-	Ast       args
+	Ast       args,
+	bool      sense
 ) {
 	if(ast_isSequence(args)) {
 		Ast      ast = eval(env, args->m.lexpr);
@@ -146,11 +177,11 @@ builtin_is_CharInSet(
 			if(ast_isString(ast)) {
 				char const *cs = StringToCharLiteral(ast->m.sval, NULL);
 				if(utf8strchr(cs, c) != NULL) {
-					return new_ast(sloc, AST_Boolean, UINT64_C(1));
+					return new_ast(sloc, AST_Boolean, (uint64_t)sense);
 				}
 			} else {
 				if(c == ast_toInteger(ast)) {
-					return new_ast(sloc, AST_Boolean, UINT64_C(1));
+					return new_ast(sloc, AST_Boolean, (uint64_t)sense);
 				}
 			}
 		}
@@ -159,25 +190,46 @@ builtin_is_CharInSet(
 		if(ast_isString(ast)) {
 			char const *cs = StringToCharLiteral(ast->m.sval, NULL);
 			if(utf8strchr(cs, c) != NULL) {
-				return new_ast(sloc, AST_Boolean, UINT64_C(1));
+				return new_ast(sloc, AST_Boolean, (uint64_t)sense);
 			}
 		} else {
 			if(c == ast_toInteger(ast)) {
-				return new_ast(sloc, AST_Boolean, UINT64_C(1));
+				return new_ast(sloc, AST_Boolean, (uint64_t)sense);
 			}
 		}
 
-		return new_ast(sloc, AST_Boolean, UINT64_C(0));
+		return new_ast(sloc, AST_Boolean, (uint64_t)!sense);
 	}
 
 	return oboerr(sloc, ERR_InvalidOperand);
 }
 
 static Ast
-builtin_span_InSet(
+builtin_is_CharInSet(
 	Ast       env,
 	sloc_t    sloc,
 	Ast       args
+) {
+	return builtin_is_CharInSet_delegate(env, sloc, args, true);
+}
+
+static Ast
+builtin_is_NotCharInSet(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       args
+) {
+	return builtin_is_CharInSet_delegate(env, sloc, args, false);
+}
+
+//------------------------------------------------------------------------------
+
+static Ast
+builtin_span_InSet_delegate(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       args,
+	bool      sense
 ) {
 	if(ast_isSequence(args)) {
 		Ast lexpr = eval(env, args->m.lexpr);
@@ -196,18 +248,163 @@ builtin_span_InSet(
 				for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
 					if(c == t) {
 						inset = true;
-						span++;
+						span += !sense;
 						break;
 					}
 				}
 
-				if(!inset) {
+				if(inset == sense) {
 					break;
 				}
+
+				span += sense;
 			}
 
 			return new_ast(sloc, AST_Integer, span);
 		}
+	}
+
+	return oboerr(sloc, ERR_InvalidOperand);
+}
+
+static Ast
+builtin_span_InSet(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       args
+) {
+	return builtin_span_InSet_delegate(env, sloc, args, false);
+}
+
+static Ast
+builtin_span_NotInSet(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       args
+) {
+	return builtin_span_InSet_delegate(env, sloc, args, true);
+}
+
+//------------------------------------------------------------------------------
+
+static Ast
+builtin_span_RevInSet_delegate(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       args,
+	bool      sense
+) {
+	if(ast_isSequence(args)) {
+		Ast lexpr = eval(env, args->m.lexpr);
+		Ast rexpr = eval(env, args->m.rexpr);
+
+		if(ast_isString(lexpr) && ast_isString(rexpr)) {
+
+			char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
+			char const *cz = StringToCharLiteral(rexpr->m.sval, NULL);
+			char const *ce;
+			bool        cont;
+			uint64_t    span;
+
+			do {
+				bool inset;
+
+				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
+					inset = false;
+
+					char const *ct = cz;
+					for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
+						if(c == t) {
+							inset = true;
+							break;
+						}
+					}
+
+					if(inset != sense) {
+						cs = ce;
+						break;
+					}
+				}
+
+				cont = false;
+				span = 0;
+
+				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
+					inset = false;
+
+					char const *ct = cz;
+					for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
+						if(c == t) {
+							inset = true;
+							span += !sense;
+							break;
+						}
+					}
+
+					if(inset == sense) {
+						cont = true;
+						cs = ce;
+						break;
+					}
+
+					span += sense;
+				}
+
+			} while(cont)
+				;
+
+			return new_ast(sloc, AST_Integer, span);
+		}
+	}
+
+	return oboerr(sloc, ERR_InvalidOperand);
+}
+
+static Ast
+builtin_span_RevInSet(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       args
+) {
+	return builtin_span_RevInSet_delegate(env, sloc, args, false);
+}
+
+static Ast
+builtin_span_RevNotInSet(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       args
+) {
+	return builtin_span_RevInSet_delegate(env, sloc, args, true);
+}
+
+//------------------------------------------------------------------------------
+
+static Ast
+builtin_span_ctype_delegate(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       arg,
+	is_CType  is_ctype,
+	bool      sense
+) {
+	arg = eval(env, arg);
+	if(ast_isString(arg)) {
+
+		uint64_t span = 0;
+
+		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
+		for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
+
+			bool inset = is_ctype(c);
+			if(inset == sense) {
+				break;
+			}
+
+			span++;
+		}
+
+		return new_ast(sloc, AST_Integer, span);
 	}
 
 	return oboerr(sloc, ERR_InvalidOperand);
@@ -220,26 +417,7 @@ builtin_span_ctype(
 	Ast       arg,
 	is_CType  is_ctype
 ) {
-	arg = eval(env, arg);
-	if(ast_isString(arg)) {
-
-		uint64_t span = 0;
-
-		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
-		for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
-
-			bool inset = is_ctype(c);
-			if(!inset) {
-				break;
-			}
-
-			span++;
-		}
-
-		return new_ast(sloc, AST_Integer, span);
-	}
-
-	return oboerr(sloc, ERR_InvalidOperand);
+	return builtin_span_ctype_delegate(env, sloc, arg, is_ctype, false);
 }
 
 #define ENUM(Name,...) \
@@ -254,51 +432,85 @@ builtin_span_##Name( \
 #include "system_ctype.enum"
 
 static Ast
-builtin_span_rev_ctype(
+builtin_span_not_ctype(
 	Ast       env,
 	sloc_t    sloc,
 	Ast       arg,
 	is_CType  is_ctype
 ) {
+	return builtin_span_ctype_delegate(env, sloc, arg, is_ctype, true);
+}
+
+#define ENUM(Name,...) \
+static Ast \
+builtin_span_Not##Name( \
+	Ast       env, \
+	sloc_t    sloc, \
+	Ast       arg \
+) { \
+	return builtin_span_not_ctype(env, sloc, arg, is_##Name); \
+}
+#include "system_ctype.enum"
+
+//------------------------------------------------------------------------------
+
+static Ast
+builtin_span_rev_ctype_delegate(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       arg,
+	is_CType  is_ctype,
+	bool      sense
+) {
 	arg = eval(env, arg);
 	if(ast_isString(arg)) {
 
 		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
-		char const *ct;
+		char const *ce;
 		bool        inset;
 		uint64_t    span;
 
 		do {
-			inset = true;
+			inset = sense;
 			span  = 0;
 
-			for(char32_t c; *(ct = cs) && ~(c = utf8chr(cs, &cs)); ) {
+			for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
 
 				inset = is_ctype(c);
-				if(inset) {
-					cs = ct;
+				if(inset == sense) {
+					cs = ce;
 					break;
 				}
 			}
 
-			for(char32_t c; *(ct = cs) && ~(c = utf8chr(cs, &cs)); ) {
+			for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
 
 				inset = is_ctype(c);
-				if(!inset) {
-					cs = ct;
+				if(inset != sense) {
+					cs = ce;
 					break;
 				}
 
 				span++;
 			}
 
-		} while(!inset)
+		} while(inset != sense)
 			;
 
 		return new_ast(sloc, AST_Integer, span);
 	}
 
 	return oboerr(sloc, ERR_InvalidOperand);
+}
+
+static Ast
+builtin_span_rev_ctype(
+	Ast       env,
+	sloc_t    sloc,
+	Ast       arg,
+	is_CType  is_ctype
+) {
+	return builtin_span_rev_ctype_delegate(env, sloc, arg, is_ctype, true);
 }
 
 #define ENUM(Name,...) \
@@ -313,132 +525,13 @@ builtin_span_Rev##Name( \
 #include "system_ctype.enum"
 
 static Ast
-builtin_span_NotInSet(
-	Ast       env,
-	sloc_t    sloc,
-	Ast       args
-) {
-	if(ast_isSequence(args)) {
-		Ast lexpr = eval(env, args->m.lexpr);
-		Ast rexpr = eval(env, args->m.rexpr);
-
-		if(ast_isString(lexpr) && ast_isString(rexpr)) {
-			uint64_t span = 0;
-
-			char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
-			char const *cz = StringToCharLiteral(rexpr->m.sval, NULL);
-
-			for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
-				bool inset = false;
-
-				char const *ct = cz;
-				for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
-					if(c == t) {
-						inset = true;
-						break;
-					}
-				}
-
-				if(inset) {
-					break;
-				}
-
-				span++;
-			}
-
-			return new_ast(sloc, AST_Integer, span);
-		}
-	}
-
-	return oboerr(sloc, ERR_InvalidOperand);
-}
-
-static Ast
-builtin_span_not_ctype(
-	Ast       env,
-	sloc_t    sloc,
-	Ast       arg,
-	is_CType  is_ctype
-) {
-	arg = eval(env, arg);
-	if(ast_isString(arg)) {
-
-		uint64_t span = 0;
-
-		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
-		for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
-
-			bool inset = is_ctype(c);
-			if(inset) {
-				break;
-			}
-
-			span++;
-		}
-
-		return new_ast(sloc, AST_Integer, span);
-	}
-
-	return oboerr(sloc, ERR_InvalidOperand);
-}
-
-#define ENUM(Name,...) \
-static Ast \
-builtin_span_Not##Name( \
-	Ast       env, \
-	sloc_t    sloc, \
-	Ast       arg \
-) { \
-	return builtin_span_not_ctype(env, sloc, arg, is_##Name); \
-}
-#include "system_ctype.enum"
-
-static Ast
 builtin_span_rev_not_ctype(
 	Ast       env,
 	sloc_t    sloc,
 	Ast       arg,
 	is_CType  is_ctype
 ) {
-	arg = eval(env, arg);
-	if(ast_isString(arg)) {
-
-		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
-		char const *ct;
-		bool        inset;
-		uint64_t    span;
-
-		do {
-			inset = false;
-			span  = 0;
-
-			for(char32_t c; *(ct = cs) && ~(c = utf8chr(cs, &cs)); ) {
-
-				inset = is_ctype(c);
-				if(!inset) {
-					cs = ct;
-					break;
-				}
-			}
-
-			for(char32_t c; *(ct = cs) && ~(c = utf8chr(cs, &cs)); ) {
-
-				inset = is_ctype(c);
-				if(inset) {
-					cs = ct;
-					break;
-				}
-
-				span++;
-			}
-
-		} while(inset)
-			;
-
-		return new_ast(sloc, AST_Integer, span);
-	}
-
-	return oboerr(sloc, ERR_InvalidOperand);
+	return builtin_span_rev_ctype_delegate(env, sloc, arg, is_ctype, false);
 }
 
 #define ENUM(Name,...) \
@@ -525,6 +618,7 @@ initialise_system_ctype(
 ) {
 	static struct builtinfn const builtinfn[] = {
 #	define STR(X)         #X
+
 #	define ENUM(Name,...) BUILTIN(STR(Name), Name)
 		ENUM(to_Uppercase)
 		ENUM(to_Lowercase)
@@ -533,18 +627,27 @@ initialise_system_ctype(
 #	define ENUM(Name,...) BUILTIN(STR(span_##Name), span_##Name)
 		ENUM(InSet)
 #	include "system_ctype.enum"
+
 #	define ENUM(Name,...) BUILTIN(STR(span_Rev##Name), span_Rev##Name)
+		ENUM(InSet)
 #	include "system_ctype.enum"
 
 #	define ENUM(Name,...) BUILTIN(STR(span_Not##Name), span_Not##Name)
 		ENUM(InSet)
 #	include "system_ctype.enum"
+
 #	define ENUM(Name,...) BUILTIN(STR(span_RevNot##Name), span_RevNot##Name)
+		ENUM(InSet)
 #	include "system_ctype.enum"
 
 #	define ENUM(Name,...) BUILTIN(STR(is_##Name), is_##Name)
 		ENUM(CharInSet)
 #	include "system_ctype.enum"
+
+#	define ENUM(Name,...) BUILTIN(STR(is_Not##Name), is_Not##Name)
+		ENUM(CharInSet)
+#	include "system_ctype.enum"
+
 #	undef STR
 	};
 	static size_t const n_builtinfn = sizeof(builtinfn) / sizeof(builtinfn[0]);
