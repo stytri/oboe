@@ -40,6 +40,24 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
+#define ENUM(Name,...)  \
+static inline int \
+is_##Name( \
+	char32_t c \
+) { \
+	return is_UCS(UCS_##Name, c); \
+}
+ENUM(Letter)
+ENUM(Mark)
+ENUM(Number)
+ENUM(Punctuation)
+ENUM(Symbol)
+ENUM(Separator)
+ENUM(Other)
+#undef ENUM
+
+//------------------------------------------------------------------------------
+
 #define ENUM(Name,...)  static unsigned builtin_##Name##_enum = -1u;
 	ENUM(to_Uppercase)
 	ENUM(to_Lowercase)
