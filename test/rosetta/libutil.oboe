@@ -11,6 +11,25 @@
 	(a > b) ? (a ; b)
 );
 
+[:] isqr(remainder:): (
+	place:(-1) >> 2 + 1,
+	root :0,
+
+	place > remainder ?* (
+		place >>= 2
+	),
+	place ?* (
+		remainder >= root + place ? (
+			remainder -= root + place,
+			root      += place << 1,
+		),
+		place >>= 2,
+		root >>= 1
+	),
+
+	root
+);
+
 [:] spad(n, s, c): (
 	m:s@length,
 	((-m >= m) && (n > m)) ? (
