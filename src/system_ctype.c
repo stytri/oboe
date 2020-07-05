@@ -254,7 +254,26 @@ builtin_span_InSet_delegate(
 ) {
 	if(ast_isSequence(args)) {
 		Ast lexpr = eval(env, args->m.lexpr);
-		Ast rexpr = eval(env, args->m.rexpr);
+		Ast qexpr = ZEN;
+		Ast rexpr;
+
+		if(ast_isSequence(args->m.rexpr)) {
+			rexpr = eval(env, args->m.rexpr->m.lexpr);
+			qexpr = eval(env, args->m.rexpr->m.rexpr);
+		} else {
+			rexpr = eval(env, args->m.rexpr);
+		}
+
+		char32_t q = '\0';
+
+		if(ast_isnotZen(qexpr)) {
+			if(ast_isString(qexpr)) {
+				char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
+				q = utf8chr(cs, &cs);
+			} if(ast_isCharacter(qexpr)) {
+				q = (char32_t)qexpr->m.ival;
+			}
+		}
 
 		if(ast_isString(lexpr) && ast_isString(rexpr)) {
 			uint64_t span = 0;
@@ -262,7 +281,33 @@ builtin_span_InSet_delegate(
 			char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
 			char const *cz = StringToCharLiteral(rexpr->m.sval, NULL);
 
-			for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
+			if(q != '\0') for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
+				bool const quoted = (c == q);
+				bool       inset = false;
+
+				if(quoted) {
+					if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
+						break;
+					}
+				} else {
+					char const *ct = cz;
+					for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
+						if(c == t) {
+							inset = true;
+							span += !sense;
+							break;
+						}
+					}
+				}
+
+				if(inset == sense) {
+					break;
+				}
+
+				span += quoted;
+				span += sense;
+
+			} else for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
 				bool inset = false;
 
 				char const *ct = cz;

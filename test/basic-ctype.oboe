@@ -15,3 +15,13 @@ cs@span_RevNotLetter@println;
 "123456"@is_NotDigit@println;
 "123456"@is_NotLetter@println;
 "123456"@is_Letter@println;
+set(:)"/{}";
+quote(:)`\\`;
+("{/}XYZ" , set, quote)@span_InSet@println;
+("{/}XYZ" , set, quote)@span_NotInSet@println;
+("XYZ{/}" , set, quote)@span_NotInSet@println;
+("{/\}XYZ", set, quote)@span_InSet@println;
+("{/\}XYZ", set, quote)@span_NotInSet@println;
+("XYZ{/\}", set, quote)@span_NotInSet@println;
+("XYZ\{/}", set, quote)@span_NotInSet@println;
+
