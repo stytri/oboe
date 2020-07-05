@@ -362,7 +362,26 @@ builtin_span_RevInSet_delegate(
 ) {
 	if(ast_isSequence(args)) {
 		Ast lexpr = eval(env, args->m.lexpr);
-		Ast rexpr = eval(env, args->m.rexpr);
+		Ast qexpr = ZEN;
+		Ast rexpr;
+
+		if(ast_isSequence(args->m.rexpr)) {
+			rexpr = eval(env, args->m.rexpr->m.lexpr);
+			qexpr = eval(env, args->m.rexpr->m.rexpr);
+		} else {
+			rexpr = eval(env, args->m.rexpr);
+		}
+
+		char32_t q = '\0';
+
+		if(ast_isnotZen(qexpr)) {
+			if(ast_isString(qexpr)) {
+				char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
+				q = utf8chr(cs, &cs);
+			} if(ast_isCharacter(qexpr)) {
+				q = (char32_t)qexpr->m.ival;
+			}
+		}
 
 		if(ast_isString(lexpr) && ast_isString(rexpr)) {
 
@@ -372,7 +391,70 @@ builtin_span_RevInSet_delegate(
 			bool        cont;
 			uint64_t    span;
 
-			do {
+			if(q != '\0') do {
+				bool inset;
+
+				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
+					bool const quoted = (c == q);
+
+					inset = false;
+
+					if(quoted) {
+						if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
+							break;
+						}
+					} else {
+						char const *ct = cz;
+						for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
+							if(c == t) {
+								inset = true;
+								break;
+							}
+						}
+					}
+
+					if(inset != sense) {
+						cs = ce;
+						break;
+					}
+				}
+
+				cont = false;
+				span = 0;
+
+				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
+					bool const quoted = (c == q);
+
+					inset = false;
+
+					if(quoted) {
+						if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
+							break;
+						}
+					} else {
+						char const *ct = cz;
+						for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
+							if(c == t) {
+								inset = true;
+								span += !sense;
+								break;
+							}
+						}
+					}
+
+					if(inset == sense) {
+						cont = true;
+						cs = ce;
+						break;
+					}
+
+					span += quoted;
+					span += sense;
+				}
+
+			} while(cont)
+				;
+			else do {
 				bool inset;
 
 				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {

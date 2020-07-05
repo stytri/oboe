@@ -24,4 +24,9 @@ quote(:)`\\`;
 ("{/\}XYZ", set, quote)@span_NotInSet@println;
 ("XYZ{/\}", set, quote)@span_NotInSet@println;
 ("XYZ\{/}", set, quote)@span_NotInSet@println;
-
+("XYZ{/}" , set, quote)@span_RevInSet   @println;
+("XYZ{/}" , set, quote)@span_RevNotInSet@println;
+("{/}XYZ" , set, quote)@span_RevNotInSet@println;
+("XYZ{/\}", set, quote)@span_RevInSet   @println;
+("XYZ{/\}", set, quote)@span_RevNotInSet@println;
+("{/\}XYZ", set, quote)@span_RevNotInSet@println;
