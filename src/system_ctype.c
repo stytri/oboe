@@ -40,6 +40,27 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
+static inline int
+is_AlphaNumeric(
+	char32_t c
+) {
+	return is_UCS(UCS_Letter | UCS_Number, c);
+}
+
+static inline int
+is_Alphabetic(
+	char32_t c
+) {
+	return is_UCS(UCS_Letter, c);
+}
+
+static inline int
+is_Numeric(
+	char32_t c
+) {
+	return is_UCS(UCS_Number, c);
+}
+
 #define ENUM(Name,...)  \
 static inline int \
 is_##Name( \
