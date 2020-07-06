@@ -128,6 +128,12 @@ builtin_is_ctype(
 	Ast       arg,
 	is_CType  is_ctype
 ) {
+	Ast range = ZEN;
+
+	if(ast_isApplicate(arg) && ast_isRange(arg->m.rexpr)) {
+		range = subeval(env, arg->m.rexpr);
+		arg   = arg->m.lexpr;
+	}
 	arg = eval(env, arg);
 
 	switch(arg->type) {
@@ -139,13 +145,29 @@ builtin_is_ctype(
 	case AST_String: {
 		int         res = 1;
 		size_t      len;
-		char const *cs = StringToCharLiteral(arg->m.sval, &len);
-		do {
-			char32_t c = utf8chr(cs, &cs);
-			res = is_ctype(c);
-		} while(res && *cs)
-			;
-		return new_ast(sloc, AST_Boolean, (uint64_t)res);
+		char const *cs  = StringToCharLiteral(arg->m.sval, &len);
+		size_t      off = 0;
+		size_t      end = 0;
+		if(ast_isnotZen(range)) {
+			off = ast_toInteger(range->m.lexpr);
+			end = ast_toInteger(range->m.rexpr);
+		}
+		if(!end || end > len) {
+			end = len - 1;
+		}
+		if((off < len) && (off <= end)) {
+			if(off > 0) {
+				end = utf8off(cs, NULL, end);
+				off = utf8off(cs, &cs, off);
+			}
+			do {
+				char32_t c = utf8chr(cs, &cs);
+				res = is_ctype(c);
+			} while(res && *cs && (off++ < end))
+				;
+			return new_ast(sloc, AST_Boolean, (uint64_t)res);
+		}
+		return oboerr(sloc, ERR_InvalidOperand);
 	}
 	default:
 		switch(ast_type(arg)) {
@@ -253,7 +275,15 @@ builtin_span_InSet_delegate(
 	bool      sense
 ) {
 	if(ast_isSequence(args)) {
-		Ast lexpr = eval(env, args->m.lexpr);
+		Ast range = ZEN;
+		Ast lexpr = (ast_isApplicate(args->m.lexpr)
+			&& ast_isRange(args->m.lexpr->m.rexpr)
+		) ? (
+			range = subeval(env, args->m.lexpr->m.rexpr),
+			eval(env, args->m.lexpr->m.lexpr)
+		):(
+			eval(env, args->m.lexpr)
+		);
 		Ast qexpr = ZEN;
 		Ast rexpr;
 
@@ -278,21 +308,60 @@ builtin_span_InSet_delegate(
 		if(ast_isString(lexpr) && ast_isString(rexpr)) {
 			uint64_t span = 0;
 
-			char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
-			char const *cz = StringToCharLiteral(rexpr->m.sval, NULL);
+			size_t      len;
+			char const *cs  = StringToCharLiteral(lexpr->m.sval, &len);
+			char const *cz  = StringToCharLiteral(rexpr->m.sval, NULL);
+			size_t      off = 0;
+			size_t      end = 0;
+			if(ast_isnotZen(range)) {
+				off = ast_toInteger(range->m.lexpr);
+				end = ast_toInteger(range->m.rexpr);
+			}
+			if(!end || end > len) {
+				end = len - 1;
+			}
 
-			if(q != '\0') for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
-				bool const quoted = (c == q);
-				bool       inset = false;
+			if((off < len) && (off <= end)) {
+				if(off > 0) {
+					end = utf8off(cs, NULL, end);
+					off = utf8off(cs, &cs, off);
+				}
 
-				if(quoted) {
-					if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
-						break;
+				if(q != '\0') for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
+					bool const quoted = (c == q);
+					bool       inset = false;
+
+					if(quoted) {
+						if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
+							break;
+						}
+
+						span += quoted;
+						span += quoted;
+					} else {
+						char const *ct = cz;
+						for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
+							if(c == t) {
+								inset = true;
+								span += !sense;
+								break;
+							}
+						}
+
+						if(inset == sense) {
+							break;
+						}
+
+						span += sense;
+
+						if(!(off++ < end)) {
+							break;
+						}
 					}
 
-					span += quoted;
-					span += quoted;
-				} else {
+				} else for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
+					bool inset = false;
+
 					char const *ct = cz;
 					for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
 						if(c == t) {
@@ -307,25 +376,11 @@ builtin_span_InSet_delegate(
 					}
 
 					span += sense;
-				}
 
-			} else for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
-				bool inset = false;
-
-				char const *ct = cz;
-				for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
-					if(c == t) {
-						inset = true;
-						span += !sense;
+					if(!(off++ < end)) {
 						break;
 					}
 				}
-
-				if(inset == sense) {
-					break;
-				}
-
-				span += sense;
 			}
 
 			return new_ast(sloc, AST_Integer, span);
@@ -363,7 +418,15 @@ builtin_span_RevInSet_delegate(
 	bool      sense
 ) {
 	if(ast_isSequence(args)) {
-		Ast lexpr = eval(env, args->m.lexpr);
+		Ast range = ZEN;
+		Ast lexpr = (ast_isApplicate(args->m.lexpr)
+			&& ast_isRange(args->m.lexpr->m.rexpr)
+		) ? (
+			range = subeval(env, args->m.lexpr->m.rexpr),
+			eval(env, args->m.lexpr->m.lexpr)
+		):(
+			eval(env, args->m.lexpr)
+		);
 		Ast qexpr = ZEN;
 		Ast rexpr;
 
@@ -386,26 +449,116 @@ builtin_span_RevInSet_delegate(
 		}
 
 		if(ast_isString(lexpr) && ast_isString(rexpr)) {
+			uint64_t span = 0;
 
-			char const *cs = StringToCharLiteral(lexpr->m.sval, NULL);
+			size_t      len;
+			char const *cs = StringToCharLiteral(lexpr->m.sval, &len);
 			char const *cz = StringToCharLiteral(rexpr->m.sval, NULL);
-			char const *ce;
-			bool        cont;
-			uint64_t    span;
+			size_t      off = 0;
+			size_t      end = 0;
+			if(ast_isnotZen(range)) {
+				off = ast_toInteger(range->m.lexpr);
+				end = ast_toInteger(range->m.rexpr);
+			}
+			if(!end || end > len) {
+				end = len - 1;
+			}
 
-			if(q != '\0') do {
-				bool inset;
+			if((off < len) && (off <= end)) {
+				if(off > 0) {
+					end = utf8off(cs, NULL, end);
+					off = utf8off(cs, &cs, off);
+				}
 
-				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
-					bool const quoted = (c == q);
+				char const *ce;
+				bool        cont;
 
-					inset = false;
+				if(q != '\0') do {
+					bool inset;
 
-					if(quoted) {
-						if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
+					for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
+						bool const quoted = (c == q);
+
+						inset = false;
+
+						if(quoted) {
+							if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
+								break;
+							}
+						} else {
+							char const *ct = cz;
+							for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
+								if(c == t) {
+									inset = true;
+									break;
+								}
+							}
+						}
+
+						if(inset != sense) {
+							cs = ce;
 							break;
 						}
-					} else {
+
+						if(!(off++ < end)) {
+							break;
+						}
+					}
+
+					if(!(off < end)) {
+						break;
+					}
+
+					cont = false;
+					span = 0;
+
+					for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
+						bool const quoted = (c == q);
+
+						inset = false;
+
+						if(quoted) {
+							if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
+								break;
+							}
+
+							span += quoted;
+							span += quoted;
+						} else {
+							char const *ct = cz;
+							for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
+								if(c == t) {
+									inset = true;
+									span += !sense;
+									break;
+								}
+							}
+
+							if(inset == sense) {
+								cont = true;
+								cs = ce;
+								break;
+							}
+
+							span += sense;
+
+							if(!(off++ < end)) {
+								break;
+							}
+						}
+					}
+
+					if(!(off < end)) {
+						break;
+					}
+				} while(cont)
+					;
+				else do {
+					bool inset;
+
+					for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
+						inset = false;
+
 						char const *ct = cz;
 						for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
 							if(c == t) {
@@ -413,30 +566,27 @@ builtin_span_RevInSet_delegate(
 								break;
 							}
 						}
-					}
 
-					if(inset != sense) {
-						cs = ce;
-						break;
-					}
-				}
-
-				cont = false;
-				span = 0;
-
-				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
-					bool const quoted = (c == q);
-
-					inset = false;
-
-					if(quoted) {
-						if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
+						if(inset != sense) {
+							cs = ce;
 							break;
 						}
 
-						span += quoted;
-						span += quoted;
-					} else {
+						if(!(off++ < end)) {
+							break;
+						}
+					}
+
+					if(!(off < end)) {
+						break;
+					}
+
+					cont = false;
+					span = 0;
+
+					for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
+						inset = false;
+
 						char const *ct = cz;
 						for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
 							if(c == t) {
@@ -453,57 +603,18 @@ builtin_span_RevInSet_delegate(
 						}
 
 						span += sense;
-					}
-				}
 
-			} while(cont)
-				;
-			else do {
-				bool inset;
-
-				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
-					inset = false;
-
-					char const *ct = cz;
-					for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
-						if(c == t) {
-							inset = true;
+						if(!(off++ < end)) {
 							break;
 						}
 					}
 
-					if(inset != sense) {
-						cs = ce;
+					if(!(off < end)) {
 						break;
 					}
-				}
-
-				cont = false;
-				span = 0;
-
-				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
-					inset = false;
-
-					char const *ct = cz;
-					for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
-						if(c == t) {
-							inset = true;
-							span += !sense;
-							break;
-						}
-					}
-
-					if(inset == sense) {
-						cont = true;
-						cs = ce;
-						break;
-					}
-
-					span += sense;
-				}
-
-			} while(cont)
-				;
+				} while(cont)
+					;
+			}
 
 			return new_ast(sloc, AST_Integer, span);
 		}
