@@ -64,6 +64,7 @@ ENUM(Range)
 #include "oboe.enum"
 static unsigned builtin_type_enum          = -1u;
 static unsigned builtin_typename_enum      = -1u;
+static unsigned builtin_identifier_enum    = -1u;
 static unsigned builtin_length_enum        = -1u;
 static unsigned builtin_to_String_enum     = -1u;
 static unsigned builtin_to_Literal_enum    = -1u;
@@ -320,6 +321,17 @@ builtin_typename(
 	arg = eval(env, arg);
 	char const *cs = ast_typename(arg);
 	String      s  = CharLiteralToString(cs, strlen(cs));
+	return new_ast(sloc, AST_String, s);
+}
+
+static Ast
+builtin_identifier(
+	Ast    env,
+	sloc_t sloc,
+	Ast    arg
+) {
+	arg = subeval(env, arg);
+	StringConst s = ast_isReference(arg) ? arg->m.sval : NullString();
 	return new_ast(sloc, AST_String, s);
 }
 
@@ -1069,6 +1081,7 @@ initialise_system_environment(
 #		include "oboe.enum"
 		BUILTIN("type"        , type)
 		BUILTIN("typename"    , typename)
+		BUILTIN("identifier"  , identifier)
 		BUILTIN("length"      , length)
 		BUILTIN("to_String"   , to_String)
 		BUILTIN("to_Character", to_Character)
