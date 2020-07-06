@@ -289,6 +289,9 @@ builtin_span_InSet_delegate(
 					if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
 						break;
 					}
+
+					span += quoted;
+					span += quoted;
 				} else {
 					char const *ct = cz;
 					for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
@@ -298,14 +301,13 @@ builtin_span_InSet_delegate(
 							break;
 						}
 					}
-				}
 
-				if(inset == sense) {
-					break;
-				}
+					if(inset == sense) {
+						break;
+					}
 
-				span += quoted;
-				span += sense;
+					span += sense;
+				}
 
 			} else for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
 				bool inset = false;
@@ -431,6 +433,9 @@ builtin_span_RevInSet_delegate(
 						if(!(*cs && ~(c = utf8chr(cs, &cs)))) {
 							break;
 						}
+
+						span += quoted;
+						span += quoted;
 					} else {
 						char const *ct = cz;
 						for(char32_t t; *ct && ~(t = utf8chr(ct, &ct)); ) {
@@ -440,16 +445,15 @@ builtin_span_RevInSet_delegate(
 								break;
 							}
 						}
-					}
 
-					if(inset == sense) {
-						cont = true;
-						cs = ce;
-						break;
-					}
+						if(inset == sense) {
+							cont = true;
+							cs = ce;
+							break;
+						}
 
-					span += quoted;
-					span += sense;
+						span += sense;
+					}
 				}
 
 			} while(cont)
