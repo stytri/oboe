@@ -651,20 +651,46 @@ builtin_span_ctype_delegate(
 	is_CType  is_ctype,
 	bool      sense
 ) {
+	Ast range = ZEN;
+	if(ast_isApplicate(arg) && ast_isRange(arg->m.rexpr)) {
+		range = subeval(env, arg->m.rexpr);
+		arg   = arg->m.lexpr;
+	}
+
 	arg = eval(env, arg);
 	if(ast_isString(arg)) {
-
 		uint64_t span = 0;
 
-		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
-		for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
-
-			bool inset = is_ctype(c);
-			if(inset == sense) {
-				break;
+		size_t      len;
+		char const *cs  = StringToCharLiteral(arg->m.sval, &len);
+		size_t      off = 0;
+		size_t      end = 0;
+		if(ast_isnotZen(range)) {
+			off = ast_toInteger(range->m.lexpr);
+			end = ast_toInteger(range->m.rexpr);
+		}
+		if(!end || end > len) {
+			end = len - 1;
+		}
+		if((off < len) && (off <= end)) {
+			if(off > 0) {
+				end = utf8off(cs, NULL, end);
+				off = utf8off(cs, &cs, off);
 			}
 
-			span++;
+			for(char32_t c; *cs && ~(c = utf8chr(cs, &cs)); ) {
+
+				bool inset = is_ctype(c);
+				if(inset == sense) {
+					break;
+				}
+
+				span++;
+
+				if(!(off++ < end)) {
+					break;
+				}
+			}
 		}
 
 		return new_ast(sloc, AST_Integer, span);
@@ -725,40 +751,78 @@ builtin_span_rev_ctype_delegate(
 	is_CType  is_ctype,
 	bool      sense
 ) {
+	Ast range = ZEN;
+	if(ast_isApplicate(arg) && ast_isRange(arg->m.rexpr)) {
+		range = subeval(env, arg->m.rexpr);
+		arg   = arg->m.lexpr;
+	}
+
 	arg = eval(env, arg);
 	if(ast_isString(arg)) {
+		uint64_t span = 0;
 
-		char const *cs = StringToCharLiteral(arg->m.sval, NULL);
-		char const *ce;
-		bool        inset;
-		uint64_t    span;
-
-		do {
-			inset = sense;
-			span  = 0;
-
-			for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
-
-				inset = is_ctype(c);
-				if(inset == sense) {
-					cs = ce;
-					break;
-				}
+		size_t      len;
+		char const *cs  = StringToCharLiteral(arg->m.sval, &len);
+		size_t      off = 0;
+		size_t      end = 0;
+		if(ast_isnotZen(range)) {
+			off = ast_toInteger(range->m.lexpr);
+			end = ast_toInteger(range->m.rexpr);
+		}
+		if(!end || end > len) {
+			end = len - 1;
+		}
+		if((off < len) && (off <= end)) {
+			if(off > 0) {
+				end = utf8off(cs, NULL, end);
+				off = utf8off(cs, &cs, off);
 			}
 
-			for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
+			char const *ce;
+			bool        inset;
 
-				inset = is_ctype(c);
-				if(inset != sense) {
-					cs = ce;
+			do {
+				inset = sense;
+				span  = 0;
+
+				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
+
+					inset = is_ctype(c);
+					if(inset == sense) {
+						cs = ce;
+						break;
+					}
+
+					if(!(off++ < end)) {
+						break;
+					}
+				}
+
+				if(!(off < end)) {
 					break;
 				}
 
-				span++;
-			}
+				for(char32_t c; *(ce = cs) && ~(c = utf8chr(cs, &cs)); ) {
 
-		} while(inset != sense)
-			;
+					inset = is_ctype(c);
+					if(inset != sense) {
+						cs = ce;
+						break;
+					}
+
+					span++;
+
+					if(!(off++ < end)) {
+						break;
+					}
+				}
+
+				if(!(off < end)) {
+					break;
+				}
+			} while(inset != sense)
+				;
+		}
 
 		return new_ast(sloc, AST_Integer, span);
 	}
