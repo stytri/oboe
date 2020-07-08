@@ -157,8 +157,9 @@ UnEscapeString(
 
 		for(char32_t c = char32(cs); c && (c != (char32_t)q); c = char32(cs)) {
 			if(c == '\\') {
+				char const *ct;
 				++cs;
-				c = utf8chr(cs, NULL);
+				c = utf8chr(cs, &ct);
 				if(!is_EOL(c)) {
 					char  sc[4], *sp;
 					int   cc = esctoc(cs, &cs);
@@ -166,7 +167,12 @@ UnEscapeString(
 					s = StringAppendCharLiteral(t, sc, n);
 					if(!s) break;
 					t = s;
+					continue;
 				}
+				cs = ct + (
+					((c == '\n') && (*ct == '\r'))
+					|| ((c == '\r') && (*ct == '\n'))
+				);
 				continue;
 			}
 
