@@ -26,6 +26,7 @@ SOFTWARE.
 #include "gc.h"
 #include "hash.h"
 #include "utf8.h"
+#include "lex.h"
 
 //------------------------------------------------------------------------------
 
@@ -154,18 +155,22 @@ UnEscapeString(
 	if(t) {
 		String s;
 
-		for(int c = *cs; c && (c != q); c = *cs) {
+		for(char32_t c = char32(cs); c && (c != (char32_t)q); c = char32(cs)) {
 			if(c == '\\') {
-				char  sc[4], *sp;
-				int   cc = esctoc(cs + 1, &cs);
-				size_t n = utf8encode(sc, &sp, (char32_t)cc);
-				s = StringAppendCharLiteral(t, sc, n);
-				if(!s) break;
-				t = s;
+				++cs;
+				c = utf8chr(cs, NULL);
+				if(!is_EOL(c)) {
+					char  sc[4], *sp;
+					int   cc = esctoc(cs, &cs);
+					size_t n = utf8encode(sc, &sp, (char32_t)cc);
+					s = StringAppendCharLiteral(t, sc, n);
+					if(!s) break;
+					t = s;
+				}
 				continue;
 			}
 
-			s = StringAppendChar(t, c);
+			s = StringAppendChar(t, (int)c);
 			if(!s) break;
 			t = s;
 			++cs;

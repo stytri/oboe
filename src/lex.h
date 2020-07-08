@@ -145,6 +145,13 @@ is_EOL(
 	;
 }
 
+static inline char32_t
+char32(
+	char const *cs
+) {
+	return (char32_t)*(unsigned char *)cs;
+}
+
 //------------------------------------------------------------------------------
 
 extern char const *

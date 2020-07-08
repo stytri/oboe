@@ -26,13 +26,6 @@ SOFTWARE.
 
 //------------------------------------------------------------------------------
 
-static inline char32_t
-char32(
-	char const *cs
-) {
-	return (char32_t)*(unsigned char *)cs;
-}
-
 char const *
 lex(
 	char const    *cs,
