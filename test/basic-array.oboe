@@ -5,7 +5,7 @@ a["three"]@println;
 (i:0..2) ?* (
 	(a[i], " ")@print
 );
-''@println;
+""@println;
 a:[];
 a[0..9]=[],
 (i:0..9) ?* (

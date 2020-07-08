@@ -1,10 +1,10 @@
-# https://rosettacode.org/wiki/Conway's_Game_of_Life
+# https://rosettacode.org/wiki/Conway"s_Game_of_Life
 
 "rosetta/libutil"@import;
 
 ctrl(c):((c & 0x1F)@to_Character);
 
-ESC:ctrl(`[`);
+ESC:ctrl('[');
 
 show(universe): (
 	(ESC"[H")@print,

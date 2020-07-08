@@ -1,4 +1,3 @@
-'\tab\nc'@println;
 "\tab\nc"@println;
 s:"αβγ";
 (s<<1)@println;

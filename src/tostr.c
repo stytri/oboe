@@ -96,9 +96,9 @@ toString_character(
 
 	s = StringAppendCharLiteral(s, prefix, strlen(prefix));
 	if(archival) {
-		s = StringAppendChar(s, '`');
-		s = EscapeString(s, temp, NULL, "`", '\0');
-		s = StringAppendChar(s, '`');
+		s = StringAppendChar(s, '\'');
+		s = EscapeString(s, temp, NULL, "'", '\0');
+		s = StringAppendChar(s, '\'');
 	} else {
 		s = StringAppendCharLiteral(s, temp, len);
 	}
@@ -117,9 +117,9 @@ toString_string(
 ) {
 	s = StringAppendCharLiteral(s, prefix, strlen(prefix));
 	if(archival) {
-		s = StringAppendChar(s, '\'');
-		s = EscapeString(s, StringToCharLiteral(value, NULL), NULL, "\'", '\0');
-		s = StringAppendChar(s, '\'');
+		s = StringAppendChar(s, '"');
+		s = EscapeString(s, StringToCharLiteral(value, NULL), NULL, "\"", '\0');
+		s = StringAppendChar(s, '"');
 	} else {
 		s = StringAppend(s, value);
 	}

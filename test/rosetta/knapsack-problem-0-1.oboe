@@ -66,7 +66,7 @@ knapsack(items, n:, w:): (
 
 print(name, weight, value): (
 	@println(
-		spad(-max_name_width, name, ` `), ":",
+		spad(-max_name_width, name, ' '), ":",
 		itos(6, weight),
 		itos(6, value)
 	)

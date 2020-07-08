@@ -67,10 +67,10 @@ tree:
 		)
 	);
 
-print(v): (v, ` `)@print;
+print(v): (v, ' ')@print;
 
-print "preorder  :", preorder  (tree, print), ``@println;
-print "inorder   :", inorder   (tree, print), ``@println;
-print "postorder :", postorder (tree, print), ``@println;
-print "levelorder:", levelorder(tree, print), ``@println;
+print "preorder  :", preorder  (tree, print), ''@println;
+print "inorder   :", inorder   (tree, print), ''@println;
+print "postorder :", postorder (tree, print), ''@println;
+print "levelorder:", levelorder(tree, print), ''@println;
 

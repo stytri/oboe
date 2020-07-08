@@ -14,6 +14,6 @@ o1:oop(0,1);
 o2:oop(1,2);
 
 (i:0..2) ?* (
-	("o1: ", o1 func(2 i + 1) , ` `, o1)@println;
-	("o2: ", o2 func(2(i + 1)), ` `, o2)@println;
+	("o1: ", o1 func(2 i + 1) , ' ', o1)@println;
+	("o2: ", o2 func(2(i + 1)), ' ', o2)@println;
 );

@@ -176,7 +176,7 @@ restart_continue:
 			;
 		goto restart_continue;
 
-	case '\\':
+	case '`':
 		c = utf8chr(end = cs, &cs);
 		if(is_Operator(c)) {
 			do {
@@ -189,7 +189,7 @@ restart_continue:
 			} while(is_ID_Continue(c))
 				;
 		}
-		*endp = end;
+		*endp = (c == '`') ? cs : end;
 		break;
 
 	case '(': case '[': case '{': {
@@ -218,22 +218,7 @@ restart_continue:
 		*endp = cs;
 		break;
 
-	case '"':
-		for(c = char32(cs); c && (c != '"'); c = char32(++cs)) {
-			switch(c) {
-			default:
-				continue;
-			CASE_EOL(
-					continue;
-				)
-			}
-		}
-		if(c) {
-			++cs;
-		}
-		*endp = cs;
-		break;
-	case '\'': case '`':
+	case '"': case '\'':
 		{
 			char32_t const e = c;
 			for(c = char32(cs); c && (c != e); c = char32(++cs)) {

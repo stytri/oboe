@@ -119,19 +119,12 @@ makchr(
 static String
 makstr(
 	char const *cs,
-	size_t      n,
-	int         q
+	size_t      n
 ) {
 	++cs;
 	--n;
 
-	if(q == '"') {
-		if((n > 0) && (cs[n-1] == '"')) {
-			--n;
-		}
-		return dupstr(cs, n);
-	}
-	String t = UnEscapeString(NULL, cs, NULL, q);
+	String t = UnEscapeString(NULL, cs, NULL, '"');
 	assert(t != NULL);
 
 	return t;
@@ -360,14 +353,11 @@ new_ast_from_lexeme(
 			return ZEN;
 		}
 		nobreak;
-	case '[' :
-	case '{' :
 	default  : type = AST_Operator;   break;
 	case ',' : type = AST_Sequence;   break;
 	case ';' : type = AST_Assemblage; break;
 	case '"' : type = AST_String;     break;
-	case '\'': type = AST_String;     break;
-	case '`' : type = AST_Character;  break;
+	case '\'': type = AST_Character;  break;
 	}
 
 	ast = alloc_ast();
@@ -380,12 +370,12 @@ new_ast_from_lexeme(
 #	define ENUM(Name)       } break; case AST_##Name: {
 #	define NEW(...)         __VA_ARGS__;
 
-#	define INTEGER(...)     (ast->attr |= ATTR_CopyOnAssign, makint(leme, len)        )
-#	define FLOAT(...)       (ast->attr |= ATTR_CopyOnAssign, makdbl(leme, len)        )
-#	define CHARACTER(...)   (ast->attr |= ATTR_CopyOnAssign, makchr(leme, len)        )
-#	define STRING(...)      (ast->attr |= ATTR_CopyOnAssign, makstr(leme, len, (int)c))
-#	define IDENTIFIER(...)  (                                dupstr(leme, len)        )
-#	define OPERATOR(...)    (                                makopr(leme, len)        )
+#	define INTEGER(...)     (ast->attr |= ATTR_CopyOnAssign, makint(leme, len))
+#	define FLOAT(...)       (ast->attr |= ATTR_CopyOnAssign, makdbl(leme, len))
+#	define CHARACTER(...)   (ast->attr |= ATTR_CopyOnAssign, makchr(leme, len))
+#	define STRING(...)      (ast->attr |= ATTR_CopyOnAssign, makstr(leme, len))
+#	define IDENTIFIER(...)  (                                dupstr(leme, len))
+#	define OPERATOR(...)    (                                makopr(leme, len))
 
 #	include "oboe.enum"
 

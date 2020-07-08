@@ -1056,12 +1056,12 @@ initialise_system_environment(
 	bool no_alias
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN("\\sigil", sigil, P_Applicate)
+		BUILTIN("`sigil`", sigil, P_Applicate)
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 
 	static struct builtinalias const builtinalias[] = {
-		{"@", "\\sigil" },
+		{"@", "`sigil`" },
 	};
 	static size_t const n_builtinalias = sizeof(builtinalias) / sizeof(builtinalias[0]);
 

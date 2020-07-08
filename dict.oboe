@@ -71,7 +71,7 @@ main(argc, argv) : (
 		args ?: (
 		"-h": "--help": help@printerr;
 		"-v": "--verbose": verbose = TRUE;
-		(args[0] == `@`) ? (
+		(args[0] == '@') ? (
 			catfiles(args << 1, verbose)
 		;
 			catfile(args, verbose)

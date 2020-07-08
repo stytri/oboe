@@ -67,7 +67,7 @@ is_not_finished(): (
 );
 
 show_cells(): (
-	``@println,
+	''@println,
 	(row(:)cells[]) ?* (
 		(column(:)row[]) ?* (
 			column ? (
@@ -78,17 +78,17 @@ show_cells(): (
 		),
 		" :"@println
 	),
-	``@println
+	''@println
 );
 
 get_move(): (
 	s:getcmd(),
 	(i(:)0..(s@length-1)) ?* (
 		s[i] ?: (
-		(`u`: update(0));
-		(`d`: update(1));
-		(`l`: update(2));
-		(`r`: update(3))
+		('u': update(0));
+		('d': update(1));
+		('l': update(2));
+		('r': update(3))
 		)
 	)
 );

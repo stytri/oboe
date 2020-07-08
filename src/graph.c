@@ -107,9 +107,9 @@ graph_character(
 
 	fprintf(stream, "\t\tnode%zu [group=cluster%zu,label=\"", id, cid);
 	escaped(stream, prefix);
-	escaped(stream, "`");
+	escaped(stream, "'");
 	escaped(stream, cs);
-	escaped(stream, "`");
+	escaped(stream, "'");
 	escaped(stream, postfix);
 	fprintf(stream, "\"];\n");
 
@@ -129,9 +129,9 @@ graph_string(
 ) {
 	fprintf(stream, "\t\tnode%zu [group=cluster%zu,label=\"", id, cid);
 	escaped(stream, prefix);
-	escaped(stream, "'");
+	escaped(stream, "\"");
 	escaped(stream, StringToCharLiteral(value, NULL));
-	escaped(stream, "'");
+	escaped(stream, "\"");
 	escaped(stream, postfix);
 	fprintf(stream, "\"];\n");
 

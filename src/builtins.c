@@ -2791,116 +2791,116 @@ initialise_builtin_operators(
 	bool no_alias
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN("\\applicate"      , applicate      , P_Binding)
-		BUILTIN("\\global"         , global         , P_Interstitial)
-		BUILTIN("\\tag"            , tag            , P_Declarative)
-		BUILTIN("\\tag_ref"        , tag_ref        , P_Declarative)
-		BUILTIN("\\const"          , const          , P_Declarative)
-		BUILTIN("\\assign"         , assign         , P_Assigning)
-		BUILTIN("\\assign_ref"     , assign_ref     , P_Assigning)
-		BUILTIN("\\assign_land"    , assign_land    , P_Assigning)
-		BUILTIN("\\assign_lor"     , assign_lor     , P_Assigning)
-		BUILTIN("\\assign_and"     , assign_and     , P_Assigning)
-		BUILTIN("\\assign_or"      , assign_or      , P_Assigning)
-		BUILTIN("\\assign_xor"     , assign_xor     , P_Assigning)
-		BUILTIN("\\assign_add"     , assign_add     , P_Assigning)
-		BUILTIN("\\assign_sub"     , assign_sub     , P_Assigning)
-		BUILTIN("\\assign_mul"     , assign_mul     , P_Assigning)
-		BUILTIN("\\assign_div"     , assign_div     , P_Assigning)
-		BUILTIN("\\assign_mod"     , assign_mod     , P_Assigning)
-		BUILTIN("\\assign_shl"     , assign_shl     , P_Assigning)
-		BUILTIN("\\assign_shr"     , assign_shr     , P_Assigning)
-		BUILTIN("\\assign_exl"     , assign_exl     , P_Assigning)
-		BUILTIN("\\assign_exr"     , assign_exr     , P_Assigning)
-		BUILTIN("\\assign_rol"     , assign_rol     , P_Assigning)
-		BUILTIN("\\assign_ror"     , assign_ror     , P_Assigning)
-		BUILTIN("\\exchange"       , exchange       , P_Assigning)
-		BUILTIN("\\if"             , if             , P_Conditional)
-		BUILTIN("\\ifnot"          , ifnot          , P_Conditional)
-		BUILTIN("\\case"           , case           , P_Conditional)
-		BUILTIN("\\while"          , while          , P_Conditional)
-		BUILTIN("\\until"          , until          , P_Conditional)
-		BUILTIN("\\land"           , land           , P_Logical)
-		BUILTIN("\\lor"            , lor            , P_Logical)
-		BUILTIN("\\lt"             , lt             , P_Relational)
-		BUILTIN("\\lte"            , lte            , P_Relational)
-		BUILTIN("\\eq"             , eq             , P_Relational)
-		BUILTIN("\\neq"            , neq            , P_Relational)
-		BUILTIN("\\gte"            , gte            , P_Relational)
-		BUILTIN("\\gt"             , gt             , P_Relational)
-		BUILTIN("\\and"            , and            , P_Bitwise)
-		BUILTIN("\\or"             , or             , P_Bitwise)
-		BUILTIN("\\xor"            , xor            , P_Bitwise)
-		BUILTIN("\\add"            , add            , P_Additive)
-		BUILTIN("\\sub"            , sub            , P_Additive)
-		BUILTIN("\\mul"            , mul            , P_Multiplicative)
-		BUILTIN("\\div"            , div            , P_Multiplicative)
-		BUILTIN("\\mod"            , mod            , P_Multiplicative)
-		BUILTIN("\\shl"            , shl            , P_Exponential)
-		BUILTIN("\\shr"            , shr            , P_Exponential)
-		BUILTIN("\\exl"            , exl            , P_Exponential)
-		BUILTIN("\\exr"            , exr            , P_Exponential)
-		BUILTIN("\\rol"            , rol            , P_Exponential)
-		BUILTIN("\\ror"            , ror            , P_Exponential)
-		BUILTIN("\\array"          , array          , P_Binding)
-		BUILTIN("\\range"          , range          , P_Binding)
+		BUILTIN("`applicate`"      , applicate      , P_Binding)
+		BUILTIN("`global`"         , global         , P_Interstitial)
+		BUILTIN("`tag`"            , tag            , P_Declarative)
+		BUILTIN("`tag_ref`"        , tag_ref        , P_Declarative)
+		BUILTIN("`const`"          , const          , P_Declarative)
+		BUILTIN("`assign`"         , assign         , P_Assigning)
+		BUILTIN("`assign_ref`"     , assign_ref     , P_Assigning)
+		BUILTIN("`assign_land`"    , assign_land    , P_Assigning)
+		BUILTIN("`assign_lor`"     , assign_lor     , P_Assigning)
+		BUILTIN("`assign_and`"     , assign_and     , P_Assigning)
+		BUILTIN("`assign_or`"      , assign_or      , P_Assigning)
+		BUILTIN("`assign_xor`"     , assign_xor     , P_Assigning)
+		BUILTIN("`assign_add`"     , assign_add     , P_Assigning)
+		BUILTIN("`assign_sub`"     , assign_sub     , P_Assigning)
+		BUILTIN("`assign_mul`"     , assign_mul     , P_Assigning)
+		BUILTIN("`assign_div`"     , assign_div     , P_Assigning)
+		BUILTIN("`assign_mod`"     , assign_mod     , P_Assigning)
+		BUILTIN("`assign_shl`"     , assign_shl     , P_Assigning)
+		BUILTIN("`assign_shr`"     , assign_shr     , P_Assigning)
+		BUILTIN("`assign_exl`"     , assign_exl     , P_Assigning)
+		BUILTIN("`assign_exr`"     , assign_exr     , P_Assigning)
+		BUILTIN("`assign_rol`"     , assign_rol     , P_Assigning)
+		BUILTIN("`assign_ror`"     , assign_ror     , P_Assigning)
+		BUILTIN("`exchange`"       , exchange       , P_Assigning)
+		BUILTIN("`if`"             , if             , P_Conditional)
+		BUILTIN("`ifnot`"          , ifnot          , P_Conditional)
+		BUILTIN("`case`"           , case           , P_Conditional)
+		BUILTIN("`while`"          , while          , P_Conditional)
+		BUILTIN("`until`"          , until          , P_Conditional)
+		BUILTIN("`land`"           , land           , P_Logical)
+		BUILTIN("`lor`"            , lor            , P_Logical)
+		BUILTIN("`lt`"             , lt             , P_Relational)
+		BUILTIN("`lte`"            , lte            , P_Relational)
+		BUILTIN("`eq`"             , eq             , P_Relational)
+		BUILTIN("`neq`"            , neq            , P_Relational)
+		BUILTIN("`gte`"            , gte            , P_Relational)
+		BUILTIN("`gt`"             , gt             , P_Relational)
+		BUILTIN("`and`"            , and            , P_Bitwise)
+		BUILTIN("`or`"             , or             , P_Bitwise)
+		BUILTIN("`xor`"            , xor            , P_Bitwise)
+		BUILTIN("`add`"            , add            , P_Additive)
+		BUILTIN("`sub`"            , sub            , P_Additive)
+		BUILTIN("`mul`"            , mul            , P_Multiplicative)
+		BUILTIN("`div`"            , div            , P_Multiplicative)
+		BUILTIN("`mod`"            , mod            , P_Multiplicative)
+		BUILTIN("`shl`"            , shl            , P_Exponential)
+		BUILTIN("`shr`"            , shr            , P_Exponential)
+		BUILTIN("`exl`"            , exl            , P_Exponential)
+		BUILTIN("`exr`"            , exr            , P_Exponential)
+		BUILTIN("`rol`"            , rol            , P_Exponential)
+		BUILTIN("`ror`"            , ror            , P_Exponential)
+		BUILTIN("`array`"          , array          , P_Binding)
+		BUILTIN("`range`"          , range          , P_Binding)
 	};
 	static size_t const n_builtinop = sizeof(builtinop) / sizeof(builtinop[0]);
 
 	static struct builtinalias const builtinalias[] = {
-		{    "", "\\applicate"      },
-		{ "[:]", "\\global"         },
-		{   ":", "\\tag"            },
-		{  ":^", "\\tag_ref"        },
-		{ "(:)", "\\const"          },
-		{   "=", "\\assign"         },
-		{  "=^", "\\assign_ref"     },
-		{ "&&=", "\\assign_land"    },
-		{ "||=", "\\assign_lor"     },
-		{  "&=", "\\assign_and"     },
-		{  "|=", "\\assign_or"      },
-		{  "~=", "\\assign_xor"     },
-		{  "+=", "\\assign_add"     },
-		{  "-=", "\\assign_sub"     },
-		{  "*=", "\\assign_mul"     },
-		{  "/=", "\\assign_div"     },
-		{ "//=", "\\assign_mod"     },
-		{ "<<=", "\\assign_shl"     },
-		{ ">>=", "\\assign_shr"     },
-		{"<<<=", "\\assign_exl"     },
-		{">>>=", "\\assign_exr"     },
-		{"<<>=", "\\assign_rol"     },
-		{"<>>=", "\\assign_ror"     },
-		{  "><", "\\exchange"       },
-		{   "?", "\\if"             },
-		{   "!", "\\ifnot"          },
-		{  "?:", "\\case"           },
-		{  "?*", "\\while"          },
-		{  "!*", "\\until"          },
-		{  "&&", "\\land"           },
-		{  "||", "\\lor"            },
-		{   "<", "\\lt"             },
-		{  "<=", "\\lte"            },
-		{  "==", "\\eq"             },
-		{  "<>", "\\neq"            },
-		{  ">=", "\\gte"            },
-		{   ">", "\\gt"             },
-		{   "&", "\\and"            },
-		{   "|", "\\or"             },
-		{   "~", "\\xor"            },
-		{   "+", "\\add"            },
-		{   "-", "\\sub"            },
-		{   "*", "\\mul"            },
-		{   "/", "\\div"            },
-		{  "//", "\\mod"            },
-		{  "<<", "\\shl"            },
-		{  ">>", "\\shr"            },
-		{ "<<<", "\\exl"            },
-		{ ">>>", "\\exr"            },
-		{ "<<>", "\\rol"            },
-		{ "<>>", "\\ror"            },
-		{  "[]", "\\array"          },
-		{  "..", "\\range"          },
+		{    "", "`applicate`"      },
+		{ "[:]", "`global`"         },
+		{   ":", "`tag`"            },
+		{  ":^", "`tag_ref`"        },
+		{ "(:)", "`const`"          },
+		{   "=", "`assign`"         },
+		{  "=^", "`assign_ref`"     },
+		{ "&&=", "`assign_land`"    },
+		{ "||=", "`assign_lor`"     },
+		{  "&=", "`assign_and`"     },
+		{  "|=", "`assign_or`"      },
+		{  "~=", "`assign_xor`"     },
+		{  "+=", "`assign_add`"     },
+		{  "-=", "`assign_sub`"     },
+		{  "*=", "`assign_mul`"     },
+		{  "/=", "`assign_div`"     },
+		{ "//=", "`assign_mod`"     },
+		{ "<<=", "`assign_shl`"     },
+		{ ">>=", "`assign_shr`"     },
+		{"<<<=", "`assign_exl`"     },
+		{">>>=", "`assign_exr`"     },
+		{"<<>=", "`assign_rol`"     },
+		{"<>>=", "`assign_ror`"     },
+		{  "><", "`exchange`"       },
+		{   "?", "`if`"             },
+		{   "!", "`ifnot`"          },
+		{  "?:", "`case`"           },
+		{  "?*", "`while`"          },
+		{  "!*", "`until`"          },
+		{  "&&", "`land`"           },
+		{  "||", "`lor`"            },
+		{   "<", "`lt`"             },
+		{  "<=", "`lte`"            },
+		{  "==", "`eq`"             },
+		{  "<>", "`neq`"            },
+		{  ">=", "`gte`"            },
+		{   ">", "`gt`"             },
+		{   "&", "`and`"            },
+		{   "|", "`or`"             },
+		{   "~", "`xor`"            },
+		{   "+", "`add`"            },
+		{   "-", "`sub`"            },
+		{   "*", "`mul`"            },
+		{   "/", "`div`"            },
+		{  "//", "`mod`"            },
+		{  "<<", "`shl`"            },
+		{  ">>", "`shr`"            },
+		{ "<<<", "`exl`"            },
+		{ ">>>", "`exr`"            },
+		{ "<<>", "`rol`"            },
+		{ "<>>", "`ror`"            },
+		{  "[]", "`array`"          },
+		{  "..", "`range`"          },
 	};
 	static size_t const n_builtinalias = sizeof(builtinalias) / sizeof(builtinalias[0]);
 

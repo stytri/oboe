@@ -3,6 +3,6 @@ argv:(@argv);
 
 (argi:0..(argc-1)) ?* (
 	args:argv[argi],
-	@println('[', argi, '] ', args)
+	@println("[", argi, "] ", args)
 );
-@println(' ', argc)
+@println(" ", argc)

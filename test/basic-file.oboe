@@ -1,6 +1,6 @@
 i:1234567890;
 f:0.123456789;
-s:'hello world!\n';
+s:"hello world!\n";
 w:(@open("./out/test.txt", "w+"));
 @write(w, i, f, s);
 w@close;

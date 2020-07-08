@@ -49,12 +49,12 @@ main(argc, argv): (
 		W[y][x] = 1
 	),
 
-	('P1\n', SIDE, ` `, SIDE, `\n`)@print,
+	("P1\n", SIDE, ' ', SIDE, '\n')@print,
 	(Wy(:)W[]) ?* (
 		(Wyx(:)Wy[]) ?* (
-			(Wyx, ` `)@print
+			(Wyx, ' ')@print
 		),
-		`\n`@print
+		'\n'@print
 	)
 );
 

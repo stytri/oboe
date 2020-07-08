@@ -11,15 +11,15 @@ no_yes:["no", "yes"];
 
 print(s, len, uniq, diff, hex): (
 	@print(
-		spad(-length_max, s, ` `), " | ",
+		spad(-length_max, s, ' '), " | ",
 		itos(-length_digits, len), " | ",
-		spad(-6, uniq, ` `), " | ",
-		spad(-8, diff, ` `), " | "
+		spad(-6, uniq, ' '), " | ",
+		spad(-8, diff, ' '), " | "
 	),
 	(n:pos[diff]@length, i:0; 0 < n && i < n; i++) ?* (
 		itos(-3, pos[diff][i])@print
 	),
-	``@println
+	''@println
 );
 
 is_unique(c:, i:): (
@@ -60,17 +60,17 @@ main(argc, argv): (
 	);
 
 	@println(
-		spad(-length_max, "string", ` `), " | ",
-		spad(-length_digits, "length", ` `), " | ",
-		spad(-6, "unique", ` `), " | ",
-		spad(-8, "1st diff", ` `), " | "
+		spad(-length_max, "string", ' '), " | ",
+		spad(-length_digits, "length", ' '), " | ",
+		spad(-6, "unique", ' '), " | ",
+		spad(-8, "1st diff", ' '), " | "
 		"positions"
 	),
 	@println(
-		spad(-length_max, "", `-`), "-|-",
-		spad(-length_digits, "", `-`), "-|-",
-		spad(-6, "", `-`), "-|-",
-		spad(-8, "", `-`), "-|-"
+		spad(-length_max, "", '-'), "-|-",
+		spad(-length_digits, "", '-'), "-|-",
+		spad(-6, "", '-'), "-|-",
+		spad(-8, "", '-'), "-|-"
 		"---------"
 	),
 

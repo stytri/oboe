@@ -1,5 +1,5 @@
 write(file): (
-	s:'hello world!\n',
+	s:"hello world!\n",
 	i:0xFEDCBA9876543210,
 	f:0xFEDCBA98765432p1,
 	w:(@open(file, "w")),

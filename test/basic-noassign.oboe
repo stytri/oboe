@@ -10,7 +10,7 @@ c(:)(@RAND_MAX*2),   c@println;
 c  = @RAND_MAX,      c@println;
 c /= 2,              c@println;
 assign(c,@RAND_MAX), c@println;
-a >< c,              (a, ` `)@print, c@println;
+a >< c,              (a, ' ')@print, c@println;
 
 v:[1,2,3],           v@println;
 v = [4,5,6],         v@println;
@@ -23,8 +23,8 @@ u = [4,5,6],         u@println;
 u[1] = 7,            u@println;
 assign(u[1],9),      u@println;
 u[3] = 10,           u@println;
-u >< v,              (u, ` `)@print, v@println;
-u[1] >< v[1],        (u, ` `)@print, v@println;
+u >< v,              (u, ' ')@print, v@println;
+u[1] >< v[1],        (u, ' ')@print, v@println;
 
 e:[one:1,two(:)2,three:3],           e@println;
 e one = 11, e two = 22, e three = 33,e@println;

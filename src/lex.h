@@ -85,10 +85,10 @@ is_Primary(
 	switch(c) {
 	default :
 		return is_ID_Start(c) || is_Digit(c);
-	case '"': case '\'': case '`':
+	case '"': case '\'':
 	case '(': case '[': case '{':
 		return 1;
-	case '\\':
+	case '`':
 	case ')': case ']': case '}':
 	case ';': case ',':
 	case '#':
@@ -103,9 +103,9 @@ is_Operator(
 	switch(c) {
 	default :
 		return is_UCS(UCS_Operator, c);
-	case '\\':
+	case '`':
 		return 1;
-	case '"': case '\'': case '`':
+	case '"': case '\'':
 	case '(': case '[': case '{':
 	case ')': case ']': case '}':
 	case ';': case ',':
@@ -121,8 +121,8 @@ is_Reserved(
 	switch(c) {
 	default :
 		return 0;
-	case '\\':
-	case '"': case '\'': case '`':
+	case '`':
+	case '"': case '\'':
 	case '(': case '[': case '{':
 	case ')': case ']': case '}':
 	case ';': case ',':

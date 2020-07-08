@@ -1,9 +1,9 @@
-`a`@println;
-`β`@println;
-`\u3B3`@println;
-(`a`@to_Literal)@println;
-(`β`@to_Literal)@println;
-(`\u3B3`@to_Literal)@println;
+'a'@println;
+'β'@println;
+'\u3B3'@println;
+('a'@to_Literal)@println;
+('β'@to_Literal)@println;
+('\u3B3'@to_Literal)@println;
 "αβγ"[0]@println;
 "αβγ"[1]@println;
 "αβγ"[2]@println;
