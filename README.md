@@ -69,23 +69,13 @@ Otherwise comments are terminated at the end of line.
 
 #### Strings
 
-##### Double-quote strings
-
 Delimited by `"`. 
-
-No escape sequences.
-
-Can not contain `"`.
-
-##### Single-quote strings
-
-Delimited by `'`.
 
 Can contain escape sequences (see **Characters** section)
 
 #### Characters
 
-Delimited by ```.
+Delimited by `'`.
 
 Can contain an escape sequence.
 
@@ -99,6 +89,7 @@ Initiated by `\`, followed by:
 - `U` or `u` followed by up to 8 hexadecimal digits specifying  a Unicode code-point.
 - `W` or `w` followed by up to 4 hexadecimal digits specifying  a Unicode code-point.
 - `X` or `x` followed by up to 2 hexadecimal digits specifying  a Unicode code-point.
+- End-of-Line characters; these are elided, including CR-LF and LF-CR pairings.
 - for other characters, acts as a quoting mechanism.
 
 #### Sub-expressions
@@ -151,7 +142,7 @@ Where an _operand_-less **operator** is bracketed sans space, then this forms a 
 
 ##### Named operators
 
-User-defined operators can be named by prefixing an **identifier** with `\`.
+User-defined operators can be named by prefixing an **identifier** with '`' and can also be terminated with another back-tick.
 
 ##### Unary operators
 
