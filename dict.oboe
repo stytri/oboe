@@ -1,84 +1,670 @@
-unable_to_open(file): ("unable to open ", file)@printerr;
-unable_to_read(file): ("unable to read ", file)@printerr;
-
-"&&" "&!"(L,R): (L && (!R));
-
-FALSE(:)?;
-TRUE (:)!;
-
-catword(s): (
-	n:(s, "#%/[]{}")@span_NotInSet,
-	(; n > 1 && s[n-1]@is_Space; n-=1) ?*,
-	(n > 0) ? (s <<< n)@println
-);
-
-catfile(file, verbose): (
-	f:file@open,
-
-	f@is_File ? (
-		s:f@fgetln,
-		verbose ? (file, " [", s@to_Integer, "]")@printerr,
-
-		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
-			(s@length &! s[0]@is_Space) ? (
-				catword(s)
-			)
-		),
-
-		f@ferror ? unable_to_read file,
-
-		f@close
-	;
-		unable_to_open file
-	)
-);
-
-catfiles(file, verbose): (
-	f:file@open,
-
-	f@is_File ? (
-		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
-			catfile(s, verbose)
-		),
-
-		f@ferror ? unable_to_read file,
-
-		f@close
-	;
-		unable_to_open file
-	)
-);
-
-help(:)"
+VERSION(:)"
+dict 20.07.090
+Copyright (C) 2020 Tristan Styles
+MIT License
+";
+USAGE(:)"
 dict [options] FILE...
 options:
 	-h, --help           display this help
-	-v, --verbose        display file name
+	-v, --verbose        display file names
+	-n, --noaffix        do not expand affixes
+	    --version        display program version
+	    --debug          display debugging information
 
-Where FILE is the name of the file to be processed. More than one file may be
-given; each file will be processed in turn.
+Expands a dictionary file to produce affixed word variants.
+
+Where FILE is the root name of the file(s) to be processed. More than one file
+may be given; each file will be processed in turn.
 
 If FILE is prefixed with @, then it provides a list of files to be processed,
 with one file per line.
 ";
 
-main(argc, argv) : (
-	verbose:FALSE,
+#==============================================================================
 
-	(i:1; i < argc; i+=1) ?* (
+"=" "[=]"(L,R): L[L@length] = R;
+"+"  "++"(L)  : L += 1;
+"-"  "--"(L)  : L -= 1;
+
+__:[
+	enum:0
+];
+
+enum(e): (e@is_Integer ? (r:__(enum) = e ; r:__(enum)), __(enum++), r);
+
+FALSE(:)?;
+TRUE (:)!;
+
+#==============================================================================
+
+unable_to_open file: ("unable to open ", file)@printerr;
+unable_to_read file: ("unable to read ", file)@printerr;
+
+noaffix:FALSE;
+verbose:FALSE;
+debug  :FALSE;
+
+#==============================================================================
+
+dump(name,object,indent:): (
+	object@is_Environment ? ((
+		('\t' indent, name, ":[]")@println,
+		(N:object@length, i:0; i < N; i++) ?* (
+			dump(object[i]@identifier, object[i], indent+1)
+		)
+	);(
+		object@is_String ? ((
+			('\t' indent, name, ":\"", object, "\"")@println,
+		);(
+			('\t' indent, name, ':', object)@println,
+		))
+	))
+);
+
+getln(f): (
+	line:f@fgetln,
+	line@is_String ? (
+		line,
+	;
+		""
+	)
+);
+
+gettok(s): (
+	n:s@span_NotSpace,
+	t:s <<< n,
+	n += (s(n..))@span_Space,
+	s <<= n,
+	t
+);
+
+split1(arg): (
+	s:gettok(arg),
+	s
+);
+
+split2(arg): (
+	s:gettok(arg),
+	t:gettok(arg),
+	[s, t]
+);
+
+split3(arg): (
+	s:gettok(arg),
+	t:gettok(arg),
+	z:gettok(arg),
+	[s, t, z]
+);
+
+splitw(arg): (
+	return:[],
+
+	arg ?* (
+		n:arg@span_Space,
+		n ? (
+			arg <<= n
+		),
+		n:arg@span_NotSpace,
+		n ? (
+			return [=] arg <<< n,
+			arg <<= n
+		)
+	),
+
+	return
+);
+
+splitc(arg,set): (
+	return:[],
+
+	arg ?* (
+		n:(arg, set)@span_InSet,
+		n ? (
+			arg <<= n
+		),
+		n:(arg, set)@span_NotInSet,
+		n ? (
+			return [=] arg <<< n,
+			arg <<= n
+		)
+	),
+
+	return
+);
+
+#==============================================================================
+
+(
+	NUM_FLAG (:)enum(0),
+	CHAR_FLAG(:)enum(),
+	LONG_FLAG(:)enum()
+);
+(
+	enum(0),
+	WARN              (:)enum(),
+	NOSUGGEST         (:)enum(),
+	COMPOUNDFLAG      (:)enum(),
+	COMPOUNDBEGIN     (:)enum(),
+	COMPOUNDLAST      (:)enum(),
+	COMPOUNDMIDDLE    (:)enum(),
+	ONLYINCOMPOUND    (:)enum(),
+	COMPOUNDPERMITFLAG(:)enum(),
+	COMPOUNDFORBIDFLAG(:)enum(),
+	COMPOUNDROOT      (:)enum(),
+	FORCEUCASE        (:)enum(),
+	SYLLABLENUM       (:)enum(),
+	CIRCUMFIX         (:)enum(),
+	FORBIDDENWORD     (:)enum(),
+	KEEPCASE          (:)enum(),
+	LEMMA_PRESENT     (:)enum(),
+	NEEDAFFIX         (:)enum(),
+	PSEUDOROOT        (:)enum(),
+	SUBSTANDARD       (:)enum(),
+);
+(
+	ARC_SEQ(:)enum(0),
+	ARC_SET(:)enum(),
+	ARC_NOT(:)enum()
+);
+
+AFFIX(:)[
+	COUNT               : 0,
+	NAME                : "",
+	VERSION             : "",
+	HOME                : "",
+	SET                 : "UTF-8",
+	FLAG                : [type: CHAR_FLAG],
+	LANG                : "",
+	IGNORE              : "",
+	TRY                 : "",
+	KEY                 : [],
+	MAP                 : [],
+	AF                  : [""],
+	AM                  : [""],
+	REP                 : [],
+	PFX                 : [],
+	SFX                 : [],
+	BREAK               : ["-", "^-", "-$"],
+	PHONE               : [],
+	FORBIDWARN          : FALSE,
+	COMPLEXPREFIXES     : FALSE,
+	MAXCPDSUGS          : 0,
+	MAXNGRAMSUGS        : 0,
+	MAXDIFF             : 0,
+	ONLYMAXDIFF         : FALSE,
+	NOSPLITSUGS         : FALSE,
+	SUGSWITHDOTS        : FALSE,
+	COMPOUNDRULE        : [],
+	COMPOUNDMIN         : 0,
+	COMPOUNDWORDMAX     : 0,
+	CHECKCOMPOUNDDUP    : FALSE,
+	CHECKCOMPOUNDREP    : FALSE,
+	CHECKCOMPOUNDCASE   : FALSE,
+	CHECKCOMPOUNDTRIPLE : FALSE,
+	SIMPLIFIEDTRIPLE    : FALSE,
+	CHECKCOMPOUNDPATTERN: [],
+	COMPOUNDSYLLABLE    : [],
+	FULLSTRIP           : FALSE,
+	ICONV               : [],
+	OCONV               : [],
+	WORDCHARS           : "",
+	CHECKSHARPS         : FALSE
+];
+
+flag_type(arg): (
+	arg ?: (
+	"num" : NUM_FLAG;
+	"long": LONG_FLAG;
+	        CHAR_FLAG
+	)
+);
+
+set_flag(afx,arg,flag): (
+	afx[arg] = flag
+);
+
+set_value(afx,arg): (
+	afx = arg
+);
+
+set_string(afx,arg): (
+	afx = arg@to_String
+);
+
+set_number(afx,arg): (
+	afx = arg@to_Integer
+);
+
+set_boolean(afx): (
+	afx = TRUE
+);
+
+set_affix_class(afx,field,count) : (
+	afx[field[0]] = [
+		cross:(field[1] == "Y"),
+		rule :[]
+	],
+	count = field[2]@to_Integer
+);
+
+set_affix_rule_condition(field): (
+	cond:[len:0],
+
+	field <> "." ? ((N(:)field@length, start:0, end:; start < N; start = end) ?* (
+		end = start + (field(start..), "[")@span_NotInSet,
+		end > start ? ((
+			cond [=] [
+				char:field[start..(end - 1)],
+				type:0
+			],
+			cond len += (end - start)
+
+		);(field[start] == '[' ? (
+			start += 1,
+			invert:(start < N) && (field[start] == '^'),
+			start += invert,
+
+			end = start + (field(start..), "]")@span_NotInSet,
+			end > start ? (
+				cond [=] [
+					char:field[start..(end - 1)],
+					type:invert ? (2 ; 1)
+				],
+				cond len += 1,
+
+				end += (end < N) && (field[end] == ']')
+			)
+		)))
+	)),
+
+	cond
+);
+
+set_affix_rule(afx,field,count): (
+	afx[field[0]]rule [=] [
+		strip: field[1] <> "0" ? (field[1] ; ""),
+		affix: field[2],
+		cond : set_affix_rule_condition(field[3]),
+		morph: field@length > 4 ? (field[4..] ; [])
+	],
+	count--
+);
+
+set_affix(afx,field,count): (
+	count ! (
+		set_affix_class(afx,field,count)
+	;
+		set_affix_rule(afx,field,count)
+	)
+);
+
+set_counted(afx,field,count): (
+	count ! (
+		count = arg@to_Integer
+	;
+		afx [=] field,
+		count--
+	)
+);
+
+affix_cmd:[
+	NAME                (aff,arg): set_string (aff NAME                , arg);
+	VERSION             (aff,arg): set_string (aff VERSION             , arg);
+	HOME                (aff,arg): set_string (aff HOME                , arg);
+	SET                 (aff,arg): set_string (aff SET                 , split1 arg);
+	FLAG                (aff,arg): set_value  (aff FLAG type           , split1 arg  flag_type);
+	LANG                (aff,arg): set_string (aff LANG                , split1 arg);
+	IGNORE              (aff,arg): set_string (aff IGNORE              , split1 arg);
+	TRY                 (aff,arg): set_string (aff TRY                 , split1 arg);
+	KEY                 (aff,arg): set_value  (aff KEY                 , splitc(arg, "|"));
+	MAP                 (aff,arg): set_counted(aff MAP                 , split1 arg, aff COUNT);
+	AF                  (aff,arg): set_counted(aff AF                  , split1 arg, aff COUNT);
+	AM                  (aff,arg): set_counted(aff AM                  , split1 arg, aff COUNT);
+	REP                 (aff,arg): set_counted(aff REP                 , split2 arg, aff COUNT);
+	PFX                 (aff,arg): set_affix  (aff PFX                 , splitw arg, aff COUNT);
+	SFX                 (aff,arg): set_affix  (aff SFX                 , splitw arg, aff COUNT);
+	BREAK               (aff,arg):(set_counted(aff BREAK               , split1 arg, aff COUNT), aff COUNT ! (aff BREAK = []));
+	PHONE               (aff,arg): set_counted(aff PHONE               , split2 arg, aff COUNT);
+	WARN                (aff,arg): set_flag   (aff FLAG                , split1 arg, WARN);
+	FORBIDWARN          (aff,arg): set_boolean(aff FORBIDWARN          );
+	COMPLEXPREFIXES     (aff,arg): set_boolean(aff COMPLEXPREFIXES     );
+	NOSUGGEST           (aff,arg): set_flag   (aff FLAG                , split1 arg, NOSUGGEST);
+	MAXCPDSUGS          (aff,arg): set_number (aff MAXCPDSUGS          , split1 arg);
+	MAXNGRAMSUGS        (aff,arg): set_number (aff MAXNGRAMSUGS        , split1 arg);
+	MAXDIFF             (aff,arg): set_number (aff MAXDIFF             , split1 arg);
+	ONLYMAXDIFF         (aff,arg): set_boolean(aff ONLYMAXDIFF         );
+	NOSPLITSUGS         (aff,arg): set_boolean(aff NOSPLITSUGS         );
+	SUGSWITHDOTS        (aff,arg): set_boolean(aff SUGSWITHDOTS        );
+	COMPOUNDRULE        (aff,arg): set_counted(aff COMPOUNDRULE        , split1 arg, aff COUNT);
+	COMPOUNDMIN         (aff,arg): set_number (aff COMPOUNDMIN         , split1 arg);
+	COMPOUNDFLAG        (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDFLAG);
+	COMPOUNDBEGIN       (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDBEGIN);
+	COMPOUNDLAST        (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDLAST);
+	COMPOUNDMIDDLE      (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDMIDDLE);
+	ONLYINCOMPOUND      (aff,arg): set_flag   (aff FLAG                , split1 arg, ONLYINCOMPOUND);
+	COMPOUNDPERMITFLAG  (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDPERMITFLAG);
+	COMPOUNDFORBIDFLAG  (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDFORBIDFLAG);
+	COMPOUNDROOT        (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDROOT);
+	COMPOUNDWORDMAX     (aff,arg): set_number (aff COMPOUNDWORDMAX     , split1 arg);
+	CHECKCOMPOUNDDUP    (aff,arg): set_boolean(aff CHECKCOMPOUNDDUP    );
+	CHECKCOMPOUNDREP    (aff,arg): set_boolean(aff CHECKCOMPOUNDREP    );
+	CHECKCOMPOUNDCASE   (aff,arg): set_boolean(aff CHECKCOMPOUNDCASE   );
+	CHECKCOMPOUNDTRIPLE (aff,arg): set_boolean(aff CHECKCOMPOUNDTRIPLE );
+	SIMPLIFIEDTRIPLE    (aff,arg): set_boolean(aff SIMPLIFIEDTRIPLE    );
+	CHECKCOMPOUNDPATTERN(aff,arg): set_counted(aff CHECKCOMPOUNDPATTERN, splitw arg, aff COUNT);
+	FORCEUCASE          (aff,arg): set_flag   (aff FLAG                , split1 arg, FORCEUCASE);
+	COMPOUNDSYLLABLE    (aff,arg): set_value  (aff COMPOUNDSYLLABLE    , split2 arg);
+	SYLLABLENUM         (aff,arg): set_flag   (aff FLAG                , split1 arg, SYLLABLENUM);
+	CIRCUMFIX           (aff,arg): set_flag   (aff FLAG                , split1 arg, CIRCUMFIX);
+	FORBIDDENWORD       (aff,arg): set_flag   (aff FLAG                , split1 arg, FORBIDDENWORD);
+	FULLSTRIP           (aff,arg): set_boolean(aff FULLSTRIP           );
+	ICONV               (aff,arg): set_counted(aff ICONV               , split2 arg, aff COUNT);
+	OCONV               (aff,arg): set_counted(aff OCONV               , split2 arg, aff COUNT);
+	KEEPCASE            (aff,arg): set_flag   (aff FLAG                , split1 arg, KEEPCASE);
+	LEMMA_PRESENT       (aff,arg): set_flag   (aff FLAG                , split1 arg, LEMMA_PRESENT);
+	NEEDAFFIX           (aff,arg): set_flag   (aff FLAG                , split1 arg, NEEDAFFIX);
+	PSEUDOROOT          (aff,arg): set_flag   (aff FLAG                , split1 arg, PSEUDOROOT);
+	SUBSTANDARD         (aff,arg): set_flag   (aff FLAG                , split1 arg, SUBSTANDARD);
+	WORDCHARS           (aff,arg): set_string (aff WORDCHARS           , split1 arg);
+	CHECKSHARPS         (aff,arg): set_boolean(aff CHECKSHARPS         );
+];
+
+get_affix_args(s,o:): (
+	n:o + (s(o..))@span_Space,
+	m:n + (s(n..), "#")@span_NotInSet,
+	n < m ? (
+		o  = (s(n..m))@span_RevSpace,
+		m -= o
+	),
+	n < m ? (
+		s[n..(m - 1)]
+	;
+		""
+	)
+);
+
+read_affix(file_aff,affix): (
+	f:file_aff@open,
+
+	f@is_File ? (
+		verbose ? file_aff@printerr,
+
+		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
+			s@is_String ? (
+				n:s@span_Alphabetic,
+				n ? (
+					cs:s <<< n,
+					s = get_affix_args(s, n),
+					affix_cmd[cs](affix, s)
+				)
+			)
+		),
+
+		f@ferror ? unable_to_read file_aff,
+
+		f@close
+	;
+		unable_to_open file_aff
+	),
+
+	()
+);
+
+cmp_affix_rule_condition:[
+	arc_seq(cs,cc,j): (
+		match:TRUE,
+		(n:cs@length, k:0;
+			match && k < n;
+			k++, j++
+		) ?* (
+			cs[k] ?: (cc: '.': ; match = FALSE)
+		),
+		match
+	);
+	arc_set(cs,cc,j): (
+		j++,
+		(cc, cs)@is_CharInSet
+	);
+	arc_not(cs,cc,j): (
+		j++,
+		(cc, cs)@is_NotCharInSet
+	);
+];
+
+#==============================================================================
+
+catprefix(aff,afx,wlist,w): (
+	afx@is_Environment ? (
+		len:w@length,
+
+		(R:afx rule@length, r:0; r < R; r++) ?* (
+			rule:afx  rule[r],
+			slen:rule strip@length,
+			cond:rule cond,
+			pref:rule affix,
+
+			debug ? dump("rule", rule, 1),
+			(len >= cond len
+				&& (len + aff FULLSTRIP) > slen
+				&& (
+					(!slen)
+					|| rule strip == w[..(slen - 1)]
+				)
+			) ? (
+				match:TRUE,
+				(N:cond@length, i:1, j:0; match && i < N; i++) ?* (
+					match = cmp_affix_rule_condition[cond[i]type](cond[i]char, w[j], j)
+				),
+				match ? (
+					wlist [=] [
+						pref w[slen..],
+						FALSE
+					]
+				)
+			)
+		)
+	),
+
+	()
+);
+
+catsuffix(aff,afx,wlist,w): (
+	afx@is_Environment ? (
+		len:w@length,
+
+		(R:afx rule@length, r:0; r < R; r++) ?* (
+			rule:afx  rule[r],
+			slen:rule strip@length,
+			cond:rule cond,
+			suff:rule affix,
+
+			debug ? dump("rule", rule, 1),
+			(len >= cond len
+				&& (len + aff FULLSTRIP) > slen
+				&& (
+					(!slen)
+					|| rule strip == w[(len - slen)..]
+				)
+			) ? (
+				match:TRUE,
+				(N:cond@length, i:1, j:0; match && i < N; i++) ?* (
+					match = cmp_affix_rule_condition[cond[i]type](cond[i]char, w[j], j)
+				),
+				match ? (
+					wlist [=] [
+						w[..(len - slen - 1)] suff,
+						afx cross
+					]
+				)
+			)
+		)
+	),
+
+	()
+);
+
+cataffix(aff,flag, wlist,w): (
+	(f:flag[..()]) ?* (
+		debug ? (w, " *.. ", f)@println,
+		catsuffix(aff, aff SFX[f], wlist, w)
+	),
+
+	(f:flag[..()]) ?* (
+		aff PFX[f]cross ? (
+			(wl:wlist[..()]) ?* (
+				wl[1] ? (
+					debug ? (wl[0], " ..*.. ", f)@println,
+					catprefix(aff, aff PFX[f], wlist, wl[0])
+				)
+			)
+		)
+	),
+
+	(f:flag[..()]) ?* (
+		debug ? (w, " ..* ", f)@println,
+		catprefix(aff, aff PFX[f], wlist, w)
+	),
+
+	()
+);
+
+catword(aff,s): (
+	n:(s, "\t #/", '\\')@span_NotInSet,
+	w:s <<< n,
+
+	wlist:[
+		[w, FALSE]
+	],
+
+	noaffix ! (
+		s[n] == '/' ? (
+			s <<= (n + 1),
+			n = (s, "\t #")@span_NotInSet,
+			s <<<= n,
+			aff AF@length > 1 && s@is_Digit ? (
+				s = aff AF[s@to_Integer]
+			)
+		;
+			s = ""
+		),
+
+		s ? (
+			flag:[],
+
+			N(:)s@length,
+			n = aff FLAG type,
+			n ? ((
+				(start:0, end:(n - 1); start < N; start += n, end += n) ?* (
+					flag [=] s[start..end]
+				)
+			);(
+				(start:0; start < N; start += n + 1) ?* (
+					n = (s(start..))@span_Digit,
+					n ? (
+						flag [=] s[start..(start + n - 1)]
+					)
+				)
+			)),
+
+			cataffix(aff, flag, wlist, w)
+		)
+	),
+
+	(wl:wlist[..()]) ?* (
+		wl[0]@println
+	),
+
+	()
+);
+
+catfile(file): (
+	file >>> 4 ?: (
+	".DIC": ".AFF": (
+			file >>= 4,
+			file_aff:file".AFF",
+			file_dic:file".DIC"
+		);
+	".dic": ".aff": (
+			file >>= 4,
+			file_aff:file".aff",
+			file_dic:file".dic"
+		);
+		(
+			file_aff:file".aff",
+			file_dic:file".dic"
+		);
+	),
+
+	affix:AFFIX,
+	noaffix ! (
+		read_affix(file_aff, affix),
+
+		debug ? dump("affix", affix, 0)
+	),
+
+	f:file_dic@open,
+
+	f@is_File ? (
+		s:f@fgetln,
+		verbose ? (file_dic, " [", s@to_Integer, "]")@printerr,
+
+		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
+			s@is_String ? (
+				s[0]@is_Space ! (
+					catword(affix, s)
+				),
+			)
+		),
+
+		f@ferror ? unable_to_read file_dic,
+
+		f@close,
+	;
+		unable_to_open file_dic
+	),
+
+	()
+);
+
+catfiles(file): (
+	f:file@open,
+
+	f@is_File ? (
+		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
+			catfile(s)
+		),
+
+		f@ferror ? unable_to_read file,
+
+		f@close
+	;
+		unable_to_open file
+	),
+
+	()
+);
+
+#==============================================================================
+
+main(argc, argv) : (
+	(continue:TRUE, i:1; continue && i < argc; i++) ?* (
 		args:argv[i],
 
 		args ?: (
-		"-h": "--help": help@printerr;
+		"-h": "--help"   : USAGE@println;
 		"-v": "--verbose": verbose = TRUE;
+		"-n": "--noaffix": noaffix = TRUE;
+		      "--version": VERSION@println;
+		      "--debug"  : debug = TRUE;
 		(args[0] == '@') ? (
-			catfiles(args << 1, verbose)
+			catfiles(args << 1)
 		;
-			catfile(args, verbose)
+			catfile(args)
 		))
+	;
+		USAGE@printerr
 	)
 );
 
 main(@argc, @argv);
-
-
