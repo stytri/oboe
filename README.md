@@ -230,7 +230,7 @@ Normally, non-operator declarations are made in the local environment (_source-f
 
 ##### constant
 
-Non-operator declarations can be made constant (i.e. non-assignable), by enclosing the declaration operator in parenthesis; i.e. `(:)` and `(::)`.
+Non-operator declarations can be made constant (i.e. non-assignable), by enclosing the declaration operator in parenthesis; i.e. `(:)`.
 
 ##### assignment
 
@@ -268,11 +268,11 @@ The `!` operator is as above, except the condition is inverted.
 
 either:
 
-_expression_ `?:` `(` (_case-expression_ `:` _case-operand_ `;`)+ _default-operand_?`)`
+_expression_ `?:` `(` (_case-expression_ `:` _action-expression_ `;`)+ _default-action-expression_?`)`
 
 or:
 
- **Zen** `?:` `(` (_case-expression_ `:` _case-operand_ `;`)+ _default-operand_?`)`
+ **Zen** `?:` `(` (_case-expression_ `:` _action-expression_ `;`)+ _default-action-expression_?`)`
 
 ##### iteration
 
@@ -282,7 +282,7 @@ _iteration-control_ `?*` _iteration-operand_
 
 or:
 
-_iteration-control_ `?*` `(` _iteration-operand_ `;` _no-iteration-operand_ `)`
+_iteration-control_ `?*` `(` _iteration-expression `;` _no-iteration-expression_ `)`
 
 _no-iteration-operand_ is evaluated if the controlling _condition_ never evaluates **true**
 
