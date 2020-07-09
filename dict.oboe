@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.092
+dict 20.07.093
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -9,6 +9,8 @@ options:
 	-h, --help           display this help
 	-v, --verbose        display file names
 	-n, --noaffix        do not expand affixes
+	-p, --noprefix       do not expand prefixes
+	-s, --nosuffix       do not expand suffixes
 	    --version        display program version
 	    --debug          display debugging information
 
@@ -41,9 +43,11 @@ TRUE (:)!;
 unable_to_open file: ("unable to open ", file)@printerr;
 unable_to_read file: ("unable to read ", file)@printerr;
 
-noaffix:FALSE;
-verbose:FALSE;
-debug  :FALSE;
+noaffix :FALSE;
+noprefix:FALSE;
+nosuffix:FALSE;
+verbose :FALSE;
+debug   :FALSE;
 
 #==============================================================================
 
@@ -501,26 +505,32 @@ catsuffix(aff,afx,wlist,w): (
 );
 
 cataffix(aff,flag,wlist,wroot,w): (
-	(f:flag[..()]) ?* (
-		debug ? (w, " *.. ", f)@println,
-		catsuffix(aff, aff SFX[f], wlist, w)
+	nosuffix ! (
+		(f:flag[..()]) ?* (
+			debug ? (w, " *.. ", f)@println,
+			catsuffix(aff, aff SFX[f], wlist, w)
+		)
 	),
 
-	(f:flag[..()]) ?* (
-		aff PFX[f]cross ? (
-			(N:wlist@length, i:wroot; i < N; i++) ?* (
-				wlist[i] ? (
-					wl:wlist[i]@identifier,
-					debug ? (wl, " ..*.. ", f)@println,
-					catprefix(aff, aff PFX[f], wlist, wl)
+	nosuffix || noprefix ! (
+		(f:flag[..()]) ?* (
+			aff PFX[f]cross ? (
+				(N:wlist@length, i:wroot; i < N; i++) ?* (
+					wlist[i] ? (
+						wl:wlist[i]@identifier,
+						debug ? (wl, " ..*.. ", f)@println,
+						catprefix(aff, aff PFX[f], wlist, wl)
+					)
 				)
 			)
 		)
 	),
 
-	(f:flag[..()]) ?* (
-		debug ? (w, " ..* ", f)@println,
-		catprefix(aff, aff PFX[f], wlist, w)
+	noprefix ! (
+		(f:flag[..()]) ?* (
+			debug ? (w, " ..* ", f)@println,
+			catprefix(aff, aff PFX[f], wlist, w)
+		)
 	),
 
 	()
@@ -653,11 +663,13 @@ main(argc, argv) : (
 		args:argv[i],
 
 		args ?: (
-		"-h": "--help"   : USAGE@println;
-		"-v": "--verbose": verbose = TRUE;
-		"-n": "--noaffix": noaffix = TRUE;
-		      "--version": VERSION@println;
-		      "--debug"  : debug = TRUE;
+		"-h": "--help"    : USAGE@println;
+		"-v": "--verbose" : verbose = TRUE;
+		"-n": "--noaffix" : noaffix = TRUE;
+		"-p": "--noprefix": noprefix = TRUE;
+		"-s": "--nosuffix": nosuffix = TRUE;
+		      "--version" : VERSION@println;
+		      "--debug"   : debug = TRUE;
 		(args[0] == '@') ? (
 			catfiles(args << 1)
 		;
