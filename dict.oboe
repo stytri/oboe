@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.095
+dict 20.07.096
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -605,6 +605,7 @@ catfile(file, makeout): (
 
 	makeout ? (
 		verbose ? (">" file_out)@printerr,
+		outfile@close,
 		outfile = (file_out, "w")@open,
 		outfile@is_File ! (
 			unable_to_open file_out
@@ -688,6 +689,7 @@ main(argc, argv) : (
 					makeout = (args[0] == '@'),
 					makeout ! (
 						i++,
+						outfile@close,
 						outfile = (args, "w")@open,
 						continue = outfile@is_File,
 						continue ! (
