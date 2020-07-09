@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.093
+dict 20.07.094
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -8,6 +8,7 @@ dict [options] FILE...
 options:
 	-h, --help           display this help
 	-v, --verbose        display file names
+	-o, --output FILE    output words to FILE
 	-n, --noaffix        do not expand affixes
 	-p, --noprefix       do not expand prefixes
 	-s, --nosuffix       do not expand suffixes
@@ -43,6 +44,7 @@ TRUE (:)!;
 unable_to_open file: ("unable to open ", file)@printerr;
 unable_to_read file: ("unable to read ", file)@printerr;
 
+outfile :(">", "w")@open;
 noaffix :FALSE;
 noprefix:FALSE;
 nosuffix:FALSE;
@@ -626,7 +628,7 @@ catfile(file): (
 		f@close,
 
 		(N:wlist@length, i:0; i < N; i++) ?* (
-			wlist[i]@identifier@println
+			(outfile, wlist[i]@identifier)@fprintln
 		)
 	;
 		unable_to_open file_dic
@@ -665,6 +667,17 @@ main(argc, argv) : (
 		args ?: (
 		"-h": "--help"    : USAGE@println;
 		"-v": "--verbose" : verbose = TRUE;
+		"-o": "--output"  : (
+				i + 1 < argc ? (
+					i++,
+					args = argv[i],
+					outfile = (args, "w")@open,
+					continue = outfile@is_File,
+					continue ! (
+						unable_to_open args
+					)
+				)
+			);
 		"-n": "--noaffix" : noaffix = TRUE;
 		"-p": "--noprefix": noprefix = TRUE;
 		"-s": "--nosuffix": nosuffix = TRUE;
@@ -677,7 +690,9 @@ main(argc, argv) : (
 		))
 	;
 		USAGE@printerr
-	)
+	),
+
+	outfile@close
 );
 
 main(@argc, @argv);
