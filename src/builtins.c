@@ -2791,7 +2791,7 @@ initialise_builtin_operators(
 	bool no_alias
 ) {
 	static struct builtinop const builtinop[] = {
-		BUILTIN("`applicate`"      , applicate      , P_Binding)
+		BUILTIN("`applicate`"      , applicate      , P_Applicate)
 		BUILTIN("`global`"         , global         , P_Interstitial)
 		BUILTIN("`tag`"            , tag            , P_Declarative)
 		BUILTIN("`tag_ref`"        , tag_ref        , P_Declarative)
