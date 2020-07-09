@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.090
+dict 20.07.091
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -457,10 +457,8 @@ catprefix(aff,afx,wlist,w): (
 					match = cmp_affix_rule_condition[cond[i]type](cond[i]char, w[j], j)
 				),
 				match ? (
-					wlist [=] [
-						pref w[slen..],
-						FALSE
-					]
+					wl:pref w[slen..],
+					wlist [wl] = FALSE
 				)
 			)
 		)
@@ -492,10 +490,8 @@ catsuffix(aff,afx,wlist,w): (
 					match = cmp_affix_rule_condition[cond[i]type](cond[i]char, w[j], j)
 				),
 				match ? (
-					wlist [=] [
-						w[..(len - slen - 1)] suff,
-						afx cross
-					]
+					wl:w[..(len - slen - 1)] suff,
+					wlist [wl] = afx cross
 				)
 			)
 		)
@@ -504,7 +500,7 @@ catsuffix(aff,afx,wlist,w): (
 	()
 );
 
-cataffix(aff,flag, wlist,w): (
+cataffix(aff,flag,wlist,wroot,w): (
 	(f:flag[..()]) ?* (
 		debug ? (w, " *.. ", f)@println,
 		catsuffix(aff, aff SFX[f], wlist, w)
@@ -512,10 +508,11 @@ cataffix(aff,flag, wlist,w): (
 
 	(f:flag[..()]) ?* (
 		aff PFX[f]cross ? (
-			(wl:wlist[..()]) ?* (
-				wl[1] ? (
-					debug ? (wl[0], " ..*.. ", f)@println,
-					catprefix(aff, aff PFX[f], wlist, wl[0])
+			(N:wlist@length, i:wroot; i < N; i++) ?* (
+				wlist[i] ? (
+					wl:wlist[i]@identifier,
+					debug ? (wl, " ..*.. ", f)@println,
+					catprefix(aff, aff PFX[f], wlist, wl)
 				)
 			)
 		)
@@ -529,13 +526,12 @@ cataffix(aff,flag, wlist,w): (
 	()
 );
 
-catword(aff,s): (
+catword(aff,wlist,s): (
 	n:(s, "\t #/", '\\')@span_NotInSet,
 	w:s <<< n,
 
-	wlist:[
-		[w, FALSE]
-	],
+	wroot:wlist@length,
+	wlist[w] = FALSE,
 
 	noaffix ! (
 		s[n] == '/' ? (
@@ -567,12 +563,8 @@ catword(aff,s): (
 				)
 			)),
 
-			cataffix(aff, flag, wlist, w)
+			cataffix(aff, flag, wlist, wroot, w)
 		)
-	),
-
-	(wl:wlist[..()]) ?* (
-		wl[0]@println
 	),
 
 	()
@@ -606,13 +598,15 @@ catfile(file): (
 	f:file_dic@open,
 
 	f@is_File ? (
+		wlist:[],
+
 		s:f@fgetln,
 		verbose ? (file_dic, " [", s@to_Integer, "]")@printerr,
 
 		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
 			s@is_String ? (
 				s[0]@is_Space ! (
-					catword(affix, s)
+					catword(affix, wlist, s)
 				),
 			)
 		),
@@ -620,6 +614,10 @@ catfile(file): (
 		f@ferror ? unable_to_read file_dic,
 
 		f@close,
+
+		(N:wlist@length, i:0; i < N; i++) ?* (
+			wlist[i]@identifier@println
+		)
 	;
 		unable_to_open file_dic
 	),
