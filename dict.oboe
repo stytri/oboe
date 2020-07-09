@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.091
+dict 20.07.092
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -630,7 +630,10 @@ catfiles(file): (
 
 	f@is_File ? (
 		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
-			catfile(s)
+			n:s@span_Space,
+			s[n] <> '#' ? (
+				catfile(s << n)
+			)
 		),
 
 		f@ferror ? unable_to_read file,
