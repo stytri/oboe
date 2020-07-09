@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.094
+dict 20.07.095
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -20,7 +20,7 @@ Expands a dictionary file to produce affixed word variants.
 Where FILE is the root name of the file(s) to be processed. More than one file
 may be given; each file will be processed in turn.
 
-If FILE is prefixed with @, then it provides a list of files to be processed,
+If FILE is prefixed with @ then it provides a list of files to be processed,
 with one file per line.
 ";
 
@@ -582,69 +582,82 @@ catword(aff,wlist,s): (
 	()
 );
 
-catfile(file): (
+catfile(file, makeout): (
 	file >>> 4 ?: (
 	".DIC": ".AFF": (
 			file >>= 4,
 			file_aff:file".AFF",
-			file_dic:file".DIC"
+			file_dic:file".DIC",
+			file_out:file".OUT"
 		);
 	".dic": ".aff": (
 			file >>= 4,
 			file_aff:file".aff",
-			file_dic:file".dic"
+			file_dic:file".dic",
+			file_out:file".out"
 		);
 		(
 			file_aff:file".aff",
-			file_dic:file".dic"
+			file_dic:file".dic",
+			file_out:file".out"
 		);
 	),
 
-	affix:AFFIX,
-	noaffix ! (
-		read_affix(file_aff, affix),
-
-		debug ? dump("affix", affix, 0)
+	makeout ? (
+		verbose ? (">" file_out)@printerr,
+		outfile = (file_out, "w")@open,
+		outfile@is_File ! (
+			unable_to_open file_out
+		)
 	),
 
-	f:file_dic@open,
+	outfile@is_File ? (
+		affix:AFFIX,
+		noaffix ! (
+			read_affix(file_aff, affix),
 
-	f@is_File ? (
-		wlist:[],
-
-		s:f@fgetln,
-		verbose ? (file_dic, " [", s@to_Integer, "]")@printerr,
-
-		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
-			s@is_String ? (
-				s[0]@is_Space ! (
-					catword(affix, wlist, s)
-				),
-			)
+			debug ? dump("affix", affix, 0)
 		),
 
-		f@ferror ? unable_to_read file_dic,
+		f:file_dic@open,
 
-		f@close,
+		f@is_File ? (
+			wlist:[],
 
-		(N:wlist@length, i:0; i < N; i++) ?* (
-			(outfile, wlist[i]@identifier)@fprintln
+			s:f@fgetln,
+			verbose ? (file_dic, " [", s@to_Integer, "]")@printerr,
+
+			(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
+				s@is_String ? (
+					s[0]@is_Space ! (
+						catword(affix, wlist, s)
+					),
+				)
+			),
+
+			f@ferror ? unable_to_read file_dic,
+
+			f@close,
+
+			(N:wlist@length, i:0; i < N; i++) ?* (
+				(outfile, wlist[i]@identifier)@fprintln
+			)
+		;
+			unable_to_open file_dic
 		)
-	;
-		unable_to_open file_dic
 	),
 
 	()
 );
 
-catfiles(file): (
+catfiles(file,makeout): (
 	f:file@open,
 
 	f@is_File ? (
 		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
 			n:s@span_Space,
 			s[n] <> '#' ? (
-				catfile(s << n)
+				catfile(s << n, makeout)
 			)
 		),
 
@@ -661,6 +674,8 @@ catfiles(file): (
 #==============================================================================
 
 main(argc, argv) : (
+	makeout:FALSE;
+
 	(continue:TRUE, i:1; continue && i < argc; i++) ?* (
 		args:argv[i],
 
@@ -669,12 +684,15 @@ main(argc, argv) : (
 		"-v": "--verbose" : verbose = TRUE;
 		"-o": "--output"  : (
 				i + 1 < argc ? (
-					i++,
-					args = argv[i],
-					outfile = (args, "w")@open,
-					continue = outfile@is_File,
-					continue ! (
-						unable_to_open args
+					args = argv[i + 1],
+					makeout = (args[0] == '@'),
+					makeout ! (
+						i++,
+						outfile = (args, "w")@open,
+						continue = outfile@is_File,
+						continue ! (
+							unable_to_open args
+						)
 					)
 				)
 			);
@@ -684,9 +702,9 @@ main(argc, argv) : (
 		      "--version" : VERSION@println;
 		      "--debug"   : debug = TRUE;
 		(args[0] == '@') ? (
-			catfiles(args << 1)
+			catfiles(args << 1, makeout)
 		;
-			catfile(args)
+			catfile(args, FALSE)
 		))
 	;
 		USAGE@printerr
