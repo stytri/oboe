@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.103
+dict 20.07.104
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -701,17 +701,17 @@ catfiles(file,idir,odir,makeout): (
 				s[n..m] ?: (
 				"-n": "--noaffix" : (
 						_noaffix:noaffix =: TRUE,
-						catfile(s << o, makeout),
+						catfile(s << o, idir, odir, makeout),
 						noaffix = _noaffix
 					);
 				"-p": "--noprefix": (
 						_noprefix:noprefix =: TRUE,
-						catfile(s << o, makeout),
+						catfile(s << o, idir, odir, makeout),
 						noprefix = _noprefix
 					);
 				"-s": "--nosuffix": (
 						_nosuffix:nosuffix =: TRUE,
-						catfile(s << o, makeout),
+						catfile(s << o, idir, odir, makeout),
 						nosuffix = _nosuffix
 					);
 				(
