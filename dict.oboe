@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.101
+dict 20.07.102
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -28,6 +28,7 @@ with one file per line.
 #==============================================================================
 
 "=" "[=]"(L,R): L[L@length] = R;
+"="  "=:"(L,R): (T:L, L = R, T);
 "+"  "++"(L)  : L += 1;
 "-"  "--"(L)  : L -= 1;
 
@@ -685,10 +686,35 @@ catfiles(file,makeout): (
 
 	f@is_File ? (
 		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
+			s@printerr,
 			n:s@span_Space,
-			s[n] <> '#' ? (
-				catfile(s << n, makeout)
-			)
+			s[n] == '-' ? ((
+				m:n + s((n + 1)..)@span_NotSpace,
+				o:m + s((m + 1)..)@span_Space + 1,
+				s[n..m] ?: (
+				"-n": "--noaffix" : (
+						_noaffix:noaffix =: TRUE,
+						catfile(s << o, makeout),
+						noaffix = _noaffix
+					);
+				"-p": "--noprefix": (
+						_noprefix:noprefix =: TRUE,
+						catfile(s << o, makeout),
+						noprefix = _noprefix
+					);
+				"-s": "--nosuffix": (
+						_nosuffix:nosuffix =: TRUE,
+						catfile(s << o, makeout),
+						nosuffix = _nosuffix
+					);
+				(
+					catfile(s << o, makeout)
+				));
+			);(
+				s[n] <> '#' ? (
+					catfile(s << n, makeout)
+				)
+			))
 		),
 
 		f@ferror ? unable_to_read file,
