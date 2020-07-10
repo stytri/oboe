@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.097
+dict 20.07.100
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -287,10 +287,15 @@ set_affix_rule_condition(field): (
 	cond
 );
 
+set_affix_rule_affix(field): (
+	n:(field, "/")@span_NotInSet,
+	field <<< n
+);
+
 set_affix_rule(afx,field,count): (
 	afx[field[0]]rule [=] [
 		strip: field[1] <> "0" ? (field[1] ; ""),
-		affix: field[2],
+		affix: set_affix_rule_affix(field[2]),
 		cond : set_affix_rule_condition(field[3]),
 		morph: field@length > 4 ? (field[4..] ; [])
 	],
