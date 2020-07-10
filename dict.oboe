@@ -1,20 +1,21 @@
 VERSION(:)"
-dict 20.07.102
+dict 20.07.103
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
 USAGE(:)"
 dict [options] FILE...
 options:
-	-h, --help           display this help
-	-v, --verbose        display file names
-	-o, --output FILE    output words to FILE
-	-n, --noaffix        do not expand affixes
-	-p, --noprefix       do not expand prefixes
-	-s, --nosuffix       do not expand suffixes
-	-w, --nowords        do not output words
-	    --version        display program version
-	    --debug          display debugging information
+	-h, --help             display this help
+	-v, --verbose          display file names
+	-d, --directory DIR    set input DIRectory
+	-o, --output FILE      output words to FILE
+	-n, --noaffix          do not expand affixes
+	-p, --noprefix         do not expand prefixes
+	-s, --nosuffix         do not expand suffixes
+	-w, --nowords          do not output words
+	    --version          display program version
+	    --debug            display debugging information
 
 Expands a dictionary file to produce affixed word variants.
 
@@ -24,6 +25,12 @@ may be given; each file will be processed in turn.
 If FILE is prefixed with @ then it provides a list of files to be processed,
 with one file per line.
 ";
+
+#
+# Tested with dictionaries from https://github.com/wooorm/dictionaries
+#
+# Uses a lot of memory, some dictionaries can cause a program crash.
+#
 
 #==============================================================================
 
@@ -609,24 +616,24 @@ catword(wlist,s): (
 	()
 );
 
-catfile(file, makeout): (
+catfile(file,idir,odir,makeout): (
 	file >>> 4 ?: (
 	".DIC": ".AFF": (
 			file >>= 4,
-			file_aff:file".AFF",
-			file_dic:file".DIC",
-			file_out:file".OUT"
+			file_aff:idir file".AFF",
+			file_dic:idir file".DIC",
+			file_out:odir file".OUT"
 		);
 	".dic": ".aff": (
 			file >>= 4,
-			file_aff:file".aff",
-			file_dic:file".dic",
-			file_out:file".out"
+			file_aff:idir file".aff",
+			file_dic:idir file".dic",
+			file_out:odir file".out"
 		);
 		(
-			file_aff:file".aff",
-			file_dic:file".dic",
-			file_out:file".out"
+			file_aff:idir file".aff",
+			file_dic:idir file".dic",
+			file_out:odir file".out"
 		);
 	),
 
@@ -681,7 +688,7 @@ catfile(file, makeout): (
 	()
 );
 
-catfiles(file,makeout): (
+catfiles(file,idir,odir,makeout): (
 	f:file@open,
 
 	f@is_File ? (
@@ -708,11 +715,11 @@ catfiles(file,makeout): (
 						nosuffix = _nosuffix
 					);
 				(
-					catfile(s << o, makeout)
+					catfile(s << o, idir, odir, makeout)
 				));
 			);(
 				s[n] <> '#' ? (
-					catfile(s << n, makeout)
+					catfile(s << n, idir, odir, makeout)
 				)
 			))
 		),
@@ -730,15 +737,35 @@ catfiles(file,makeout): (
 #==============================================================================
 
 main(argc, argv) : (
-	makeout:FALSE;
+	input_directory :"";
+	output_directory:"";
+	makeout         :FALSE;
 
 	(continue:TRUE, i:1; continue && i < argc; i++) ?* (
 		args:argv[i],
 
 		args ?: (
-		"-h": "--help"    : USAGE@println;
-		"-v": "--verbose" : verbose = TRUE;
-		"-o": "--output"  : (
+		"-h": "--help"     : USAGE@println;
+		"-v": "--verbose"  : verbose = TRUE;
+		"-d": "--directory": (
+				i + 1 < argc ? (
+					i++,
+					output_directory = (input_directory = argv[i])
+				)
+			);
+		"-o": "--output"   : (
+				i + 1 < argc ? (
+					args = argv[i + 1],
+					args ?: (
+					"-d": "--directory": (
+						i++,
+						i + 1 < argc ? (
+								i++,
+								output_directory = argv[i]
+							)
+						)
+					)
+				),
 				i + 1 < argc ? (
 					args = argv[i + 1],
 					makeout = (args[0] == '@'),
@@ -753,16 +780,16 @@ main(argc, argv) : (
 					)
 				)
 			);
-		"-n": "--noaffix" : noaffix = TRUE;
-		"-p": "--noprefix": noprefix = TRUE;
-		"-s": "--nosuffix": nosuffix = TRUE;
-		"-w": "--nowords" : nowords = TRUE;
-		      "--version" : VERSION@println;
-		      "--debug"   : debug = TRUE;
+		"-n": "--noaffix"  : noaffix = TRUE;
+		"-p": "--noprefix" : noprefix = TRUE;
+		"-s": "--nosuffix" : nosuffix = TRUE;
+		"-w": "--nowords"  : nowords = TRUE;
+		      "--version"  : VERSION@println;
+		      "--debug"    : debug = TRUE;
 		(args[0] == '@') ? (
-			catfiles(args << 1, makeout)
+			catfiles(args << 1, input_directory, output_directory, makeout)
 		;
-			catfile(args, FALSE)
+			catfile(args, input_directory, output_directory, FALSE)
 		))
 	;
 		USAGE@printerr
