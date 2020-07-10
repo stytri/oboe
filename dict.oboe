@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.106
+dict 20.07.107
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -13,6 +13,7 @@ options:
 	-n, --noaffix          do not expand affixes
 	-p, --noprefix         do not expand prefixes
 	-s, --nosuffix         do not expand suffixes
+	-c, --nocontin         do not expand continuations
 	-w, --nowords          do not output words
 	    --version          display program version
 	    --debug            display debugging information
@@ -57,6 +58,7 @@ outfile :(">", "w")@open;
 noaffix :FALSE;
 noprefix:FALSE;
 nosuffix:FALSE;
+nocontin:FALSE;
 nowords :FALSE;
 verbose :FALSE;
 debug   :FALSE;
@@ -508,7 +510,7 @@ catprefix(afx,wlist,w): (
 					wl:pref ws,
 					wlist [wl] = FALSE,
 
-					cataffix(rule affix[1], wlist, wroot, wl)
+					nocontin ! cataffix(rule affix[1], wlist, wroot, wl)
 				)
 			)
 		)
@@ -546,7 +548,7 @@ catsuffix(afx,wlist,w): (
 					wl:ws suff,
 					wlist [wl] = afx cross,
 
-					cataffix(rule affix[1], wlist, wroot, wl)
+					nocontin ! cataffix(rule affix[1], wlist, wroot, wl)
 				)
 			)
 		)
@@ -728,6 +730,7 @@ catfiles(file,idir,odir,makeout): (
 					"-n": "--noaffix" : noaffix  = TRUE;
 					"-p": "--noprefix": noprefix = TRUE;
 					"-s": "--nosuffix": nosuffix = TRUE;
+					"-c": "--nocontin": nocontin = TRUE;
 					),
 
 					n:o + s(o..)@span_Space
@@ -807,6 +810,7 @@ main(argc, argv) : (
 		"-n": "--noaffix"  : noaffix = TRUE;
 		"-p": "--noprefix" : noprefix = TRUE;
 		"-s": "--nosuffix" : nosuffix = TRUE;
+		"-c": "--nocontin" : nocontin = TRUE;
 		"-w": "--nowords"  : nowords = TRUE;
 		      "--version"  : VERSION@println;
 		      "--debug"    : debug = TRUE;
