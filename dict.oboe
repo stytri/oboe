@@ -790,14 +790,16 @@ main(argc, argv) : (
 				),
 				i + 1 < argc ? (
 					args = argv[i + 1],
-					makeout = (args[0] == '@'),
-					makeout ! (
-						i++,
-						outfile@close,
-						outfile = (args, "w")@open,
-						continue = outfile@is_File,
-						continue ! (
-							unable_to_open args
+					args[0] <> '-' ? (
+						makeout = (args[0] == '@'),
+						makeout ! (
+							i++,
+							outfile@close,
+							outfile = (args, "w")@open,
+							continue = outfile@is_File,
+							continue ! (
+								unable_to_open args
+							)
 						)
 					)
 				)
