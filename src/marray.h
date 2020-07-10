@@ -46,12 +46,25 @@ marray_free(
 
 //------------------------------------------------------------------------------
 
+#define marray_clear(Arr)                       array_clear(Arr)
+#define marray_length(Arr)                      array_length(Arr)
+#define marray_capacity(Arr)                    array_capacity(Arr)
+#define marray_available(Arr)                   array_available((Arr)
+#define marray_at_capacity(Arr)                 array_at_capacity(Arr)
+#define marray_map_index(Arr,Hash,Index)        array_map_index((Arr),(Hash),(Index))
+#define marray_get_index(Arr,Hash,Cmp,Key,Len)  array_get_index((Arr),(Hash),(Cmp),(Key),(Len))
+#define marray_foreach(Arr,Callback,Context)    array_foreach((Arr),(Callback),(Context))
+
+//------------------------------------------------------------------------------
+
 extern void *
 marray_element_pointer(
 	Array  arr,
 	size_t size,
 	size_t index
 );
+
+//------------------------------------------------------------------------------
 
 #define marray_ptr(Arr,Type,Index)  ( \
 	(Type *)marray_element_pointer((Array)(Arr), sizeof(Type), (Index)) \
@@ -62,7 +75,7 @@ marray_element_pointer(
 )
 
 #define marray_alloc_back(Arr,sizeof_Type)  ( \
-	(array_at_capacity(Arr) ? ( \
+	(marray_at_capacity(Arr) ? ( \
 		marray_expand((Arr), sizeof_Type, 1) \
 	) : ( \
 		true \
@@ -78,7 +91,7 @@ marray_element_pointer(
 )
 
 #define marray_push_back(Arr,Type,Val)  ( \
-	(array_at_capacity(Arr) ? ( \
+	(marray_at_capacity(Arr) ? ( \
 		marray_expand((Arr), sizeof(Type), 1) \
 	) : ( \
 		true \
