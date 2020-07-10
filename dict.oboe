@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.100
+dict 20.07.101
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -12,6 +12,7 @@ options:
 	-n, --noaffix        do not expand affixes
 	-p, --noprefix       do not expand prefixes
 	-s, --nosuffix       do not expand suffixes
+	-w, --nowords        do not output words
 	    --version        display program version
 	    --debug          display debugging information
 
@@ -31,7 +32,7 @@ with one file per line.
 "-"  "--"(L)  : L -= 1;
 
 __:[
-	enum:0
+	enum:0;
 ];
 
 enum(e): (e@is_Integer ? (r:__(enum) = e ; r:__(enum)), __(enum++), r);
@@ -48,6 +49,7 @@ outfile :(">", "w")@open;
 noaffix :FALSE;
 noprefix:FALSE;
 nosuffix:FALSE;
+nowords :FALSE;
 verbose :FALSE;
 debug   :FALSE;
 
@@ -226,6 +228,26 @@ flag_type(arg): (
 	)
 );
 
+get_affix_flags(s,n:): (
+	flag:[],
+
+	N(:)s@length,
+	n ? ((
+		(start:0, end:(n - 1); start < N; start += n, end += n) ?* (
+			flag [=] s[start..end]
+		)
+	);(
+		(start:0; start < N; start += n + 1) ?* (
+			n = (s(start..))@span_Digit,
+			n ? (
+				flag [=] s[start..(start + n - 1)]
+			)
+		)
+	)),
+
+	flag
+);
+
 set_flag(afx,arg,flag): (
 	afx[arg] = flag
 );
@@ -287,14 +309,18 @@ set_affix_rule_condition(field): (
 	cond
 );
 
+set_affix_rule_strip(field): (
+	field <> "0" ? (field ; "")
+);
+
 set_affix_rule_affix(field): (
 	n:(field, "/")@span_NotInSet,
-	field <<< n
+	[field <<< n, get_affix_flags(field << (n + 1), __(affix)FLAG type)]
 );
 
 set_affix_rule(afx,field,count): (
 	afx[field[0]]rule [=] [
-		strip: field[1] <> "0" ? (field[1] ; ""),
+		strip: set_affix_rule_strip(field[1]),
 		affix: set_affix_rule_affix(field[2]),
 		cond : set_affix_rule_condition(field[3]),
 		morph: field@length > 4 ? (field[4..] ; [])
@@ -320,65 +346,65 @@ set_counted(afx,field,count): (
 );
 
 affix_cmd:[
-	NAME                (aff,arg): set_string (aff NAME                , arg);
-	VERSION             (aff,arg): set_string (aff VERSION             , arg);
-	HOME                (aff,arg): set_string (aff HOME                , arg);
-	SET                 (aff,arg): set_string (aff SET                 , split1 arg);
-	FLAG                (aff,arg): set_value  (aff FLAG type           , split1 arg  flag_type);
-	LANG                (aff,arg): set_string (aff LANG                , split1 arg);
-	IGNORE              (aff,arg): set_string (aff IGNORE              , split1 arg);
-	TRY                 (aff,arg): set_string (aff TRY                 , split1 arg);
-	KEY                 (aff,arg): set_value  (aff KEY                 , splitc(arg, "|"));
-	MAP                 (aff,arg): set_counted(aff MAP                 , split1 arg, aff COUNT);
-	AF                  (aff,arg): set_counted(aff AF                  , split1 arg, aff COUNT);
-	AM                  (aff,arg): set_counted(aff AM                  , split1 arg, aff COUNT);
-	REP                 (aff,arg): set_counted(aff REP                 , split2 arg, aff COUNT);
-	PFX                 (aff,arg): set_affix  (aff PFX                 , splitw arg, aff COUNT);
-	SFX                 (aff,arg): set_affix  (aff SFX                 , splitw arg, aff COUNT);
-	BREAK               (aff,arg):(set_counted(aff BREAK               , split1 arg, aff COUNT), aff COUNT ! (aff BREAK = []));
-	PHONE               (aff,arg): set_counted(aff PHONE               , split2 arg, aff COUNT);
-	WARN                (aff,arg): set_flag   (aff FLAG                , split1 arg, WARN);
-	FORBIDWARN          (aff,arg): set_boolean(aff FORBIDWARN          );
-	COMPLEXPREFIXES     (aff,arg): set_boolean(aff COMPLEXPREFIXES     );
-	NOSUGGEST           (aff,arg): set_flag   (aff FLAG                , split1 arg, NOSUGGEST);
-	MAXCPDSUGS          (aff,arg): set_number (aff MAXCPDSUGS          , split1 arg);
-	MAXNGRAMSUGS        (aff,arg): set_number (aff MAXNGRAMSUGS        , split1 arg);
-	MAXDIFF             (aff,arg): set_number (aff MAXDIFF             , split1 arg);
-	ONLYMAXDIFF         (aff,arg): set_boolean(aff ONLYMAXDIFF         );
-	NOSPLITSUGS         (aff,arg): set_boolean(aff NOSPLITSUGS         );
-	SUGSWITHDOTS        (aff,arg): set_boolean(aff SUGSWITHDOTS        );
-	COMPOUNDRULE        (aff,arg): set_counted(aff COMPOUNDRULE        , split1 arg, aff COUNT);
-	COMPOUNDMIN         (aff,arg): set_number (aff COMPOUNDMIN         , split1 arg);
-	COMPOUNDFLAG        (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDFLAG);
-	COMPOUNDBEGIN       (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDBEGIN);
-	COMPOUNDLAST        (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDLAST);
-	COMPOUNDMIDDLE      (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDMIDDLE);
-	ONLYINCOMPOUND      (aff,arg): set_flag   (aff FLAG                , split1 arg, ONLYINCOMPOUND);
-	COMPOUNDPERMITFLAG  (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDPERMITFLAG);
-	COMPOUNDFORBIDFLAG  (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDFORBIDFLAG);
-	COMPOUNDROOT        (aff,arg): set_flag   (aff FLAG                , split1 arg, COMPOUNDROOT);
-	COMPOUNDWORDMAX     (aff,arg): set_number (aff COMPOUNDWORDMAX     , split1 arg);
-	CHECKCOMPOUNDDUP    (aff,arg): set_boolean(aff CHECKCOMPOUNDDUP    );
-	CHECKCOMPOUNDREP    (aff,arg): set_boolean(aff CHECKCOMPOUNDREP    );
-	CHECKCOMPOUNDCASE   (aff,arg): set_boolean(aff CHECKCOMPOUNDCASE   );
-	CHECKCOMPOUNDTRIPLE (aff,arg): set_boolean(aff CHECKCOMPOUNDTRIPLE );
-	SIMPLIFIEDTRIPLE    (aff,arg): set_boolean(aff SIMPLIFIEDTRIPLE    );
-	CHECKCOMPOUNDPATTERN(aff,arg): set_counted(aff CHECKCOMPOUNDPATTERN, splitw arg, aff COUNT);
-	FORCEUCASE          (aff,arg): set_flag   (aff FLAG                , split1 arg, FORCEUCASE);
-	COMPOUNDSYLLABLE    (aff,arg): set_value  (aff COMPOUNDSYLLABLE    , split2 arg);
-	SYLLABLENUM         (aff,arg): set_flag   (aff FLAG                , split1 arg, SYLLABLENUM);
-	CIRCUMFIX           (aff,arg): set_flag   (aff FLAG                , split1 arg, CIRCUMFIX);
-	FORBIDDENWORD       (aff,arg): set_flag   (aff FLAG                , split1 arg, FORBIDDENWORD);
-	FULLSTRIP           (aff,arg): set_boolean(aff FULLSTRIP           );
-	ICONV               (aff,arg): set_counted(aff ICONV               , split2 arg, aff COUNT);
-	OCONV               (aff,arg): set_counted(aff OCONV               , split2 arg, aff COUNT);
-	KEEPCASE            (aff,arg): set_flag   (aff FLAG                , split1 arg, KEEPCASE);
-	LEMMA_PRESENT       (aff,arg): set_flag   (aff FLAG                , split1 arg, LEMMA_PRESENT);
-	NEEDAFFIX           (aff,arg): set_flag   (aff FLAG                , split1 arg, NEEDAFFIX);
-	PSEUDOROOT          (aff,arg): set_flag   (aff FLAG                , split1 arg, PSEUDOROOT);
-	SUBSTANDARD         (aff,arg): set_flag   (aff FLAG                , split1 arg, SUBSTANDARD);
-	WORDCHARS           (aff,arg): set_string (aff WORDCHARS           , split1 arg);
-	CHECKSHARPS         (aff,arg): set_boolean(aff CHECKSHARPS         );
+	NAME                (arg): set_string (__(affix)NAME                , arg);
+	VERSION             (arg): set_string (__(affix)VERSION             , arg);
+	HOME                (arg): set_string (__(affix)HOME                , arg);
+	SET                 (arg): set_string (__(affix)SET                 , split1 arg);
+	FLAG                (arg): set_value  (__(affix)FLAG type           , split1 arg  flag_type);
+	LANG                (arg): set_string (__(affix)LANG                , split1 arg);
+	IGNORE              (arg): set_string (__(affix)IGNORE              , split1 arg);
+	TRY                 (arg): set_string (__(affix)TRY                 , split1 arg);
+	KEY                 (arg): set_value  (__(affix)KEY                 , splitc(arg, "|"));
+	MAP                 (arg): set_counted(__(affix)MAP                 , split1 arg, __(affix)COUNT);
+	AF                  (arg): set_counted(__(affix)AF                  , split1 arg, __(affix)COUNT);
+	AM                  (arg): set_counted(__(affix)AM                  , split1 arg, __(affix)COUNT);
+	REP                 (arg): set_counted(__(affix)REP                 , split2 arg, __(affix)COUNT);
+	PFX                 (arg): set_affix  (__(affix)PFX                 , splitw arg, __(affix)COUNT);
+	SFX                 (arg): set_affix  (__(affix)SFX                 , splitw arg, __(affix)COUNT);
+	BREAK               (arg):(set_counted(__(affix)BREAK               , split1 arg, __(affix)COUNT), __(affix)COUNT ! (__(affix)BREAK = []));
+	PHONE               (arg): set_counted(__(affix)PHONE               , split2 arg, __(affix)COUNT);
+	WARN                (arg): set_flag   (__(affix)FLAG                , split1 arg, WARN);
+	FORBIDWARN          (arg): set_boolean(__(affix)FORBIDWARN          );
+	COMPLEXPREFIXES     (arg): set_boolean(__(affix)COMPLEXPREFIXES     );
+	NOSUGGEST           (arg): set_flag   (__(affix)FLAG                , split1 arg, NOSUGGEST);
+	MAXCPDSUGS          (arg): set_number (__(affix)MAXCPDSUGS          , split1 arg);
+	MAXNGRAMSUGS        (arg): set_number (__(affix)MAXNGRAMSUGS        , split1 arg);
+	MAXDIFF             (arg): set_number (__(affix)MAXDIFF             , split1 arg);
+	ONLYMAXDIFF         (arg): set_boolean(__(affix)ONLYMAXDIFF         );
+	NOSPLITSUGS         (arg): set_boolean(__(affix)NOSPLITSUGS         );
+	SUGSWITHDOTS        (arg): set_boolean(__(affix)SUGSWITHDOTS        );
+	COMPOUNDRULE        (arg): set_counted(__(affix)COMPOUNDRULE        , split1 arg, __(affix)COUNT);
+	COMPOUNDMIN         (arg): set_number (__(affix)COMPOUNDMIN         , split1 arg);
+	COMPOUNDFLAG        (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDFLAG);
+	COMPOUNDBEGIN       (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDBEGIN);
+	COMPOUNDLAST        (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDLAST);
+	COMPOUNDMIDDLE      (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDMIDDLE);
+	ONLYINCOMPOUND      (arg): set_flag   (__(affix)FLAG                , split1 arg, ONLYINCOMPOUND);
+	COMPOUNDPERMITFLAG  (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDPERMITFLAG);
+	COMPOUNDFORBIDFLAG  (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDFORBIDFLAG);
+	COMPOUNDROOT        (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDROOT);
+	COMPOUNDWORDMAX     (arg): set_number (__(affix)COMPOUNDWORDMAX     , split1 arg);
+	CHECKCOMPOUNDDUP    (arg): set_boolean(__(affix)CHECKCOMPOUNDDUP    );
+	CHECKCOMPOUNDREP    (arg): set_boolean(__(affix)CHECKCOMPOUNDREP    );
+	CHECKCOMPOUNDCASE   (arg): set_boolean(__(affix)CHECKCOMPOUNDCASE   );
+	CHECKCOMPOUNDTRIPLE (arg): set_boolean(__(affix)CHECKCOMPOUNDTRIPLE );
+	SIMPLIFIEDTRIPLE    (arg): set_boolean(__(affix)SIMPLIFIEDTRIPLE    );
+	CHECKCOMPOUNDPATTERN(arg): set_counted(__(affix)CHECKCOMPOUNDPATTERN, splitw arg, __(affix)COUNT);
+	FORCEUCASE          (arg): set_flag   (__(affix)FLAG                , split1 arg, FORCEUCASE);
+	COMPOUNDSYLLABLE    (arg): set_value  (__(affix)COMPOUNDSYLLABLE    , split2 arg);
+	SYLLABLENUM         (arg): set_flag   (__(affix)FLAG                , split1 arg, SYLLABLENUM);
+	CIRCUMFIX           (arg): set_flag   (__(affix)FLAG                , split1 arg, CIRCUMFIX);
+	FORBIDDENWORD       (arg): set_flag   (__(affix)FLAG                , split1 arg, FORBIDDENWORD);
+	FULLSTRIP           (arg): set_boolean(__(affix)FULLSTRIP           );
+	ICONV               (arg): set_counted(__(affix)ICONV               , split2 arg, __(affix)COUNT);
+	OCONV               (arg): set_counted(__(affix)OCONV               , split2 arg, __(affix)COUNT);
+	KEEPCASE            (arg): set_flag   (__(affix)FLAG                , split1 arg, KEEPCASE);
+	LEMMA_PRESENT       (arg): set_flag   (__(affix)FLAG                , split1 arg, LEMMA_PRESENT);
+	NEEDAFFIX           (arg): set_flag   (__(affix)FLAG                , split1 arg, NEEDAFFIX);
+	PSEUDOROOT          (arg): set_flag   (__(affix)FLAG                , split1 arg, PSEUDOROOT);
+	SUBSTANDARD         (arg): set_flag   (__(affix)FLAG                , split1 arg, SUBSTANDARD);
+	WORDCHARS           (arg): set_string (__(affix)WORDCHARS           , split1 arg);
+	CHECKSHARPS         (arg): set_boolean(__(affix)CHECKSHARPS         );
 ];
 
 get_affix_args(s,o:): (
@@ -407,7 +433,7 @@ read_affix(file_aff,affix): (
 				n ? (
 					cs:s <<< n,
 					s = get_affix_args(s, n),
-					affix_cmd[cs](affix, s)
+					affix_cmd[cs](s)
 				)
 			)
 		),
@@ -445,7 +471,7 @@ cmp_affix_rule_condition:[
 
 #==============================================================================
 
-catprefix(aff,afx,wlist,w): (
+catprefix(afx,wlist,w): (
 	afx@is_Environment ? (
 		len:w@length,
 
@@ -453,11 +479,11 @@ catprefix(aff,afx,wlist,w): (
 			rule:afx  rule[r],
 			slen:rule strip@length,
 			cond:rule cond,
-			pref:rule affix,
+			pref:rule affix[0],
 
 			debug ? dump("rule", rule, 1),
 			(len >= cond len
-				&& (len + aff FULLSTRIP) > slen
+				&& (len + __(affix)FULLSTRIP) > slen
 				&& (
 					(!slen)
 					|| rule strip == w[..(slen - 1)]
@@ -468,9 +494,13 @@ catprefix(aff,afx,wlist,w): (
 					match = cmp_affix_rule_condition[cond[i]type](cond[i]char, w[j], j)
 				),
 				match ? (
+					wroot:wlist@length,
+
 					ws:w[slen..],
 					wl:pref ws,
-					wlist [wl] = FALSE
+					wlist [wl] = FALSE,
+
+					cataffix(rule affix[1], wlist, wroot, wl)
 				)
 			)
 		)
@@ -479,7 +509,7 @@ catprefix(aff,afx,wlist,w): (
 	()
 );
 
-catsuffix(aff,afx,wlist,w): (
+catsuffix(afx,wlist,w): (
 	afx@is_Environment ? (
 		len:w@length,
 
@@ -487,11 +517,11 @@ catsuffix(aff,afx,wlist,w): (
 			rule:afx  rule[r],
 			slen:rule strip@length,
 			cond:rule cond,
-			suff:rule affix,
+			suff:rule affix[0],
 
 			debug ? dump("rule", rule, 1),
 			(len >= cond len
-				&& (len + aff FULLSTRIP) > slen
+				&& (len + __(affix)FULLSTRIP) > slen
 				&& (
 					(!slen)
 					|| rule strip == w[(len - slen)..]
@@ -502,9 +532,13 @@ catsuffix(aff,afx,wlist,w): (
 					match = cmp_affix_rule_condition[cond[i]type](cond[i]char, w[j], j)
 				),
 				match ? (
+					wroot:wlist@length,
+
 					ws:w[..(len - slen - 1)],
 					wl:ws suff,
-					wlist [wl] = afx cross
+					wlist [wl] = afx cross,
+
+					cataffix(rule affix[1], wlist, wroot, wl)
 				)
 			)
 		)
@@ -513,22 +547,22 @@ catsuffix(aff,afx,wlist,w): (
 	()
 );
 
-cataffix(aff,flag,wlist,wroot,w): (
+cataffix(flag,wlist,wroot,w): (
 	nosuffix ! (
 		(f:flag[..()]) ?* (
 			debug ? (w, " *.. ", f)@println,
-			catsuffix(aff, aff SFX[f], wlist, w)
+			catsuffix(__(affix)SFX[f], wlist, w)
 		)
 	),
 
 	nosuffix || noprefix ! (
 		(f:flag[..()]) ?* (
-			aff PFX[f]cross ? (
+			__(affix)PFX[f]cross ? (
 				(N:wlist@length, i:wroot; i < N; i++) ?* (
 					wlist[i] ? (
 						wl:wlist[i]@identifier,
 						debug ? (wl, " ..*.. ", f)@println,
-						catprefix(aff, aff PFX[f], wlist, wl)
+						catprefix(__(affix)PFX[f], wlist, wl)
 					)
 				)
 			)
@@ -538,14 +572,14 @@ cataffix(aff,flag,wlist,wroot,w): (
 	noprefix ! (
 		(f:flag[..()]) ?* (
 			debug ? (w, " ..* ", f)@println,
-			catprefix(aff, aff PFX[f], wlist, w)
+			catprefix(__(affix)PFX[f], wlist, w)
 		)
 	),
 
 	()
 );
 
-catword(aff,wlist,s): (
+catword(wlist,s): (
 	n:(s, "\t #/", '\\')@span_NotInSet,
 	w:s <<< n,
 
@@ -557,32 +591,17 @@ catword(aff,wlist,s): (
 			s <<= (n + 1),
 			n = (s, "\t #")@span_NotInSet,
 			s <<<= n,
-			aff AF@length > 1 && s@is_Digit ? (
-				s = aff AF[s@to_Integer]
+			__(affix)AF@length > 1 && s@is_Digit ? (
+				s = __(affix)AF[s@to_Integer]
 			)
 		;
 			s = ""
 		),
 
 		s ? (
-			flag:[],
+			flag:get_affix_flags(s, __(affix)FLAG type),
 
-			N(:)s@length,
-			n = aff FLAG type,
-			n ? ((
-				(start:0, end:(n - 1); start < N; start += n, end += n) ?* (
-					flag [=] s[start..end]
-				)
-			);(
-				(start:0; start < N; start += n + 1) ?* (
-					n = (s(start..))@span_Digit,
-					n ? (
-						flag [=] s[start..(start + n - 1)]
-					)
-				)
-			)),
-
-			cataffix(aff, flag, wlist, wroot, w)
+			cataffix(flag, wlist, wroot, w)
 		)
 	),
 
@@ -620,38 +639,41 @@ catfile(file, makeout): (
 	),
 
 	outfile@is_File ? (
-		affix:AFFIX,
-		noaffix ! (
-			read_affix(file_aff, affix),
+		__["affix"]=AFFIX,
 
-			debug ? dump("affix", affix, 0)
+		noaffix ! (
+			read_affix(file_aff, __(affix)),
+
+			debug ? dump("affix", __(affix), 0)
 		),
 
-		f:file_dic@open,
+		nowords ! (
+			f:file_dic@open,
 
-		f@is_File ? (
-			wlist:[],
+			f@is_File ? (
+				wlist:[],
 
-			s:f@fgetln,
-			verbose ? (file_dic, " [", s@to_Integer, "]")@printerr,
+				s:f@fgetln,
+				verbose ? (file_dic, " [", s@to_Integer, "]")@printerr,
 
-			(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
-				s@is_String ? (
-					s[0]@is_Space ! (
-						catword(affix, wlist, s)
-					),
+				(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
+					s@is_String ? (
+						s[0]@is_Space ! (
+							catword(wlist, s)
+						),
+					)
+				),
+
+				f@ferror ? unable_to_read file_dic,
+
+				f@close,
+
+				(N:wlist@length, i:0; i < N; i++) ?* (
+					(outfile, wlist[i]@identifier)@fprintln
 				)
-			),
-
-			f@ferror ? unable_to_read file_dic,
-
-			f@close,
-
-			(N:wlist@length, i:0; i < N; i++) ?* (
-				(outfile, wlist[i]@identifier)@fprintln
+			;
+				unable_to_open file_dic
 			)
-		;
-			unable_to_open file_dic
 		)
 	),
 
@@ -708,6 +730,7 @@ main(argc, argv) : (
 		"-n": "--noaffix" : noaffix = TRUE;
 		"-p": "--noprefix": noprefix = TRUE;
 		"-s": "--nosuffix": nosuffix = TRUE;
+		"-w": "--nowords" : nowords = TRUE;
 		      "--version" : VERSION@println;
 		      "--debug"   : debug = TRUE;
 		(args[0] == '@') ? (
