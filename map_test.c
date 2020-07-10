@@ -84,6 +84,10 @@ static int cmp(
 	return 0;
 }
 
+static size_t collision     = 0;
+static size_t ncollisions   = 0;
+static size_t maxcollisions = 0;
+
 static int map_print_ndigits = 9;
 
 static int
@@ -99,8 +103,14 @@ map_print(
 	if(last_hash != hash) {
 		last_hash = hash;
 		printf("#%16.16llx", hash);
+		collision = 0;
 	} else {
 		printf("+%16.16s", "");
+		collision++;
+		ncollisions++;
+		if(maxcollisions < collision) {
+			maxcollisions = collision;
+		}
 	}
 	int n = entry->len;
 	printf("[%*zu] %*.*s\n", map_print_ndigits, index, n, n, entry->cs);
@@ -245,7 +255,11 @@ int main(
 		}
 
 		if(verbose) {
-			puts("..Finished");
+			if(ncollisions > 0) {
+				printf("..Finished: collisions %zu : %zu\n", ncollisions, maxcollisions);
+			} else {
+				puts("..Finished");
+			}
 		}
 	}
 }
