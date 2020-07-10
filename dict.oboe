@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.105
+dict 20.07.106
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -705,7 +705,6 @@ catfiles(file,idir,odir,makeout): (
 
 	f@is_File ? (
 		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
-			s@printerr,
 			n:s@span_Space,
 			s[n] == '-' ? ((
 				_makeout :makeout,
