@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.107
+dict 20.07.110
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -10,6 +10,7 @@ options:
 	-v, --verbose          display file names
 	-d, --directory DIR    set input DIRectory
 	-o, --output FILE      output words to FILE
+	-m, --minimal          only read the minimum necessary data
 	-n, --noaffix          do not expand affixes
 	-p, --noprefix         do not expand prefixes
 	-s, --nosuffix         do not expand suffixes
@@ -57,6 +58,7 @@ unable_to_open file: ("unable to open ", file)@printerr;
 unable_to_read file: ("unable to read ", file)@printerr;
 
 outfile :(">", "w")@open;
+minimal :FALSE;
 noaffix :FALSE;
 noprefix:FALSE;
 nosuffix:FALSE;
@@ -336,10 +338,10 @@ set_affix_rule_affix(field): (
 
 set_affix_rule(afx,field,count): (
 	afx[field[0]]rule [=] [
-		strip: set_affix_rule_strip(field[1]),
-		affix: set_affix_rule_affix(field[2]),
-		cond : set_affix_rule_condition(field[3]),
-		morph: field@length > 4 ? (field[4..] ; ())
+		strip:           set_affix_rule_strip(field[1]),
+		affix:           set_affix_rule_affix(field[2]),
+		cond :           set_affix_rule_condition(field[3]),
+		morph: minimal ! field@length > 4 ? (field[4..] ; ())
 	],
 	count--
 );
@@ -362,65 +364,65 @@ set_counted(afx,field,count): (
 );
 
 affix_cmd:[
-	NAME                (arg): set_string (__(affix)NAME                , arg);
-	VERSION             (arg): set_string (__(affix)VERSION             , arg);
-	HOME                (arg): set_string (__(affix)HOME                , arg);
-	SET                 (arg): set_string (__(affix)SET                 , split1 arg);
-	FLAG                (arg): set_value  (__(affix)FLAG type           , split1 arg  flag_type);
-	LANG                (arg): set_string (__(affix)LANG                , split1 arg);
-	IGNORE              (arg): set_string (__(affix)IGNORE              , split1 arg);
-	TRY                 (arg): set_string (__(affix)TRY                 , split1 arg);
-	KEY                 (arg): set_value  (__(affix)KEY                 , splitc(arg, "|"));
-	MAP                 (arg): set_counted(__(affix)MAP                 , split1 arg, __(affix)COUNT);
-	AF                  (arg): set_counted(__(affix)AF                  , split1 arg, __(affix)COUNT);
-	AM                  (arg): set_counted(__(affix)AM                  , split1 arg, __(affix)COUNT);
-	REP                 (arg): set_counted(__(affix)REP                 , split2 arg, __(affix)COUNT);
-	PFX                 (arg): set_affix  (__(affix)PFX                 , splitw arg, __(affix)COUNT);
-	SFX                 (arg): set_affix  (__(affix)SFX                 , splitw arg, __(affix)COUNT);
-	BREAK               (arg):(set_counted(__(affix)BREAK               , split1 arg, __(affix)COUNT), __(affix)COUNT ! (__(affix)BREAK = []));
-	PHONE               (arg): set_counted(__(affix)PHONE               , split2 arg, __(affix)COUNT);
-	WARN                (arg): set_flag   (__(affix)FLAG                , split1 arg, WARN);
-	FORBIDWARN          (arg): set_boolean(__(affix)FORBIDWARN          );
-	COMPLEXPREFIXES     (arg): set_boolean(__(affix)COMPLEXPREFIXES     );
-	NOSUGGEST           (arg): set_flag   (__(affix)FLAG                , split1 arg, NOSUGGEST);
-	MAXCPDSUGS          (arg): set_number (__(affix)MAXCPDSUGS          , split1 arg);
-	MAXNGRAMSUGS        (arg): set_number (__(affix)MAXNGRAMSUGS        , split1 arg);
-	MAXDIFF             (arg): set_number (__(affix)MAXDIFF             , split1 arg);
-	ONLYMAXDIFF         (arg): set_boolean(__(affix)ONLYMAXDIFF         );
-	NOSPLITSUGS         (arg): set_boolean(__(affix)NOSPLITSUGS         );
-	SUGSWITHDOTS        (arg): set_boolean(__(affix)SUGSWITHDOTS        );
-	COMPOUNDRULE        (arg): set_counted(__(affix)COMPOUNDRULE        , split1 arg, __(affix)COUNT);
-	COMPOUNDMIN         (arg): set_number (__(affix)COMPOUNDMIN         , split1 arg);
-	COMPOUNDFLAG        (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDFLAG);
-	COMPOUNDBEGIN       (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDBEGIN);
-	COMPOUNDLAST        (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDLAST);
-	COMPOUNDMIDDLE      (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDMIDDLE);
-	ONLYINCOMPOUND      (arg): set_flag   (__(affix)FLAG                , split1 arg, ONLYINCOMPOUND);
-	COMPOUNDPERMITFLAG  (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDPERMITFLAG);
-	COMPOUNDFORBIDFLAG  (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDFORBIDFLAG);
-	COMPOUNDROOT        (arg): set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDROOT);
-	COMPOUNDWORDMAX     (arg): set_number (__(affix)COMPOUNDWORDMAX     , split1 arg);
-	CHECKCOMPOUNDDUP    (arg): set_boolean(__(affix)CHECKCOMPOUNDDUP    );
-	CHECKCOMPOUNDREP    (arg): set_boolean(__(affix)CHECKCOMPOUNDREP    );
-	CHECKCOMPOUNDCASE   (arg): set_boolean(__(affix)CHECKCOMPOUNDCASE   );
-	CHECKCOMPOUNDTRIPLE (arg): set_boolean(__(affix)CHECKCOMPOUNDTRIPLE );
-	SIMPLIFIEDTRIPLE    (arg): set_boolean(__(affix)SIMPLIFIEDTRIPLE    );
-	CHECKCOMPOUNDPATTERN(arg): set_counted(__(affix)CHECKCOMPOUNDPATTERN, splitw arg, __(affix)COUNT);
-	FORCEUCASE          (arg): set_flag   (__(affix)FLAG                , split1 arg, FORCEUCASE);
-	COMPOUNDSYLLABLE    (arg): set_value  (__(affix)COMPOUNDSYLLABLE    , split2 arg);
-	SYLLABLENUM         (arg): set_flag   (__(affix)FLAG                , split1 arg, SYLLABLENUM);
-	CIRCUMFIX           (arg): set_flag   (__(affix)FLAG                , split1 arg, CIRCUMFIX);
-	FORBIDDENWORD       (arg): set_flag   (__(affix)FLAG                , split1 arg, FORBIDDENWORD);
-	FULLSTRIP           (arg): set_boolean(__(affix)FULLSTRIP           );
-	ICONV               (arg): set_counted(__(affix)ICONV               , split2 arg, __(affix)COUNT);
-	OCONV               (arg): set_counted(__(affix)OCONV               , split2 arg, __(affix)COUNT);
-	KEEPCASE            (arg): set_flag   (__(affix)FLAG                , split1 arg, KEEPCASE);
-	LEMMA_PRESENT       (arg): set_flag   (__(affix)FLAG                , split1 arg, LEMMA_PRESENT);
-	NEEDAFFIX           (arg): set_flag   (__(affix)FLAG                , split1 arg, NEEDAFFIX);
-	PSEUDOROOT          (arg): set_flag   (__(affix)FLAG                , split1 arg, PSEUDOROOT);
-	SUBSTANDARD         (arg): set_flag   (__(affix)FLAG                , split1 arg, SUBSTANDARD);
-	WORDCHARS           (arg): set_string (__(affix)WORDCHARS           , split1 arg);
-	CHECKSHARPS         (arg): set_boolean(__(affix)CHECKSHARPS         );
+	NAME                (arg): minimal ! set_string (__(affix)NAME                , arg);
+	VERSION             (arg): minimal ! set_string (__(affix)VERSION             , arg);
+	HOME                (arg): minimal ! set_string (__(affix)HOME                , arg);
+	SET                 (arg): minimal ! set_string (__(affix)SET                 , split1 arg);
+	FLAG                (arg):           set_value  (__(affix)FLAG type           , split1 arg  flag_type);
+	LANG                (arg): minimal ! set_string (__(affix)LANG                , split1 arg);
+	IGNORE              (arg): minimal ! set_string (__(affix)IGNORE              , split1 arg);
+	TRY                 (arg): minimal ! set_string (__(affix)TRY                 , split1 arg);
+	KEY                 (arg): minimal ! set_value  (__(affix)KEY                 , splitc(arg, "|"));
+	MAP                 (arg): minimal ! set_counted(__(affix)MAP                 , split1 arg, __(affix)COUNT);
+	AF                  (arg):           set_counted(__(affix)AF                  , split1 arg, __(affix)COUNT);
+	AM                  (arg): minimal ! set_counted(__(affix)AM                  , split1 arg, __(affix)COUNT);
+	REP                 (arg): minimal ! set_counted(__(affix)REP                 , split2 arg, __(affix)COUNT);
+	PFX                 (arg):           set_affix  (__(affix)PFX                 , splitw arg, __(affix)COUNT);
+	SFX                 (arg):           set_affix  (__(affix)SFX                 , splitw arg, __(affix)COUNT);
+	BREAK               (arg): minimal !(set_counted(__(affix)BREAK               , split1 arg, __(affix)COUNT), __(affix)COUNT ! (__(affix)BREAK = []));
+	PHONE               (arg): minimal ! set_counted(__(affix)PHONE               , split2 arg, __(affix)COUNT);
+	WARN                (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, WARN);
+	FORBIDWARN          (arg): minimal ! set_boolean(__(affix)FORBIDWARN          );
+	COMPLEXPREFIXES     (arg): minimal ! set_boolean(__(affix)COMPLEXPREFIXES     );
+	NOSUGGEST           (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, NOSUGGEST);
+	MAXCPDSUGS          (arg): minimal ! set_number (__(affix)MAXCPDSUGS          , split1 arg);
+	MAXNGRAMSUGS        (arg): minimal ! set_number (__(affix)MAXNGRAMSUGS        , split1 arg);
+	MAXDIFF             (arg): minimal ! set_number (__(affix)MAXDIFF             , split1 arg);
+	ONLYMAXDIFF         (arg): minimal ! set_boolean(__(affix)ONLYMAXDIFF         );
+	NOSPLITSUGS         (arg): minimal ! set_boolean(__(affix)NOSPLITSUGS         );
+	SUGSWITHDOTS        (arg): minimal ! set_boolean(__(affix)SUGSWITHDOTS        );
+	COMPOUNDRULE        (arg): minimal ! set_counted(__(affix)COMPOUNDRULE        , split1 arg, __(affix)COUNT);
+	COMPOUNDMIN         (arg): minimal ! set_number (__(affix)COMPOUNDMIN         , split1 arg);
+	COMPOUNDFLAG        (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDFLAG);
+	COMPOUNDBEGIN       (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDBEGIN);
+	COMPOUNDLAST        (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDLAST);
+	COMPOUNDMIDDLE      (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDMIDDLE);
+	ONLYINCOMPOUND      (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, ONLYINCOMPOUND);
+	COMPOUNDPERMITFLAG  (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDPERMITFLAG);
+	COMPOUNDFORBIDFLAG  (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDFORBIDFLAG);
+	COMPOUNDROOT        (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, COMPOUNDROOT);
+	COMPOUNDWORDMAX     (arg): minimal ! set_number (__(affix)COMPOUNDWORDMAX     , split1 arg);
+	CHECKCOMPOUNDDUP    (arg): minimal ! set_boolean(__(affix)CHECKCOMPOUNDDUP    );
+	CHECKCOMPOUNDREP    (arg): minimal ! set_boolean(__(affix)CHECKCOMPOUNDREP    );
+	CHECKCOMPOUNDCASE   (arg): minimal ! set_boolean(__(affix)CHECKCOMPOUNDCASE   );
+	CHECKCOMPOUNDTRIPLE (arg): minimal ! set_boolean(__(affix)CHECKCOMPOUNDTRIPLE );
+	SIMPLIFIEDTRIPLE    (arg): minimal ! set_boolean(__(affix)SIMPLIFIEDTRIPLE    );
+	CHECKCOMPOUNDPATTERN(arg): minimal ! set_counted(__(affix)CHECKCOMPOUNDPATTERN, splitw arg, __(affix)COUNT);
+	FORCEUCASE          (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, FORCEUCASE);
+	COMPOUNDSYLLABLE    (arg): minimal ! set_value  (__(affix)COMPOUNDSYLLABLE    , split2 arg);
+	SYLLABLENUM         (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, SYLLABLENUM);
+	CIRCUMFIX           (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, CIRCUMFIX);
+	FORBIDDENWORD       (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, FORBIDDENWORD);
+	FULLSTRIP           (arg): minimal ! set_boolean(__(affix)FULLSTRIP           );
+	ICONV               (arg): minimal ! set_counted(__(affix)ICONV               , split2 arg, __(affix)COUNT);
+	OCONV               (arg): minimal ! set_counted(__(affix)OCONV               , split2 arg, __(affix)COUNT);
+	KEEPCASE            (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, KEEPCASE);
+	LEMMA_PRESENT       (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, LEMMA_PRESENT);
+	NEEDAFFIX           (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, NEEDAFFIX);
+	PSEUDOROOT          (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, PSEUDOROOT);
+	SUBSTANDARD         (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, SUBSTANDARD);
+	WORDCHARS           (arg): minimal ! set_string (__(affix)WORDCHARS           , split1 arg);
+	CHECKSHARPS         (arg): minimal ! set_boolean(__(affix)CHECKSHARPS         );
 ];
 
 get_affix_args(s,o:): (
@@ -813,6 +815,7 @@ main(argc, argv) : (
 					)
 				)
 			);
+		"-m": "--minimal"  : minimal = TRUE;
 		"-n": "--noaffix"  : noaffix = TRUE;
 		"-p": "--noprefix" : noprefix = TRUE;
 		"-s": "--nosuffix" : nosuffix = TRUE;
