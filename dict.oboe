@@ -46,6 +46,8 @@ __:[
 
 enum(e): (e@is_Integer ? (r:__(enum) = e ; r:__(enum)), __(enum++), r);
 
+lengthof(X): (X@is_Zen ! (X@length ; 0));
+
 FALSE(:)?;
 TRUE (:)!;
 
@@ -289,7 +291,7 @@ set_affix_class(afx,field,count) : (
 set_affix_rule_condition(field): (
 	cond:[len:0],
 
-	field <> "." ? ((N(:)field@length, start:0, end:; start < N; start = end) ?* (
+	field <> "." ? ((N(:)lengthof(field), start:0, end:; start < N; start = end) ?* (
 		end = start + (field(start..), "[")@span_NotInSet,
 		end > start ? ((
 			cond [=] [
@@ -320,12 +322,16 @@ set_affix_rule_condition(field): (
 );
 
 set_affix_rule_strip(field): (
-	field <> "0" ? (field ; "")
+	field <> "0" ? (field ; ())
 );
 
 set_affix_rule_affix(field): (
 	n:(field, "/")@span_NotInSet,
-	[field <<< n, get_affix_flags(field << (n + 1), __(affix)FLAG type)]
+	n < field@length ? (
+		[field <<< n, get_affix_flags(field << (n + 1), __(affix)FLAG type)]
+	;
+		[field <<< n, ()]
+	)
 );
 
 set_affix_rule(afx,field,count): (
@@ -333,7 +339,7 @@ set_affix_rule(afx,field,count): (
 		strip: set_affix_rule_strip(field[1]),
 		affix: set_affix_rule_affix(field[2]),
 		cond : set_affix_rule_condition(field[3]),
-		morph: field@length > 4 ? (field[4..] ; [])
+		morph: field@length > 4 ? (field[4..] ; ())
 	],
 	count--
 );
@@ -485,9 +491,9 @@ catprefix(afx,wlist,w): (
 	afx@is_Environment ? (
 		len:w@length,
 
-		(R:afx rule@length, r:0; r < R; r++) ?* (
+		(R:lengthof(afx rule), r:0; r < R; r++) ?* (
 			rule:afx  rule[r],
-			slen:rule strip@length,
+			slen:lengthof(rule strip),
 			cond:rule cond,
 			pref:rule affix[0],
 
@@ -523,9 +529,9 @@ catsuffix(afx,wlist,w): (
 	afx@is_Environment ? (
 		len:w@length,
 
-		(R:afx rule@length, r:0; r < R; r++) ?* (
+		(R:lengthof(afx rule), r:0; r < R; r++) ?* (
 			rule:afx  rule[r],
-			slen:rule strip@length,
+			slen:lengthof(rule strip),
 			cond:rule cond,
 			suff:rule affix[0],
 
