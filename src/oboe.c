@@ -176,6 +176,7 @@ main(
 		{19, "-n, --noeval",                    "parse, but do not evaluate" },
 		{ 9, "-g, --graph FILE",                "output graphs of the AST to FILE in DOT format" },
 		{18, "-T, --timed",                     "timed execution" },
+		{17, "-S, --stats",                     "report gc stats" },
 
 		{20, "-m, --math",                      "enable math functions in the global namespace" },
 		{21, "-r, --rand GENERATOR",            "select random number GENERATOR" },
@@ -196,6 +197,7 @@ main(
 	bool          has_math      = false;
 	bool          list_builtins = false;
 	bool          timed         = false;
+	bool          stats         = false;
 	bool          quiet         = false;
 	bool          doeval        = true;
 	FILE         *gfile         = NULL;
@@ -266,6 +268,10 @@ main(
 
 			case 13:
 				list_builtins = true;
+				break;
+
+			case 17:
+				stats = true;
 				break;
 
 			case 18:
@@ -384,6 +390,18 @@ end:
 	if(gfile) {
 		graph_footer(gfile);
 		fclose(gfile);
+	}
+
+	if(stats) {
+		struct gc_stats const *sp = gc_stats();
+		printf("size        : %zu\n", sp->size);
+		printf("maximum     : %zu\n", sp->size_max);
+		printf("allocated   : %zu\n", sp->size_allocated);
+		printf("deallocated : %zu\n", sp->size_deallocated);
+		printf("stack depth : %zu\n", sp->stack_depth);
+		printf("born objects: %zu\n", sp->object_born);
+		printf("live objects: %zu\n", sp->object_live);
+		printf("dead objects: %zu\n", sp->object_died);
 	}
 
 	return exit_status;

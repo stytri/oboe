@@ -40,9 +40,9 @@ struct gc {
 #define GC_MAX  (BIT_ROUND(SIZE_MAX/2) - GC_MIN)
 #define GC_TAG  ((uintptr_t)0x3)
 
-static size_t       _gc_total_size   = 0;
+static struct gc_stats _gc_stats =  { 0, 0, 0, 0, 0, 0, 0, 0 };
+
 static size_t       _gc_sizeof_stack = 0;
-static size_t       _gc_topof_stack  = 0;
 static void const **_gc_stack        = NULL;
 static uintptr_t    _gc_list         = ((uintptr_t)NULL & ~GC_TAG) | 0x1;
 
@@ -53,8 +53,8 @@ _gc_in_limit(
 	size_t count,
 	size_t size
 ) {
-	return (GC_MAX >= _gc_total_size)
-		&& (((GC_MAX - _gc_total_size) / count) >= size)
+	return (GC_MAX >= _gc_stats.size)
+		&& (((GC_MAX - _gc_stats.size) / count) >= size)
 	;
 }
 
@@ -92,7 +92,7 @@ static inline void
 _gc_push(
 	void const *ptr
 ) {
-	if((_gc_topof_stack == _gc_sizeof_stack)
+	if((_gc_stats.stack_depth == _gc_sizeof_stack)
 		&& (_gc_sizeof_stack <= GC_MAX)
 	) {
 		size_t       new_sizeof_stack = _gc_sizeof_stack ? (_gc_sizeof_stack * 2) : GC_MIN;
@@ -104,7 +104,7 @@ _gc_push(
 		_gc_sizeof_stack = new_sizeof_stack;
 	}
 
-	_gc_stack[_gc_topof_stack++] = ptr;
+	_gc_stack[_gc_stats.stack_depth++] = ptr;
 
 	return;
 }
@@ -199,6 +199,29 @@ _gc_set(
 	return _gc_wrap(ptr);
 }
 
+static inline void
+_gc_stats_add_object(
+	size_t size
+) {
+	_gc_stats.size += size;
+	if(_gc_stats.size_max < _gc_stats.size) {
+		_gc_stats.size_max = _gc_stats.size;
+	}
+	_gc_stats.size_allocated += size;
+	_gc_stats.object_born++;
+	_gc_stats.object_live++;
+}
+
+static inline void
+_gc_stats_remove_object(
+	size_t size
+) {
+	_gc_stats.size -= size;
+	_gc_stats.size_deallocated += size;
+	_gc_stats.object_live--;
+	_gc_stats.object_died++;
+}
+
 //------------------------------------------------------------------------------
 
 void *
@@ -216,7 +239,7 @@ gc_malloc(
 		if(ptr) {
 			memset(ptr, 0, GC_MIN);
 			ptr = _gc_set(ptr, size, mark, sweep);
-			_gc_total_size += size;
+			_gc_stats_add_object(size);
 		}
 	}
 
@@ -239,7 +262,7 @@ gc_calloc(
 		ptr  =  (calloc)(1, size);
 		if(ptr) {
 			ptr = _gc_set(ptr, size, mark, sweep);
-			_gc_total_size += size;
+			_gc_stats_add_object(size);
 		}
 	}
 
@@ -272,9 +295,11 @@ gc_realloc(
 		ptr = (realloc)((void *)ptr, size);
 		if(ptr) {
 			if(oldz < size) {
-				_gc_total_size += (size - oldz);
+				_gc_stats.size             += (size - oldz);
+				_gc_stats.size_allocated   += (size - oldz);
 			} else {
-				_gc_total_size -= (oldz - size);
+				_gc_stats.size             -= (oldz - size);
+				_gc_stats.size_deallocated -= (oldz - size);
 			}
 
 			_gc(ptr)->size = size;
@@ -294,7 +319,7 @@ gc_free(
 		if(_gc(ptr)->link == 0) {
 			_gc(ptr)->mark  = _gc_no_mark;
 			_gc(ptr)->sweep = _gc_no_sweep;
-			_gc_total_size -= _gc(ptr)->size;
+			_gc_stats_remove_object(_gc(ptr)->size);
 			(free)((void *)ptr);
 		}
 	}
@@ -322,7 +347,7 @@ gc_pmalloc(
 		if(ptr) {
 			memset(ptr, 0, GC_MIN);
 			ptr = _gc_set(ptr, size, mark, sweep);
-			_gc_total_size += size;
+			_gc_stats_add_object(size);
 		}
 	}
 
@@ -338,7 +363,7 @@ gc_pfree(
 		if(_gc(ptr)->link == 0) {
 			_gc(ptr)->mark  = _gc_no_mark;
 			_gc(ptr)->sweep = _gc_no_sweep;
-			_gc_total_size -= _gc(ptr)->size;
+			_gc_stats_remove_object(_gc(ptr)->size);
 		}
 	}
 
@@ -371,22 +396,22 @@ size_t
 gc_total_size(
 	void
 ) {
-	return _gc_total_size;
+	return _gc_stats.size;
 }
 
 size_t
 gc_topof_stack(
 	void
 ) {
-	return _gc_topof_stack;
+	return _gc_stats.stack_depth;
 }
 
 void
 gc_revert(
 	size_t top
 ) {
-	if(top < _gc_topof_stack) {
-		_gc_topof_stack = top;
+	if(top < _gc_stats.stack_depth) {
+		_gc_stats.stack_depth = top;
 	}
 
 	return;
@@ -446,7 +471,7 @@ gc_mark_and_sweep(
 
 	uintptr_t const tag = (_gc_list ^= GC_TAG) & GC_TAG;
 
-	for(size_t i = _gc_topof_stack; i-- > 0; ) {
+	for(size_t i = _gc_stats.stack_depth; i-- > 0; ) {
 		_gc_mark(_gc_stack[i]);
 	}
 
@@ -468,3 +493,13 @@ gc_mark_and_sweep(
 	return;
 }
 
+//------------------------------------------------------------------------------
+
+struct gc_stats const *
+gc_stats(
+	void
+) {
+	static struct gc_stats stats;
+
+	return memcpy(&stats, &_gc_stats, sizeof(_gc_stats));
+}

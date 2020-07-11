@@ -146,6 +146,24 @@ gc_mark_and_sweep(
 
 //------------------------------------------------------------------------------
 
+struct gc_stats {
+	size_t size;
+	size_t size_max;
+	size_t size_allocated;
+	size_t size_deallocated;
+	size_t stack_depth;
+	size_t object_live;
+	size_t object_born;
+	size_t object_died;
+};
+
+extern struct gc_stats const *
+gc_stats(
+	void
+);
+
+//------------------------------------------------------------------------------
+
 #ifdef __cplusplus
 }
 #endif
