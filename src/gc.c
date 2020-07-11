@@ -40,7 +40,7 @@ struct gc {
 #define GC_MAX  (BIT_ROUND(SIZE_MAX/2) - GC_MIN)
 #define GC_TAG  ((uintptr_t)0x3)
 
-static struct gc_stats _gc_stats =  { 0, 0, 0, 0, 0, 0, 0, 0 };
+static struct gc_stats _gc_stats =  { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 static size_t       _gc_sizeof_stack = 0;
 static void const **_gc_stack        = NULL;
@@ -105,6 +105,9 @@ _gc_push(
 	}
 
 	_gc_stack[_gc_stats.stack_depth++] = ptr;
+	if(_gc_stats.stack_max < _gc_stats.stack_depth) {
+		_gc_stats.stack_max = _gc_stats.stack_depth;
+	}
 
 	return;
 }

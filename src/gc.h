@@ -152,6 +152,7 @@ struct gc_stats {
 	size_t size_allocated;
 	size_t size_deallocated;
 	size_t stack_depth;
+	size_t stack_max;
 	size_t object_live;
 	size_t object_born;
 	size_t object_died;

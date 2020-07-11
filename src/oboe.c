@@ -399,6 +399,7 @@ end:
 		printf("allocated   : %zu\n", sp->size_allocated);
 		printf("deallocated : %zu\n", sp->size_deallocated);
 		printf("stack depth : %zu\n", sp->stack_depth);
+		printf("stack max   : %zu\n", sp->stack_max);
 		printf("born objects: %zu\n", sp->object_born);
 		printf("live objects: %zu\n", sp->object_live);
 		printf("dead objects: %zu\n", sp->object_died);
