@@ -26,7 +26,7 @@ SOFTWARE.
 
 #include "stdtypes.h"
 #include "string.h"
-#include "array.h"
+#include "marray.h"
 #include "bitmac.h"
 #include "sloc.h"
 

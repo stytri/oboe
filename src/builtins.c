@@ -551,10 +551,10 @@ in_range_1(
 ) {
 	if(ast_isEnvironment(expr)) {
 		Array        arr = expr->m.env;
-		size_t const N   = array_length(arr);
+		size_t const N   = marray_length(arr);
 
 		for(size_t i = 0; i < N; i++) {
-			expr = array_at(arr, Ast, i);
+			expr = marray_at(arr, Ast, i);
 
 			if(!in_range_1(lexpr, expr, rexpr)) {
 				return false;
@@ -834,7 +834,7 @@ builtin_loop_array(
 			iexpr = eval(env, iexpr->m.rexpr);
 		}
 
-		size_t const length = array_length(arr);
+		size_t const length = marray_length(arr);
 		size_t const last   = length - !!length;
 		size_t       index  = 0;
 		size_t       end    = last;
@@ -865,7 +865,7 @@ builtin_loop_array(
 		}
 
 		if(length > 0) for(size_t ts = gc_topof_stack();;) {
-			texpr->m.rexpr = array_at(arr, Ast, index);
+			texpr->m.rexpr = marray_at(arr, Ast, index);
 
 			result = refeval(env, rexpr);
 
@@ -1097,14 +1097,14 @@ compare_delegate(
 
 	if(ast_isEnvironment(lexpr) || ast_isEnvironment(rexpr)) {
 		if(ast_isEnvironment(lexpr) && ast_isEnvironment(rexpr)) {
-			size_t const ln = array_length(lexpr->m.env);
-			size_t const rn = array_length(rexpr->m.env);
+			size_t const ln = marray_length(lexpr->m.env);
+			size_t const rn = marray_length(rexpr->m.env);
 			size_t const n = minz(ln, rn);
 			int          r = 1;
 			for(size_t i = 0; r > 0 && i < n; i++) {
 				r = compare_delegate(env, sloc,
-						array_at(lexpr->m.env, Ast, i),
-						array_at(rexpr->m.env, Ast, i),
+						marray_at(lexpr->m.env, Ast, i),
+						marray_at(rexpr->m.env, Ast, i),
 						integercmp,
 						floatcmp,
 						stringcmp,
@@ -1113,7 +1113,7 @@ compare_delegate(
 			}
 			for(size_t i = n; r == sense && i < ln; i++) {
 				r = compare_delegate(env, sloc,
-						array_at(lexpr->m.env, Ast, i),
+						marray_at(lexpr->m.env, Ast, i),
 						ZEN,
 						integercmp,
 						floatcmp,
@@ -1124,7 +1124,7 @@ compare_delegate(
 			for(size_t i = n; r == sense && i < rn; i++) {
 				r = compare_delegate(env, sloc,
 						ZEN,
-						array_at(rexpr->m.env, Ast, i),
+						marray_at(rexpr->m.env, Ast, i),
 						integercmp,
 						floatcmp,
 						stringcmp,
@@ -1133,11 +1133,11 @@ compare_delegate(
 			}
 			return r;
 		} else if(ast_isEnvironment(lexpr)) {
-			size_t const n = array_length(lexpr->m.env);
+			size_t const n = marray_length(lexpr->m.env);
 			int          r = 1;
 			for(size_t i = 0; r > 0 && i < n; i++) {
 				r = compare_delegate(env, sloc,
-						array_at(lexpr->m.env, Ast, i),
+						marray_at(lexpr->m.env, Ast, i),
 						rexpr,
 						integercmp,
 						floatcmp,
@@ -1147,12 +1147,12 @@ compare_delegate(
 			}
 			return r;
 		} else {
-			size_t const n = array_length(rexpr->m.env);
+			size_t const n = marray_length(rexpr->m.env);
 			int          r = 1;
 			for(size_t i = 0; r > 0 && i < n; i++) {
 				r = compare_delegate(env, sloc,
 						lexpr,
-						array_at(rexpr->m.env, Ast, i),
+						marray_at(rexpr->m.env, Ast, i),
 						integercmp,
 						floatcmp,
 						stringcmp,
@@ -1554,7 +1554,7 @@ arrintop_resize(
 	Array arr,
 	size_t n
 ) {
-	bool   expanded = array_expand(arr, sizeof(Ast), n);
+	bool   expanded = marray_expand(arr, sizeof(Ast), n);
 	assert(expanded);
 	arr->length = n;
 	return;
@@ -1568,14 +1568,14 @@ arrintop_copy(
 	size_t n
 ) {
 	for(; n-- > 0; si++, ti++) {
-		Ast st = array_at(s, Ast, si);
+		Ast st = marray_at(s, Ast, si);
 		st     = dup_ast(st->sloc, st);
-		array_at(t, Ast, ti) = st;
+		marray_at(t, Ast, ti) = st;
 		if(ast_isReference(st)) {
 			size_t      len;
 			char const *cs = StringToCharLiteral(st->m.sval, &len);
 			uint64_t    h  = memhash(cs, len, 0);
-			size_t      x  = array_map_index(t, h, ti);
+			size_t      x  = marray_map_index(t, h, ti);
 			assert(x == ti);
 		}
 	}
@@ -1584,8 +1584,8 @@ arrintop_copy(
 }
 static ARRINTOP (shl,
 	Array arr = arrintop_alloc();
-	if(array_length(lval) > rval) {
-		size_t n = (array_length(lval) - rval);
+	if(marray_length(lval) > rval) {
+		size_t n = (marray_length(lval) - rval);
 		arrintop_resize(arr, n);
 		arrintop_copy(arr, 0, lval, rval, n);
 	}
@@ -1593,8 +1593,8 @@ static ARRINTOP (shl,
 )
 static ARRINTOP (shr,
 	Array arr = arrintop_alloc();
-	if(array_length(lval) > rval) {
-		size_t n = (array_length(lval) - rval);
+	if(marray_length(lval) > rval) {
+		size_t n = (marray_length(lval) - rval);
 		arrintop_resize(arr, n);
 		arrintop_copy(arr, 0, lval, 0, n);
 	}
@@ -1602,10 +1602,10 @@ static ARRINTOP (shr,
 )
 static ARRINTOP (exl,
 	Array arr = arrintop_alloc();
-	if(rval > array_length(lval)) {
-		rval = array_length(lval);
+	if(rval > marray_length(lval)) {
+		rval = marray_length(lval);
 	}
-	if(array_length(lval) >= rval) {
+	if(marray_length(lval) >= rval) {
 		arrintop_resize(arr, rval);
 		arrintop_copy(arr, 0, lval, 0, rval);
 	}
@@ -1613,11 +1613,11 @@ static ARRINTOP (exl,
 )
 static ARRINTOP (exr,
 	Array arr = arrintop_alloc();
-	if(rval > array_length(lval)) {
-		rval = array_length(lval);
+	if(rval > marray_length(lval)) {
+		rval = marray_length(lval);
 	}
-	if(array_length(lval) >= rval) {
-		size_t n = (array_length(lval) - rval);
+	if(marray_length(lval) >= rval) {
+		size_t n = (marray_length(lval) - rval);
 		arrintop_resize(arr, rval);
 		arrintop_copy(arr, 0, lval, n, rval);
 	}
@@ -1625,12 +1625,12 @@ static ARRINTOP (exr,
 )
 static ARRINTOP (rol,
 	Array arr = arrintop_alloc();
-	if(array_length(lval) > 0) {
-		rval = rval % array_length(lval);
+	if(marray_length(lval) > 0) {
+		rval = rval % marray_length(lval);
 	}
-	if(array_length(lval) > rval) {
-		size_t n = (array_length(lval) - rval);
-		arrintop_resize(arr, array_length(lval));
+	if(marray_length(lval) > rval) {
+		size_t n = (marray_length(lval) - rval);
+		arrintop_resize(arr, marray_length(lval));
 		arrintop_copy(arr, 0, lval, rval, n);
 		arrintop_copy(arr, n, lval, 0, rval);
 	}
@@ -1638,12 +1638,12 @@ static ARRINTOP (rol,
 )
 static ARRINTOP (ror,
 	Array arr = arrintop_alloc();
-	if(array_length(lval) > 0) {
-		rval = rval % array_length(lval);
+	if(marray_length(lval) > 0) {
+		rval = rval % marray_length(lval);
 	}
-	if(array_length(lval) > rval) {
-		size_t n = (array_length(lval) - rval);
-		arrintop_resize(arr, array_length(lval));
+	if(marray_length(lval) > rval) {
+		size_t n = (marray_length(lval) - rval);
+		arrintop_resize(arr, marray_length(lval));
 		arrintop_copy(arr, 0, lval, n, rval);
 		arrintop_copy(arr, rval, lval, 0, n);
 	}
@@ -1999,7 +1999,7 @@ builtin_array_push_back(
 
 	} else {
 		rexpr = evaluate_instance(env, sloc, rexpr, by);
-		bool appended = array_push_back(lexpr->m.env, Ast, rexpr);
+		bool appended = marray_push_back(lexpr->m.env, Ast, rexpr);
 		assert(appended);
 		return rexpr;
 	}
@@ -2016,7 +2016,7 @@ builtin_array_assign_index(
 	size_t index,
 	By     by
 ) {
-	Ast *ent = array_ptr(lexpr->m.env, Ast, index);
+	Ast *ent = marray_ptr(lexpr->m.env, Ast, index);
 
 	rexpr = evaluate_instance(env, sloc, rexpr, by);
 	lexpr = *ent;
@@ -2094,7 +2094,7 @@ builtin_assign_by_delegate(
 		case TYPE(AST_Environment, AST_Character):
 			if(ast_isAssignable(lexpr)) {
 				size_t const index  = iexpr->m.ival;
-				size_t const length = array_length(lexpr->m.env);
+				size_t const length = marray_length(lexpr->m.env);
 				if(index < length) {
 					return builtin_array_assign_index(env, sloc, lexpr, rexpr, index, by);
 				}
@@ -2107,7 +2107,7 @@ builtin_assign_by_delegate(
 		case TYPE(AST_Environment, AST_String):
 			if(ast_isAssignable(lexpr)) {
 				size_t const index  = atenv(lexpr, iexpr);
-				size_t const length = array_length(lexpr->m.env);
+				size_t const length = marray_length(lexpr->m.env);
 				if(index < length) {
 					return builtin_array_assign_index(env, sloc, lexpr, rexpr, index, by);
 				}
@@ -2122,7 +2122,7 @@ builtin_assign_by_delegate(
 			if(ast_isAssignable(lexpr)
 				&& ast_isEnvironment(lexpr) && ast_isRange(iexpr)
 			) {
-				size_t const length = array_length(lexpr->m.env);
+				size_t const length = marray_length(lexpr->m.env);
 				size_t       index  = ast_toInteger(eval(env, iexpr->m.lexpr));
 				Ast          ast    = eval(env, iexpr->m.rexpr);
 				size_t       end    = ast_isZen(ast) ? length - !!length : ast_toInteger(ast);
@@ -2280,9 +2280,9 @@ builtin_exchange_evaluate(
 		case TYPE(AST_Environment, AST_Character):
 			if(ast_isAssignable(ast)) {
 				size_t const index  = iexpr->m.ival;
-				size_t const length = array_length(ast->m.env);
+				size_t const length = marray_length(ast->m.env);
 				if(index < length) {
-					ast = array_at(ast->m.env, Ast, index);
+					ast = marray_at(ast->m.env, Ast, index);
 					ast = deref(ast);
 					if(ast_isAssignable(ast)) {
 						return ast;
@@ -2293,9 +2293,9 @@ builtin_exchange_evaluate(
 		case TYPE(AST_Environment, AST_String):
 			if(ast_isAssignable(ast)) {
 				size_t const index  = atenv(ast, iexpr);
-				size_t const length = array_length(ast->m.env);
+				size_t const length = marray_length(ast->m.env);
 				if(index < length) {
-					ast = array_at(ast->m.env, Ast, index);
+					ast = marray_at(ast->m.env, Ast, index);
 					ast = deref(ast);
 					if(ast_isAssignable(ast)) {
 						return ast;
@@ -2386,8 +2386,8 @@ builtin_array(
 		case TYPE(AST_Environment, AST_Integer):
 		case TYPE(AST_Environment, AST_Character): {
 				size_t const index = rexpr->m.ival;
-				if(index < array_length(lexpr->m.env)) {
-					rexpr = array_at(lexpr->m.env, Ast, index);
+				if(index < marray_length(lexpr->m.env)) {
+					rexpr = marray_at(lexpr->m.env, Ast, index);
 					rexpr->attr |= lexpr->attr & ATTR_NoAssign;
 					return rexpr;
 				}
@@ -2411,7 +2411,7 @@ builtin_array(
 		default:
 			if(ast_isRange(rexpr)) switch(ast_type(lexpr)) {
 			case AST_Environment: {
-				size_t length = array_length(lexpr->m.env);
+				size_t length = marray_length(lexpr->m.env);
 				size_t start  = ast_toInteger(eval(env, rexpr->m.lexpr));
 				Ast    ast    = eval(env, rexpr->m.rexpr);
 				size_t end    = ast_isZen(ast) ? length - !!length : ast_toInteger(ast);

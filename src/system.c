@@ -252,7 +252,7 @@ builtin_system(
 
 		do {
 			Ast  ast      = builtin_system_1(env, sloc, ast_isSequence(arg) ? arg->m.lexpr : arg);
-			bool appended = array_push_back(vec->m.env, Ast, ast);
+			bool appended = marray_push_back(vec->m.env, Ast, ast);
 			assert(appended);
 
 		} while(ast_isSequence(arg) && (arg = arg->m.rexpr))
@@ -360,7 +360,7 @@ builtin_length(
 		}
 		break;
 	case AST_Environment:
-		len = array_length(arg->m.env);
+		len = marray_length(arg->m.env);
 		break;
 	default:
 		break;

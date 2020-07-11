@@ -58,7 +58,7 @@ cmp(
 	void const *key,
 	size_t      n
 ) {
-	Odt odt = array_ptr(arr, struct odt, index);
+	Odt odt = marray_ptr(arr, struct odt, index);
 	return strcmp(odt->name, key);
 	(void)n;
 }
@@ -68,7 +68,7 @@ lookup_odt(
 	char const *name,
 	uint64_t    hash
 ) {
-	return array_get_index(&odt_map, hash, cmp, name, 0);
+	return marray_get_index(&odt_map, hash, cmp, name, 0);
 }
 
 static inline Odt
@@ -77,8 +77,8 @@ odt_of(
 ) {
 	if(ast_isnotZen(ast)) {
 		size_t index = ast->qual;
-		if(index < array_length(&odt_map)) {
-			return array_ptr(&odt_map, struct odt, index);
+		if(index < marray_length(&odt_map)) {
+			return marray_ptr(&odt_map, struct odt, index);
 		}
 	}
 
@@ -117,9 +117,9 @@ add_odt(
 			mark,
 			sweep
 		};
-		size_t next_index = array_length(&odt_map);
-		if(array_push_back(&odt_map, struct odt, odt)) {
-			index = array_map_index(&odt_map, hash, next_index);
+		size_t next_index = marray_length(&odt_map);
+		if(marray_push_back(&odt_map, struct odt, odt)) {
+			index = marray_map_index(&odt_map, hash, next_index);
 		}
 	}
 

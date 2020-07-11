@@ -78,7 +78,7 @@ print_entry(
 	uint64_t hash
 ) {
 	Ast env = context;
-	Ast ast = array_at(env->m.env, Ast, index);
+	Ast ast = marray_at(env->m.env, Ast, index);
 
 	switch(ast->type) {
 		size_t      len;
@@ -118,9 +118,9 @@ initialise(
 	initialise_system_bits(no_alias);
 
 	if(list_builtins) {
-		array_foreach(operators->m.env         , print_entry, operators);
-		array_foreach(globals->m.env           , print_entry, globals);
-		array_foreach(system_environment->m.env, print_entry, system_environment);
+		marray_foreach(operators->m.env         , print_entry, operators);
+		marray_foreach(globals->m.env           , print_entry, globals);
+		marray_foreach(system_environment->m.env, print_entry, system_environment);
 	}
 }
 

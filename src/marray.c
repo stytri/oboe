@@ -71,7 +71,7 @@ marray_expand(
 		}
 	}
 
-	return false;
+	return !count;
 }
 
 void

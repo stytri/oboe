@@ -56,7 +56,7 @@ size_t
 num_searchpaths(
 	void
 ) {
-	return searchpaths ? array_length(searchpaths->m.env) : 0;
+	return searchpaths ? marray_length(searchpaths->m.env) : 0;
 }
 
 size_t
@@ -99,8 +99,8 @@ get_searchpath(
 	size_t index
 ) {
 	assert(searchpaths != NULL);
-	assert(index < array_length(searchpaths->m.env));
+	assert(index < marray_length(searchpaths->m.env));
 
-	return array_at(searchpaths->m.env, Ast, index)->m.sval;
+	return marray_at(searchpaths->m.env, Ast, index)->m.sval;
 }
 

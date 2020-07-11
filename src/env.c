@@ -44,7 +44,7 @@ env_gc_mark(
 	void      (*mark)(void const *)
 ) {
 	Array env = (Array)p;
-	for(size_t i = array_length(env); i-- > 0; mark(array_at(env, Ast, i)))
+	for(size_t i = marray_length(env); i-- > 0; mark(marray_at(env, Ast, i)))
 		;
 	return;
 }
@@ -54,7 +54,7 @@ env_gc_sweep(
 	void const *p
 ) {
 	Array env = (Array)p;
-	array_free(env);
+	marray_free(env);
 	memset(env, 0, sizeof(*env));
 	gc_free(p);
 	return;
@@ -84,20 +84,20 @@ dup_env(
 	assert(new_env != NULL);
 	*new_env = ARRAY();
 
-	size_t n        = array_length(env);
-	bool   expanded = array_expand(new_env, sizeof(Ast), n);
+	size_t n        = marray_length(env);
+	bool   expanded = marray_expand(new_env, sizeof(Ast), n);
 	assert(expanded);
 	new_env->length = n;
 
 	for(size_t i = 0; i < n; i++) {
-		Ast ent = array_at(env, Ast, i);
+		Ast ent = marray_at(env, Ast, i);
 		ent     = dup_ast(sloc, ent);
-		array_at(new_env, Ast, i) = ent;
+		marray_at(new_env, Ast, i) = ent;
 		if(ast_isReference(ent)) {
 			size_t      len;
 			char const *cs = StringToCharLiteral(ent->m.sval, &len);
 			uint64_t    h  = memhash(cs, len, 0);
-			size_t      x  = array_map_index(new_env, h, i);
+			size_t      x  = marray_map_index(new_env, h, i);
 			assert(x == i);
 		}
 	}
@@ -123,7 +123,7 @@ cmp(
 	void const *key,
 	size_t      n
 ) {
-	Ast ast = array_at(arr, Ast, index);
+	Ast ast = marray_at(arr, Ast, index);
 	return !StringEqualCharLiteral(ast->m.sval, key, n);
 }
 
@@ -137,7 +137,7 @@ locate(
 	size_t      len
 ) {
 	if(ast_isnotZen(env)) {
-		size_t index = array_get_index(env->m.env, hash, cmp, leme, len);
+		size_t index = marray_get_index(env->m.env, hash, cmp, leme, len);
 		return index;
 	}
 
@@ -154,10 +154,10 @@ lookup(
 ) {
 	if(ast_isnotZen(env)) do {
 		Array  arr   = env->m.env;
-		size_t index = array_get_index(arr, hash, cmp, leme, len);
+		size_t index = marray_get_index(arr, hash, cmp, leme, len);
 		if(~index) {
-			return (index < array_length(arr)) ? (
-				array_at(arr, Ast, index)
+			return (index < marray_length(arr)) ? (
+				marray_at(arr, Ast, index)
 			) : (
 				ZEN
 			);
@@ -178,10 +178,10 @@ define(
 
 	if(ast_isnotZen(env)) {
 		Array  arr   = env->m.env;
-		size_t index = array_length(arr);
+		size_t index = marray_length(arr);
 
-		if(array_push_back(arr, Ast, def)) {
-			return array_map_index(arr, hash, index);
+		if(marray_push_back(arr, Ast, def)) {
+			return marray_map_index(arr, hash, index);
 		}
 	}
 
@@ -249,7 +249,7 @@ addenv(
 			return def;
 		}
 
-		ident = array_at(env->m.env, Ast, n);
+		ident = marray_at(env->m.env, Ast, n);
 		assign(sloc, &ident->m.rexpr, def);
 		return ident;
 	}
@@ -372,7 +372,7 @@ addenv_argv(
 		assert(s != NULL);
 		Ast    a = new_ast(sloc, AST_String, s);
 		a->attr |= ATTR_NoAssign;
-		bool   appended = array_push_back(d->m.env, Ast, a);
+		bool   appended = marray_push_back(d->m.env, Ast, a);
 		assert(appended);
 	}
 
@@ -429,19 +429,19 @@ Ast source_env(
 	if(!source_environments) {
 		source_environments = new_env(0, NULL);
 
-		bool appended = array_push_back(globals->m.env, Ast, source_environments);
+		bool appended = marray_push_back(globals->m.env, Ast, source_environments);
 		assert(appended);
 	}
 
-	assert(source <= array_length(source_environments->m.env));
-	if(source == array_length(source_environments->m.env)) {
+	assert(source <= marray_length(source_environments->m.env));
+	if(source == marray_length(source_environments->m.env)) {
 
 		Ast  sourcenv = new_env(make_sloc(source, 0, 0, 0), globals);
-		bool appended = array_push_back(source_environments->m.env, Ast, sourcenv);
+		bool appended = marray_push_back(source_environments->m.env, Ast, sourcenv);
 		assert(appended);
 	}
 
-	return array_at(source_environments->m.env, Ast, source);
+	return marray_at(source_environments->m.env, Ast, source);
 }
 
 //------------------------------------------------------------------------------
@@ -450,8 +450,8 @@ Ast
 getopr(
 	size_t index
 ) {
-	return (index < array_length(operators->m.env)) ? (
-		array_at(operators->m.env, Ast, index)
+	return (index < marray_length(operators->m.env)) ? (
+		marray_at(operators->m.env, Ast, index)
 	) : (
 		ZEN
 	);

@@ -239,9 +239,9 @@ toString_environment(
 
 	s = StringAppendCharLiteral(s, prefix, strlen(prefix));
 	if(env) {
-		size_t const n = array_length(env);
+		size_t const n = marray_length(env);
 		if(n > 0) {
-			Ast value = array_at(env, Ast, 0);
+			Ast value = marray_at(env, Ast, 0);
 			if(ast_isReference(value)) {
 				s = toString_expression(s, archival, "('", value, "':");
 				s = toString_expression(s, archival, "(" , value->m.rexpr, "))");
@@ -249,7 +249,7 @@ toString_environment(
 				s = toString_expression(s, archival, "(", value, ")");
 			}
 			for(size_t i = 1; i < n; ++i) {
-				value = array_at(env, Ast, i);
+				value = marray_at(env, Ast, i);
 				if(ast_isReference(value)) {
 					s = toString_expression(s, archival, ",('", value, "':");
 					s = toString_expression(s, archival,  "(" , value->m.rexpr, "))");

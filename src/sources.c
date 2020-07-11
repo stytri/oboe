@@ -83,8 +83,8 @@ get_source(
 	size_t index
 ) {
 	assert(sources != NULL);
-	assert(index < array_length(sources->m.env));
+	assert(index < marray_length(sources->m.env));
 
-	return array_at(sources->m.env, Ast, index)->m.sval;
+	return marray_at(sources->m.env, Ast, index)->m.sval;
 }
 
