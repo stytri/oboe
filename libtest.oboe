@@ -1,0 +1,17 @@
+﻿#[
+Version 20.07.120
+Copyright (C) 2020 Tristan Styles
+MIT License
+]
+
+[:] TEST:[
+	RUN(): (
+		(N:TEST@length, i:1; i < N; i += 1) ?* (
+			("#[TEST: ", TEST[i]@identifier)@println,
+			TEST[i](),
+			"]"@println
+		)
+	)
+];
+
+

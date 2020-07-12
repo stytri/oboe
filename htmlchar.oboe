@@ -1,6 +1,6 @@
 # https://www.w3.org/TR/REC-html40/sgml/entities.html
 #[
-Version 20.07.120
+Version 20.07.121
 Copyright (C) 2020 Tristan Styles
 MIT License
 ]
@@ -2162,6 +2162,25 @@ AtoZ(:)"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 			))
 		),
 		t
-	)
+	),
 ];
 
+TEST@is_Environment ? (TEST[TEST@length] = (
+	htmlchar_test(): (
+		strings:[
+			"consequential",
+			"&ltconsequential",
+			"&lt;consequential",
+			"consequential&gt",
+			"consequential&gt;",
+			"consequ&ampential",
+			"consequ&amp;ential",
+			"&lt;consequ&amp;&amp;ential&gt;",
+			"&lt;&lt;consequ&amp;&amp;ential&gt;&gt;",
+		],
+		(s:strings[]) ?* (
+			htmlchar decode(s)@println
+		),
+		()
+	)
+));
