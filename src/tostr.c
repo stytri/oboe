@@ -28,6 +28,7 @@ SOFTWARE.
 #include "odt.h"
 #include "builtins.h"
 #include "utf8.h"
+#include "lex.h"
 #include <stdio.h>
 
 //------------------------------------------------------------------------------
@@ -227,6 +228,26 @@ toString_sequence(
 	return s;
 }
 
+static bool
+is_identifier(
+	String s
+) {
+	size_t      len;
+	char const *cs = StringToCharLiteral(s, &len);
+	if(len > 0) {
+
+		char32_t cc = utf8chr(cs, &cs);
+		if(is_ID_Start(cc)) {
+			while(--len && is_ID_Continue(cc = utf8chr(cs, &cs)))
+				;
+		}
+
+		return !len;
+	}
+
+	return false;
+}
+
 static String
 toString_environment(
 	String      s,
@@ -243,7 +264,11 @@ toString_environment(
 		if(n > 0) {
 			Ast value = marray_at(env, Ast, 0);
 			if(ast_isReference(value)) {
-				s = toString_expression(s, archival, "('", value, "':");
+				if(is_identifier(value->m.sval)) {
+					s = toString_expression(s, archival, "(", value, ":");
+				} else {
+					s = toString_expression(s, archival, "(\"", value, "\":");
+				}
 				s = toString_expression(s, archival, "(" , value->m.rexpr, "))");
 			} else {
 				s = toString_expression(s, archival, "(", value, ")");
@@ -251,7 +276,11 @@ toString_environment(
 			for(size_t i = 1; i < n; ++i) {
 				value = marray_at(env, Ast, i);
 				if(ast_isReference(value)) {
-					s = toString_expression(s, archival, ",('", value, "':");
+					if(is_identifier(value->m.sval)) {
+						s = toString_expression(s, archival, "(", value, ":");
+					} else {
+						s = toString_expression(s, archival, "(\"", value, "\":");
+					}
 					s = toString_expression(s, archival,  "(" , value->m.rexpr, "))");
 				} else {
 					s = toString_expression(s, archival, ",(", value, ")");
