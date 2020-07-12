@@ -1,15 +1,17 @@
 # https://www.w3.org/TR/REC-html40/sgml/entities.html
 #[
-Version 20.07.110
+Version 20.07.120
 Copyright (C) 2020 Tristan Styles
 MIT License
 ]
+
+AtoZ(:)"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 [:] htmlchar(:)[
 	quot    :'\x22'  ,
 	amp     :'\x26'  ,
 	lt      :'\x3C'  ,
-	gt      :'\x2E'  ,
+	gt      :'\x3E'  ,
 	OElig   :'\w0152',
 	oelig   :'\w0153',
 	Scaron  :'\w0160',
@@ -257,5 +259,36 @@ MIT License
 	spades  :'\w2660',
 	clubs   :'\w2663',
 	hearts  :'\w2665',
-	diams   :'\w2666'
+	diams   :'\w2666',
+
+	decode(s): (
+		t:"",
+		(continue:1, N:s@length, o:0, n:0; continue) ?* (
+			n = o + (s(o..), "&")@span_NotInSet,
+			n > o ? (
+				r:s[o..(n-1)],
+				t = t r
+			),
+			(continue = n < N) ? ((
+				m:n + 1,
+				o = m + (s(m..), AtoZ)@span_InSet,
+				(continue = o < N && s[o] == ';') ? ((
+					r:s[m..(o-1)],
+					c:htmlchar[r],
+					c@is_Character ! ((
+						r:s[n..o],
+						t = t r,
+					);(
+						t = t c,
+					)),
+					o += 1
+				);(
+					r:s[n..],
+					t = t r
+				))
+			))
+		),
+		t
+	)
 ];
+
