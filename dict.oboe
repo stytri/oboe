@@ -1,5 +1,5 @@
 VERSION(:)"
-dict 20.07.110
+dict 20.07.120
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -33,6 +33,10 @@ with one file per line.
 #
 # Uses a lot of memory, some dictionaries can cause a program crash.
 #
+
+#==============================================================================
+
+"htmlchar"@import;
 
 #==============================================================================
 
@@ -451,7 +455,7 @@ read_affix(file_aff,affix): (
 				n ? (
 					cs:s <<< n,
 					s = get_affix_args(s, n),
-					affix_cmd[cs](s)
+					affix_cmd[cs](htmlchar decode s)
 				)
 			)
 		),
@@ -689,7 +693,7 @@ catfile(file,idir,odir,makeout): (
 				(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
 					s@is_String ? (
 						s[0]@is_Space ! (
-							catword(wlist, s)
+							catword(wlist, htmlchar decode s)
 						),
 					)
 				),
