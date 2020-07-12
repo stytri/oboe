@@ -57,6 +57,15 @@ initialise_system_bits(
 //------------------------------------------------------------------------------
 
 extern Ast
+import(
+	Ast    env,
+	sloc_t sloc,
+	String file
+);
+
+//------------------------------------------------------------------------------
+
+extern Ast
 error_or(
 	sloc_t sloc,
 	Ast    ast,

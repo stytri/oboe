@@ -964,49 +964,58 @@ builtin_load(
 
 //------------------------------------------------------------------------------
 
+Ast
+import(
+	Ast    env,
+	sloc_t sloc,
+	String file
+) {
+	String s = mapoboefile(file);
+	if(s) {
+		Ast arg = ZEN;
+
+		unsigned long source = add_source(0, file);
+		unsigned long line   = 0;
+		char const   *cs     = StringToCharLiteral(s, NULL);
+
+		for(size_t ts = gc_topof_stack();
+			*cs;
+		) {
+			arg = parse(cs, &cs, source, &line, new_ast_from_lexeme, false);
+			if(ast_isnotZen(arg)) {
+				arg = eval(env, arg);
+			}
+
+			gc_return(ts, arg);
+			run_gc();
+
+			if(ast_isError(arg)) {
+				break;
+			}
+		}
+
+		StringDelete(s);
+
+		return arg;
+	}
+
+	return oboerr(sloc, ERR_FailedOperation);
+}
+
 static Ast
 builtin_import_1(
 	Ast    env,
 	sloc_t sloc,
 	Ast    arg
 ) {
-	if(ast_isIdentifier(arg)) {
+	if(ast_isString(arg)) {
+		return import(env, sloc, arg->m.sval);
+	}
 
+	if(ast_isIdentifier(arg)) {
 		if(StringEqualCharLiteral(arg->m.sval, "math", 4)) {
 			initialise_builtin_math_functions(env);
 			return ZEN;
-		}
-
-	} else if(ast_isString(arg)) {
-
-		String file = arg->m.sval;
-		String s    = mapoboefile(file);
-		if(s) {
-			arg = ZEN;
-
-			unsigned long source = add_source(0, file);
-			unsigned long line   = 0;
-			char const   *cs     = StringToCharLiteral(s, NULL);
-
-			for(size_t ts = gc_topof_stack();
-				*cs;
-			) {
-				arg = parse(cs, &cs, source, &line, new_ast_from_lexeme, false);
-				if(ast_isnotZen(arg)) {
-					arg = eval(env, arg);
-				}
-
-				gc_return(ts, arg);
-				run_gc();
-
-				if(ast_isError(arg)) {
-					break;
-				}
-			}
-
-			StringDelete(s);
-
-			return arg;
 		}
 	}
 

@@ -303,7 +303,7 @@ main(
 				no_alias = true;
 				break;
 
-			case 90:
+			case 90: {
 				unprocessed = false;
 
 				initialise(generator, no_alias, has_math, list_builtins);
@@ -318,17 +318,34 @@ main(
 					}
 				}
 				break;
+			}
+			case 91: {
+				initialise(generator, no_alias, has_math, list_builtins);
 
-			case 0:
+				size_t ts   = gc_topof_stack();
+				size_t n    = strlen(argv[argi]);
+				String file = CharLiteralToString(argv[argi], n);
+				assert(file != NULL);
+				import(globals, 0, file);
+				gc_revert(ts);
+				break;
+			}
+			case 92: {
+				initialise(generator, no_alias, has_math, list_builtins);
+
+				size_t ts   = gc_topof_stack();
+				size_t n    = strlen(argv[argi]);
+				String path = CharLiteralToString(argv[argi], n);
+				assert(path != NULL);
+				add_searchpath(0, gc_push(path));
+				gc_revert(ts);
+				break;
+			}
+			case 0: {
 				initialise(generator, no_alias, has_math, list_builtins);
 
 				--argi;
 				addenv_argv(system_environment, 0, argc - argi, &argv[argi]);
-
-				unprocessed = false;
-				nobreak;
-			case 91: {
-				initialise(generator, no_alias, has_math, list_builtins);
 
 				size_t ts   = gc_topof_stack();
 				size_t n    = strlen(argv[argi]);
@@ -348,21 +365,7 @@ main(
 				}
 				gc_revert(ts);
 
-				if(!unprocessed || (exit_status != EXIT_SUCCESS)) {
-					goto end;
-				}
-				break;
-			}
-			case 92: {
-				initialise(generator, no_alias, has_math, list_builtins);
-
-				size_t ts   = gc_topof_stack();
-				size_t n    = strlen(argv[argi]);
-				String path = CharLiteralToString(argv[argi], n);
-				assert(path != NULL);
-				add_searchpath(0, gc_push(path));
-				gc_revert(ts);
-				break;
+				goto end;
 			}
 			default:
 				if((params > 0) && (argi < argc)) {
