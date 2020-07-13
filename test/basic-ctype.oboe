@@ -1,11 +1,11 @@
-DIGITS(:)"0123456789";
-UPPER(:)"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-LOWER(:)"abcdefghijklmnopqrstuvwxyz";
+DIGITS::"0123456789";
+UPPER::"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+LOWER::"abcdefghijklmnopqrstuvwxyz";
 "123456"@is_Digit@println;
 "123456"@is_NotDigit@println;
 "123456"@is_NotLetter@println;
 "123456"@is_Letter@println;
-cs(:)"123456ABCDEFG4321";
+cs::"123456ABCDEFG4321";
 cs@to_Lowercase@println;
 cs@to_Uppercase@println;
 cs@span_Digit@println;

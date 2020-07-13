@@ -29,13 +29,13 @@ row:, i:;
 
 "Unsigned Lah numbers: L(n, k):"@println;
 "n/k"@print;
-(i(:)0..12) ?* (
+(i::0..12) ?* (
 	itos(11, i)@print
 );
 ""@println;
-(row(:)0..12) ?* (
+(row::0..12) ?* (
 	itos(-3, row)@print,
-	(i(:)0..row) ?* (
+	(i::0..row) ?* (
 		l:lah(row, i),
 		itos(11, l)@print
 	),

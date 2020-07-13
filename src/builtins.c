@@ -100,6 +100,7 @@ typedef enum {
 
 static unsigned builtin_applicate_enum      = -1u;
 static unsigned builtin_global_enum         = -1u;
+static unsigned builtin_static_enum         = -1u;
 static unsigned builtin_tag_enum            = -1u;
 static unsigned builtin_tag_ref_enum        = -1u;
 static unsigned builtin_const_enum          = -1u;
@@ -2678,35 +2679,56 @@ builtin_applicate(
 //------------------------------------------------------------------------------
 
 static Ast
-builtin_global(
+builtin_scope_delegate(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
-	Ast    rexpr
+	Ast    rexpr,
+	Ast    scope
 ) {
 	if(ast_isZen(lexpr)) {
 		if(ast_isZen(rexpr)) {
-			return globals;
+			return scope;
 		}
 
-		env = globals;
+		env = scope;
 
 	} else {
 		lexpr = eval(env, lexpr);
 		if(ast_isEnvironment(lexpr)) {
-			env = link_env(sloc, globals, lexpr);
+			env = link_env(sloc, scope, lexpr);
 
 			if(ast_isZen(rexpr)) {
 				return env;
 			}
 
 		} else {
-			env = globals;
+			env = scope;
 		}
 	}
 
 	rexpr = eval(env, rexpr);
 	return rexpr;
+}
+
+static Ast
+builtin_global(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_scope_delegate(env, sloc, lexpr, rexpr, globals);
+}
+
+static Ast
+builtin_static(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_scope_delegate(env, sloc, lexpr, rexpr, statics);
 }
 
 //------------------------------------------------------------------------------
@@ -2793,6 +2815,7 @@ initialise_builtin_operators(
 	static struct builtinop const builtinop[] = {
 		BUILTIN("`applicate`"      , applicate      , P_Applicate)
 		BUILTIN("`global`"         , global         , P_Interstitial)
+		BUILTIN("`static`"         , static         , P_Interstitial)
 		BUILTIN("`tag`"            , tag            , P_Declarative)
 		BUILTIN("`tag_ref`"        , tag_ref        , P_Declarative)
 		BUILTIN("`const`"          , const          , P_Declarative)
@@ -2850,9 +2873,10 @@ initialise_builtin_operators(
 	static struct builtinalias const builtinalias[] = {
 		{    "", "`applicate`"      },
 		{ "[:]", "`global`"         },
+		{ "(:)", "`static`"         },
 		{   ":", "`tag`"            },
 		{  ":^", "`tag_ref`"        },
-		{ "(:)", "`const`"          },
+		{  "::", "`const`"          },
 		{   "=", "`assign`"         },
 		{  "=^", "`assign_ref`"     },
 		{ "&&=", "`assign_land`"    },

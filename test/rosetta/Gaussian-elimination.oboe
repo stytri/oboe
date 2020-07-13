@@ -6,7 +6,7 @@ abs(x): (
 	(x < 0) ? -x : x
 );
 gauss_eliminate(a, b, x, n): (
-	N(:)n-1,
+	N::n-1,
 	(dia:0..N) ?* (
 		D:dia+1,
 

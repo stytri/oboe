@@ -1,13 +1,13 @@
 # https://www.w3.org/TR/REC-html40/sgml/entities.html
 #[
-Version 20.07.122
+Version 20.07.130
 Copyright (C) 2020 Tristan Styles
 MIT License
 ]
 
-AtoZ(:)"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+AtoZ::"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-[:] htmlchar(:)[
+[:] htmlchar::[
 	AElig                          :"\u00C6",
 	AMP                            :"\u0026",
 	Aacute                         :"\u00C1",

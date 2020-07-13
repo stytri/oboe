@@ -1,9 +1,9 @@
-VERSION(:)"
-dict 20.07.120
+VERSION::"
+dict 20.07.130
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
-USAGE(:)"
+USAGE::"
 dict [options] FILE...
 options:
 	-h, --help             display this help
@@ -53,8 +53,8 @@ enum(e): (e@is_Integer ? (r:__(enum) = e ; r:__(enum)), __(enum++), r);
 
 lengthof(X): (X@is_Zen ! (X@length ; 0));
 
-FALSE(:)?;
-TRUE (:)!;
+FALSE::()?;
+TRUE ::()!;
 
 #==============================================================================
 
@@ -162,39 +162,39 @@ splitc(arg,set): (
 #==============================================================================
 
 (
-	NUM_FLAG (:)enum(0),
-	CHAR_FLAG(:)enum(),
-	LONG_FLAG(:)enum()
+	NUM_FLAG ::enum(0),
+	CHAR_FLAG::enum(),
+	LONG_FLAG::enum()
 );
 (
 	enum(0),
-	WARN              (:)enum(),
-	NOSUGGEST         (:)enum(),
-	COMPOUNDFLAG      (:)enum(),
-	COMPOUNDBEGIN     (:)enum(),
-	COMPOUNDLAST      (:)enum(),
-	COMPOUNDMIDDLE    (:)enum(),
-	ONLYINCOMPOUND    (:)enum(),
-	COMPOUNDPERMITFLAG(:)enum(),
-	COMPOUNDFORBIDFLAG(:)enum(),
-	COMPOUNDROOT      (:)enum(),
-	FORCEUCASE        (:)enum(),
-	SYLLABLENUM       (:)enum(),
-	CIRCUMFIX         (:)enum(),
-	FORBIDDENWORD     (:)enum(),
-	KEEPCASE          (:)enum(),
-	LEMMA_PRESENT     (:)enum(),
-	NEEDAFFIX         (:)enum(),
-	PSEUDOROOT        (:)enum(),
-	SUBSTANDARD       (:)enum(),
+	WARN              ::enum(),
+	NOSUGGEST         ::enum(),
+	COMPOUNDFLAG      ::enum(),
+	COMPOUNDBEGIN     ::enum(),
+	COMPOUNDLAST      ::enum(),
+	COMPOUNDMIDDLE    ::enum(),
+	ONLYINCOMPOUND    ::enum(),
+	COMPOUNDPERMITFLAG::enum(),
+	COMPOUNDFORBIDFLAG::enum(),
+	COMPOUNDROOT      ::enum(),
+	FORCEUCASE        ::enum(),
+	SYLLABLENUM       ::enum(),
+	CIRCUMFIX         ::enum(),
+	FORBIDDENWORD     ::enum(),
+	KEEPCASE          ::enum(),
+	LEMMA_PRESENT     ::enum(),
+	NEEDAFFIX         ::enum(),
+	PSEUDOROOT        ::enum(),
+	SUBSTANDARD       ::enum(),
 );
 (
-	ARC_SEQ(:)enum(0),
-	ARC_SET(:)enum(),
-	ARC_NOT(:)enum()
+	ARC_SEQ::enum(0),
+	ARC_SET::enum(),
+	ARC_NOT::enum()
 );
 
-AFFIX(:)[
+AFFIX::[
 	COUNT               : 0,
 	NAME                : "",
 	VERSION             : "",
@@ -249,7 +249,7 @@ flag_type(arg): (
 get_affix_flags(s,n:): (
 	flag:[],
 
-	N(:)s@length,
+	N::s@length,
 	n ? ((
 		(start:0, end:(n - 1); start < N; start += n, end += n) ?* (
 			flag [=] s[start..end]
@@ -297,7 +297,7 @@ set_affix_class(afx,field,count) : (
 set_affix_rule_condition(field): (
 	cond:[len:0],
 
-	field <> "." ? ((N(:)lengthof(field), start:0, end:; start < N; start = end) ?* (
+	field <> "." ? ((N::lengthof(field), start:0, end:; start < N; start = end) ?* (
 		end = start + (field(start..), "[")@span_NotInSet,
 		end > start ? ((
 			cond [=] [

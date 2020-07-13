@@ -116,7 +116,9 @@ Indexes are zero based. Assigning to to the last + 1 index, appends a new entry.
 
 The following environments are predefined:
 
-**global**, which is available to all; unless **oboe** is invoked with the `--math` option, there are no predefined identifiers in the **global** environment.
+**static** which is the default scope within a source file. It can be specifically invoked using the `(:)` operator.
+
+**global**, which is available to all; unless **oboe** is invoked with the `--math` option, there are no predefined identifiers in the **global** environment. It can be specifically invoked using the `[:]` operator.
 
 **system**, which can be accessed via the **sigil** operator.
 
@@ -210,6 +212,10 @@ _referent_ `:` _operand_
 
 or:
 
+_referent_ `::` _operand_
+
+or:
+
 _referent_ `:^` _reference_
 
 or:
@@ -226,11 +232,11 @@ _operator-string_ `:` _operator-string_
 
 ##### global declaration
 
-Normally, non-operator declarations are made in the local environment (_source-file_, _function_, ...); if the global environment operator `[:]` is applied to the declaration then it is made in the global environment. Operator declarations are always made in the global environment.
+Normally, non-operator declarations are made in the static environment (_source-file_, _function_, ...); if the global environment operator `[:]` is applied to the declaration then it is made in the global environment. Operator declarations are always made in the global environment.
 
-##### constant
+##### static declaration
 
-Non-operator declarations can be made constant (i.e. non-assignable), by enclosing the declaration operator in parenthesis; i.e. `(:)`.
+Declarations within a non static-scope (e.g. within a function), can be made static by applying the static environment operator `(:)`. They will be visible to all functions that share the same static scope; e.g. within the same source file.
 
 ##### assignment
 
