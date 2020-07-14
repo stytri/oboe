@@ -2135,7 +2135,7 @@ AtoZ::"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	zwnj                           :"\u200C",
 
 	decode(s): {
-		t:"",
+		t:"";
 		(continue:1, N:s@length, o:0, n:0; continue) ?* {
 			n = o + (s(o..), "&")@span_NotInSet;
 			n > o ? {
