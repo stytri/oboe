@@ -2603,6 +2603,8 @@ builtin_applicate(
 	case AST_Integer:
 		rexpr = eval(env, rexpr);
 		switch(ast_type(rexpr)) {
+		case AST_Sequence:
+			return new_ast(sloc, AST_Sequence, lexpr, rexpr);
 		case AST_Character: {
 				String s = RepeatedCharToString((int)rexpr->m.ival, (size_t)lexpr->m.ival);
 				assert(s != NULL);
@@ -2633,6 +2635,8 @@ builtin_applicate(
 	case AST_Float:
 		rexpr = eval(env, rexpr);
 		switch(ast_type(rexpr)) {
+		case AST_Sequence:
+			return new_ast(sloc, AST_Sequence, lexpr, rexpr);
 		case AST_Character: {
 				String s = RepeatedCharToString((int)rexpr->m.ival, (size_t)lexpr->m.fval);
 				assert(s != NULL);
@@ -2660,34 +2664,11 @@ builtin_applicate(
 		default:
 			return builtin_mul(env, sloc, lexpr, rexpr);
 		}
-	case AST_Function: {
-			Array statics_env = statics->m.env;
-			Ast   locals      = source_env(sloc_source(lexpr->sloc));
-			statics->m.env    = locals->m.env;
-
-			locals = new_env(sloc, env);
-			addenv_args(locals, env, sloc, lexpr->m.lexpr, rexpr);
-			rexpr = eval(locals, lexpr->m.rexpr);
-
-			statics->m.env = statics_env;
-			return rexpr;
-		}
-	case AST_Environment:
-		if(ast_isIdentifier(rexpr) || ast_isString(rexpr)) {
-			rexpr = inenv(lexpr, rexpr);
-			if(ast_isnotZen(rexpr)) {
-				rexpr->attr |= lexpr->attr & ATTR_NoAssign;
-				return rexpr;
-			}
-			return oboerr(sloc, ERR_InvalidIdentifier);
-		}
-		env = link_env(sloc, lexpr, env);
-		return refeval(env, rexpr);
-	case AST_BuiltinFunction:
-		return lexpr->m.bfn(env, sloc, rexpr);
 	case AST_Character:
 		rexpr = eval(env, rexpr);
 		switch(ast_type(rexpr)) {
+		case AST_Sequence:
+			return new_ast(sloc, AST_Sequence, lexpr, rexpr);
 		case AST_Boolean:
 		case AST_Integer: {
 				String s = RepeatedCharToString((int)lexpr->m.ival, (size_t)rexpr->m.ival);
@@ -2717,6 +2698,8 @@ builtin_applicate(
 		if(ast_isnotArray(rexpr)) {
 			rexpr = eval(env, rexpr);
 			switch(ast_type(rexpr)) {
+			case AST_Sequence:
+				return new_ast(sloc, AST_Sequence, lexpr, rexpr);
 			case AST_Boolean:
 			case AST_Integer: {
 					String s = RepeatedString(lexpr->m.sval, rexpr->m.ival);
@@ -2748,6 +2731,52 @@ builtin_applicate(
 			&& ast_isZen(rexpr->m.lexpr)
 		) {
 			return evalop(env, sloc, rexpr->qual, lexpr, rexpr->m.rexpr);
+		}
+		break;
+	case AST_BuiltinFunction:
+		return lexpr->m.bfn(env, sloc, rexpr);
+	case AST_Function: {
+			Array statics_env = statics->m.env;
+			Ast   locals      = source_env(sloc_source(lexpr->sloc));
+			statics->m.env    = locals->m.env;
+
+			locals = new_env(sloc, env);
+			addenv_args(locals, env, sloc, lexpr->m.lexpr, rexpr);
+			rexpr = eval(locals, lexpr->m.rexpr);
+
+			statics->m.env = statics_env;
+			return rexpr;
+		}
+	case AST_Environment:
+		if(ast_isIdentifier(rexpr) || ast_isString(rexpr)) {
+			rexpr = inenv(lexpr, rexpr);
+			if(ast_isnotZen(rexpr)) {
+				rexpr->attr |= lexpr->attr & ATTR_NoAssign;
+				return rexpr;
+			}
+			return oboerr(sloc, ERR_InvalidIdentifier);
+		}
+		env = link_env(sloc, lexpr, env);
+		return refeval(env, rexpr);
+	case AST_Sequence:
+		rexpr = eval(env, rexpr);
+		switch(ast_type(rexpr)) {
+		case AST_Zen:
+			return lexpr;
+		case AST_Error:
+			return rexpr;
+		default: {
+				Ast texpr;
+				for(texpr = lexpr;
+					ast_isSequence(texpr->m.rexpr);
+					texpr = lexpr->m.rexpr
+				);
+				if(ast_isnotZen(texpr->m.rexpr)) {
+					rexpr = new_ast(sloc, AST_Sequence, texpr->m.rexpr, rexpr);
+				}
+				texpr->m.rexpr = rexpr;
+				return lexpr;
+			}
 		}
 		break;
 	}
