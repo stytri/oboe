@@ -1,2 +1,2 @@
-i:2, j:i+1,         @println (i, j);
-k:0, k=i, i=j, j=k, @println (i, j)
+i:2; j:i+1;         @println (i, j);
+k:0; k=i; i=j; j=k; @println (i, j)

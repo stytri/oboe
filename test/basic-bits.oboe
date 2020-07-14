@@ -4,32 +4,32 @@ header::"
 ===|=========|=========|=========|=========|=========|=========|
 ";
 
-itos(x): (
-	s:x@to_String,
+itos(x): {
+	s:x@to_String;
 	s@length == 1 ? (
 		"  " s
 	;
 		" " s
 	)
-);
+};
 
-btos(x:): (
-	s:"",
-	(i:0; i < 64; i+=1) ?* (
-		s = ((x & 1) ? ('1' ; '0')) s,
+btos(x:): {
+	s:"";
+	(i:0; i < 64; i+=1) ?* {
+		s = ((x & 1) ? ('1' ; '0')) s;
 		x >>= 1
-	),
+	};
 	s
-);
+};
 
-(i:0; i < 64; i+=1) ?* (
+(i:0; i < 64; i+=1) ?* {
 	(i // 8) ! (
-		header@println,
-	),
-	x:i << i,
-	btos(x)@print,
-	itos(x@popcount)@print,
-	itos(x@lzcount)@print,
-	itos(x@tzcount)@print,
+		header@println
+	);
+	x:i << i;
+	btos(x)@print;
+	itos(x@popcount)@print;
+	itos(x@lzcount)@print;
+	itos(x@tzcount)@print;
 	itos(x@msbit)@println
-);
+};

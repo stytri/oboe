@@ -278,6 +278,16 @@ ast_isnotAssign(
 );
 
 extern bool
+ast_isBlock(
+	Ast ast
+);
+
+extern bool
+ast_isnotBlock(
+	Ast ast
+);
+
+extern bool
 ast_isArray(
 	Ast ast
 );

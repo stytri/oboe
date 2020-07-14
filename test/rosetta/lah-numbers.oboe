@@ -3,7 +3,7 @@
 "rosetta/libutil"@import;
 
 factorial(n:): (
-    return:1,
+    return:1;
     (n=n..1) ?* (
 		return *= n
 	)
@@ -25,7 +25,7 @@ lah(n:, k:): (
 	)
 );
 
-row:, i:;
+row:; i:;
 
 "Unsigned Lah numbers: L(n, k):"@println;
 "n/k"@print;
@@ -35,9 +35,9 @@ row:, i:;
 ""@println;
 (row::0..12) ?* (
 	itos(-3, row)@print,
-	(i::0..row) ?* (
-		l:lah(row, i),
+	(i::0..row) ?* {
+		l:lah(row, i);
 		itos(11, l)@print
-	),
+	};
 	""@println
 );

@@ -10,19 +10,20 @@ new_prisoner(id): (
 	[id:id, card_found:0]
 );
 
-drawer:[], prisoner:[];
+drawer:[];
+prisoner:[];
 
 initialize(N): (
-	card:[],
+	card:[];
 
-	i:0,
-	card[0..(N-1)] = (i++),
-	shuffle(card),
+	i:0;
+	card[0..(N-1)] = (i++);
+	shuffle(card);
 
-	(i:0..(N-1)) ?* (
-		prisoner[i] = new_prisoner(i+1),
+	(i:0..(N-1)) ?* {
+		prisoner[i] = new_prisoner(i+1);
 		drawer[i] = new_drawer(card[i])
-	)
+	}
 );
 
 close_drawers(): (
@@ -30,58 +31,62 @@ close_drawers(): (
 );
 
 play(is_random): (
-	N:prisoner@length, chances:N/2, chosen:0, found:1,
+	N:prisoner@length;
+	chances:N/2;
+	chosen:0;
+	found:1;
 
-	(i:0; found && i < N; i++) ?* (
-		close_drawers(),
+	(i:0; found && i < N; i++) ?* {
+		close_drawers();
 
-		found = 0,
-		chosen = is_random ? (select(N) ; i),
-		(j:0; found == 0 && j < chances; j++) ?* (
-			drawer[chosen]opened = 1,
+		found = 0;
+		chosen = is_random ? (select(N) ; i);
 
-			(drawer[chosen]card_number == prisoner[i]id) ? (
-				prisoner[i]card_found = 1,
+		(j:0; found == 0 && j < chances; j++) ?* {
+			drawer[chosen]opened = 1;
+
+			(drawer[chosen]card_number == prisoner[i]id) ? ({
+				prisoner[i]card_found = 1;
 				found = 1
-			;
+			};{
 				(is_random || chosen == drawer[chosen]card_number-1) ? (
 					(; drawer[chosen]opened; chosen = select(N)) ?*
 				;
 					chosen = drawer[chosen]card_number-1
 				)
-			)
-		)
-	),
+			})
+		}
+	};
 
 	found
 );
 
 play_game(number_of_prisoners, games, verbose, is_random): (
-	won:0,
-	t1:(@clock()),
-	(g:1..games) ?* (
-		initialize(number_of_prisoners),
+	won:0;
+	t1:(@clock());
+	(g:1..games) ?* {
+		initialize(number_of_prisoners);
 
-		once:play(is_random),
-		won = won + once,
+		once:play(is_random);
+		won = won + once;
 
-		verbose ? (
-			("...Game ", g, "...", once ? ("won" ; "lost"))@println,
+		verbose ? {
+			("...Game ", g, "...", once ? ("won" ; "lost"))@println;
 			(i:0..(number_of_prisoners-1)) ?* (
 				prisoner[i]@println
 			)
-		)
-	),
-	t2:(@clock()),
-	(games, " games played, ", won, " games won : ", ((100.0*won)/games), "%")@println,
+		}
+	};
+	t2:(@clock());
+	(games, " games played, ", won, " games won : ", ((100.0*won)/games), "%")@println;
 	(timing(t1, t2), " : ", timing(0, (t2 - t1) / games@to_Float), " per game")@println
 );
 
 run(number_of_prisoners, games, verbose): (
-	("Playing ", games, " random games...")@println,
-	play_game(number_of_prisoners, games, verbose, 1),
+	("Playing ", games, " random games...")@println;
+	play_game(number_of_prisoners, games, verbose, 1);
 
-	("Playing ", games, " optimal games...")@println,
+	("Playing ", games, " optimal games...")@println;
 	play_game(number_of_prisoners, games, verbose, 0)
 );
 

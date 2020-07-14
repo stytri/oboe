@@ -68,6 +68,12 @@ eval(
 );
 
 extern Ast
+evalseq(
+	Ast    env,
+	Ast    ast
+);
+
+extern Ast
 eval_named(
 	Ast         env,
 	sloc_t      sloc,

@@ -3,7 +3,7 @@
 "rosetta/libutil"@import;
 
 sum(x, lo:, hi:, term) : (
-	return:0.0,
+	return:0.0;
 	(x=lo..hi) ?* (
 		return += term
 	)

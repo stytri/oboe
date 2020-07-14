@@ -150,6 +150,7 @@ static unsigned builtin_exl_enum            = -1u;
 static unsigned builtin_exr_enum            = -1u;
 static unsigned builtin_rol_enum            = -1u;
 static unsigned builtin_ror_enum            = -1u;
+static unsigned builtin_block_enum          = -1u;
 static unsigned builtin_array_enum          = -1u;
 static unsigned builtin_range_enum          = -1u;
 
@@ -215,6 +216,20 @@ ast_isnotAssign(
 	Ast ast
 ) {
 	return ast_isnotOp(ast, builtin_assign_enum);
+}
+
+inline bool
+ast_isBlock(
+	Ast ast
+) {
+	return ast_isOp(ast, builtin_block_enum);
+}
+
+inline bool
+ast_isnotBlock(
+	Ast ast
+) {
+	return ast_isnotOp(ast, builtin_block_enum);
 }
 
 inline bool
@@ -614,7 +629,7 @@ builtin_if_1(
 	bool   inverted
 ) {
 	if(ast_isZen(lexpr) || ast_isZen(rexpr)) {
-		uint64_t cond = ast_toBool(eval(env, ast_isnotZen(lexpr) ? lexpr : rexpr)) ^ inverted;
+		uint64_t cond = ast_toBool(evalseq(env, ast_isnotZen(lexpr) ? lexpr : rexpr)) ^ inverted;
 		return new_ast(sloc, AST_Boolean, cond);
 	}
 
@@ -622,10 +637,10 @@ builtin_if_1(
 		ast_isAssemblage(lexpr);
 		lexpr = lexpr->m.rexpr
 	) {
-		eval(env, lexpr->m.lexpr);
+		evalseq(env, lexpr->m.lexpr);
 	}
 
-	lexpr = eval(env, lexpr);
+	lexpr = evalseq(env, lexpr);
 
 	bool cond = ast_toBool(lexpr) ^ inverted;
 
@@ -699,7 +714,6 @@ builtin_case_equal(
 		expr = expr->m.rexpr;
 	}
 
-
 	if(ast_isRelational(expr) && ast_isZen(expr->m.lexpr)) {
 		Ast ast = dup_ast(expr->sloc, expr);
 		ast->m.lexpr = cond;
@@ -728,7 +742,7 @@ builtin_case(
 		ast_isAssemblage(lexpr);
 		lexpr = lexpr->m.rexpr
 	) {
-		eval(env, lexpr->m.lexpr);
+		evalseq(env, lexpr->m.lexpr);
 	}
 
 	if(ast_isZen(lexpr)) {
@@ -756,7 +770,7 @@ builtin_case(
 		}
 
 	} else {
-		Ast cond = eval(env, lexpr);
+		Ast cond = evalseq(env, lexpr);
 
 		for(rexpr = undefer(env, rexpr);
 			ast_isAssemblage(rexpr);
@@ -930,6 +944,51 @@ builtin_loop_range(
 }
 
 static Ast
+builtin_loop_sequence(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr,
+	Ast    iexpr
+) {
+	Ast texpr = ast_isTag(lexpr) ? (
+		addenv(env, sloc, lexpr->m.lexpr, ZEN, 0)
+	): ast_isConst(lexpr) ? (
+		addenv(env, sloc, lexpr->m.lexpr, ZEN, ATTR_NoAssign)
+	):(
+		unwrapref(subeval(env, lexpr->m.lexpr))
+	);
+	if(ast_isReference(texpr)) {
+
+		Ast result = ZEN;
+
+		size_t ts = gc_topof_stack();
+		do {
+			texpr->m.rexpr = iexpr->m.lexpr;
+
+			result = refeval(env, rexpr);
+
+			gc_return(ts, result);
+
+			iexpr = iexpr->m.rexpr;
+		} while(ast_isSequence(iexpr))
+			;
+		if(ast_isnotZen(iexpr)) {
+			texpr->m.rexpr = iexpr;
+
+			result = refeval(env, rexpr);
+
+			gc_return(ts, result);
+
+		}
+
+		return result;
+	}
+
+	return oboerr(sloc, ERR_InvalidReferent);
+}
+
+static Ast
 builtin_loop_1(
 	Ast    env,
 	sloc_t sloc,
@@ -958,6 +1017,9 @@ builtin_loop_1(
 			if(ast_isRange(iexpr)) {
 				return builtin_loop_range(env, sloc, lexpr, rexpr, iexpr);
 			}
+			if(ast_isSequence(iexpr)) {
+				return builtin_loop_sequence(env, sloc, lexpr, rexpr, iexpr);
+			}
 
 			iexpr = ZEN;
 		}
@@ -967,7 +1029,7 @@ builtin_loop_1(
 	if(ast_isAssemblage(lexpr)) {
 		if(ast_isAssemblage(lexpr->m.rexpr)) {
 			do {
-				eval(env, lexpr->m.lexpr);
+				evalseq(env, lexpr->m.lexpr);
 				lexpr = lexpr->m.rexpr;
 			} while(ast_isAssemblage(lexpr->m.rexpr))
 				;
@@ -975,12 +1037,12 @@ builtin_loop_1(
 			lexpr = lexpr->m.lexpr;
 
 		} else {
-			eval(env, lexpr->m.lexpr);
+			evalseq(env, lexpr->m.lexpr);
 			lexpr = lexpr->m.rexpr;
 		}
 	}
 
-	bool cond = ast_toBool(eval(env, lexpr)) ^ inverted;
+	bool cond = ast_toBool(evalseq(env, lexpr)) ^ inverted;
 
 	rexpr = undefer(env, rexpr);
 	if(ast_isAssemblage(rexpr)) {
@@ -998,9 +1060,9 @@ builtin_loop_1(
 		while(cond) {
 			result = refeval(env, rexpr);
 
-			eval(env, iexpr);
+			evalseq(env, iexpr);
 
-			cond = ast_toBool(eval(env, lexpr)) ^ inverted;
+			cond = ast_toBool(evalseq(env, lexpr)) ^ inverted;
 
 			gc_return(ts, result);
 		}
@@ -1008,7 +1070,7 @@ builtin_loop_1(
 		while(cond) {
 			result = refeval(env, rexpr);
 
-			cond = ast_toBool(eval(env, lexpr)) ^ inverted;
+			cond = ast_toBool(evalseq(env, lexpr)) ^ inverted;
 
 			gc_return(ts, result);
 		}
@@ -2357,16 +2419,18 @@ builtin_exchange(
 //------------------------------------------------------------------------------
 
 static Ast
-builtin_range(
+builtin_block(
 	Ast    env,
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr
 ) {
-	lexpr = eval(env, lexpr);
-	rexpr = eval(env, rexpr);
+	if(ast_isnotZen(lexpr)) {
+		env = eval(env, lexpr);
+	}
 
-	return new_ast(sloc, AST_Operator, lexpr, rexpr, builtin_range_enum);
+	return eval(env, rexpr);
+	(void)sloc;
 }
 
 //------------------------------------------------------------------------------
@@ -2490,6 +2554,21 @@ builtin_array(
 	}
 
 	return lexpr;
+}
+
+//------------------------------------------------------------------------------
+
+static Ast
+builtin_range(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	lexpr = eval(env, lexpr);
+	rexpr = eval(env, rexpr);
+
+	return new_ast(sloc, AST_Operator, lexpr, rexpr, builtin_range_enum);
 }
 
 //------------------------------------------------------------------------------
@@ -2865,6 +2944,7 @@ initialise_builtin_operators(
 		BUILTIN("`exr`"            , exr            , P_Exponential)
 		BUILTIN("`rol`"            , rol            , P_Exponential)
 		BUILTIN("`ror`"            , ror            , P_Exponential)
+		BUILTIN("`block`"          , block          , P_Binding)
 		BUILTIN("`array`"          , array          , P_Binding)
 		BUILTIN("`range`"          , range          , P_Binding)
 	};
@@ -2923,6 +3003,7 @@ initialise_builtin_operators(
 		{ ">>>", "`exr`"            },
 		{ "<<>", "`rol`"            },
 		{ "<>>", "`ror`"            },
+		{  "{}", "`block`"          },
 		{  "[]", "`array`"          },
 		{  "..", "`range`"          },
 	};

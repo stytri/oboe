@@ -40,27 +40,27 @@ max_name_width:0;
 );
 
 knapsack(items, n:, w:): (
-	m:[calloc(w + 1)],
-	(i::1..n) ?* (
-        m[i] = calloc(w + 1),
-        (j::0..w) ?* (
+	m:[calloc(w + 1)];
+	(i::1..n) ?* {
+		m[i] = calloc(w + 1);
+		(j::0..w) ?* (
 			(items[i - 1]weight > j) ? ((
 				m[i][j] = m[i - 1][j]
 			) ; (
-				a:m[i - 1][j],
-				b: m[i - 1][j - items[i - 1]weight] + items[i - 1]value,
+				a:m[i - 1][j];
+				b: m[i - 1][j - items[i - 1]weight] + items[i - 1]value;
 				m[i][j] = max(a, b)
 			))
 		)
-	),
+	};
 
-	s:calloc(n),
+	s:calloc(n);
 	[]((i:n, j:w; i > 0; i--) ?* (
-		(m[i][j] > m[i - 1][j]) ? (
-			j = j - items[i - 1]weight,
+		(m[i][j] > m[i - 1][j]) ? {
+			j = j - items[i - 1]weight;
 			s[i - 1] = 1
-		)
-	)),
+		}
+	));
 	s
 );
 
@@ -78,10 +78,10 @@ total_weight:0;
 total_value:0;
 
 (i::0..(N_items-1)) ?* (
-	is_packed[i] ? (
-		print(items[i]name, items[i]weight, items[i]value),
-		total_weight += items[i]weight,
+	is_packed[i] ? {
+		print(items[i]name, items[i]weight, items[i]value);
+		total_weight += items[i]weight;
 		total_value += items[i]value
-	)
+	}
 );
 print("totals", total_weight, total_value);

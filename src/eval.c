@@ -173,6 +173,28 @@ eval(
 }
 
 Ast
+evalseq(
+	Ast    env,
+	Ast    ast
+) {
+	Ast result = ZEN;
+
+	size_t ts = gc_topof_stack();
+	for(; ast_isSequence(ast); ast = ast->m.rexpr) {
+		result = eval(env, ast->m.lexpr);
+
+		gc_return(ts, result);
+	}
+	if(ast_isnotZen(ast)) {
+		result = eval(env, ast);
+
+		gc_return(ts, result);
+	}
+
+	return result;
+}
+
+Ast
 eval_named(
 	Ast         env,
 	sloc_t      sloc,

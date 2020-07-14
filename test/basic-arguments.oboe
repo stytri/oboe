@@ -1,8 +1,8 @@
 argc:(@argc),
 argv:(@argv);
 
-(argi:0..(argc-1)) ?* (
-	args:argv[argi],
+(argi:0..(argc-1)) ?* {
+	args:argv[argi];
 	@println("[", argi, "] ", args)
-);
+};
 @println(" ", argc)

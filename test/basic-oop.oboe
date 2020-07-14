@@ -3,17 +3,17 @@
 oop(a,b): [
 	m_a:a;
 	m_b:b;
-	func(x): (
-		t:m_b,
-		m_b = m_a + x,
+	func(x): {
+		t:m_b;
+		m_b = m_a + x;
 		m_a = t
-	);
+	};
 ];
 
 o1:oop(0,1);
 o2:oop(1,2);
 
-(i:0..2) ?* (
+(i:0..2) ?* {
 	("o1: ", o1 func(2 i + 1) , ' ', o1)@println;
 	("o2: ", o2 func(2(i + 1)), ' ', o2)@println;
-);
+};

@@ -96,13 +96,13 @@ Initiated by `\`, followed by:
 
 Initiated by one of `(`, `[`,  `{`, terminated by the corresponding `)`, `]`, `}`.
 
-`(` `)` are elided, replaced in the syntax tree by the bracketed sub-expression.
+`(` `)` are elided, replaced in the syntax tree by the bracketed **sub-expression**.
 
 `[` `]` and `{` `}` are represented in the syntax tree by distinct operators.
 
-`[` `]` is used to define arrays.
+`[` `]` is used to define **arrays/environments**.
 
-`{` `}` is currently unused.
+`{` `}` is used to designate an evaluation **block**.
 
 Where the bracketed expression is an _operand_-less **operator** sans space, then this forms a distinct **operator**.
 
@@ -128,13 +128,17 @@ When an **environment** is applied to an expression or, expression-list, it is a
 
 An anonymous **environment** can be utilized to limit the scope of variables.
 
+#### Block
+
+Used to demark a block of code; primarily this will be used with conditional expressions to isolate a block of code to avoid unwanted interaction with the `;` operator which is utilized to designate alternate program flow paths.
+
 #### Operators
 
 ##### Predefined operators
 
 - _applicate_, has no lexical representation, but is invoked by adjacency.
-- `,` _sequence_, creates a list of operations.
-- `;` _assemblage_, creates a list of sequences.
+- `,` _sequence_, creates a list of expressions.
+- `;` _assemblage_, creates a list of sequences/expressions.
 
 ##### User-defined operators
 
@@ -190,7 +194,7 @@ _left-operand_ ; _right-operand_
 
 An _assemblage_ may be evaluated differently when used as an operand, but is otherwise evaluated thus:
 
-_left-operand_ is evaluated, then _right-operand_ is evaluated.
+_left-operand_ is evaluated, then _right-operand_ is evaluated, the result of evaluating the _right-operand_ is returned.
 
 ##### sequence
 
@@ -198,7 +202,7 @@ _left-operand_ `,` _right-operand_
 
 A _sequence_ may be evaluated differently when used as an operand, but is otherwise evaluated thus:
 
-_left-operand_ is evaluated, then _right-operand_ is evaluated.
+_left-operand_ is evaluated, then _right-operand_ is evaluated, and a new sequence of the results is created. Individual operators [e.g. **conditional**, **iteration** or, **selection**] may handle sequences differently in certain instances.
 
 ##### range
 
@@ -262,6 +266,8 @@ _condition_ `?` `(`_true-operand_ `;` _false-operand_`)`
 
 _condition_ is evaluated, and if the result, when cast to a boolean value, evaluates to **true**, then _true-operand_ is evaluated, otherwise _false-operand_ id evaluated.
 
+**sequences** in _condition_ are evaluated as a simple list of expressions, each evaluated in turn; with the result of the evaluation of the final expression in the sequence is used to determine the condition.
+
 _operand_ `?` **Zen** 
 
 **Zen** `?` _operand_
@@ -274,11 +280,13 @@ The `!` operator is as above, except the condition is inverted.
 
 either:
 
-_expression_ `?:` `(` (_case-expression_ `:` _action-expression_ `;`)+ _default-action-expression_?`)`
+_condition_ `?:` `(` (_case-expression_ `:` _action-expression_ `;`)+ _default-action-expression_?`)`
 
 or:
 
  **Zen** `?:` `(` (_case-expression_ `:` _action-expression_ `;`)+ _default-action-expression_?`)`
+
+**sequences** in _condition_ are evaluated as a simple list of expressions, each evaluated in turn; with the result of the evaluation of the final expression in the sequence is used to determine the condition.
 
 ##### iteration
 
@@ -318,6 +326,14 @@ or:
 
 or:
 
+`(` _identifier_ `:` _sequence_ `)`   
+
+or:
+
+`(` _identifier_ `=` _sequence_ `)`
+
+or:
+
 `(` _identifier_ `:` _array_`[`_range_`]` `)`
 
 or:
@@ -333,6 +349,8 @@ or:
 `(` _identifier_ `=` `[`_initializer_`]` `)`
 
 The `!*` operator is as above, except the condition is inverted; does **not** apply to **range**s.
+
+**sequences** in _initialization_, _condition_ and, _recalculation_ are evaluated as a simple list of expressions, each evaluated in turn; in the case of _condition_ with the result of the evaluation of the final expression in the sequence is used to determine the condition.
 
 ##### evaluation
 

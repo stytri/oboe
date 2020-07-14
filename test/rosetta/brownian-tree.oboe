@@ -9,53 +9,53 @@ bitmap(y,x): (
 );
 
 main(argc, argv): (
-	SIDE:301,
-	COVERAGE:10,
-	(argc > 1) ? (
-		SIDE = argv[1]@to_Integer,
+	SIDE:301;
+	COVERAGE:10;
+	(argc > 1) ? {
+		SIDE = argv[1]@to_Integer;
 		(argc > 2) ? (
 			COVERAGE = argv[2]@to_Integer
 		)
-	),
+	};
 
-	NPARTICLES::COVERAGE % (SIDE * SIDE),
+	NPARTICLES::COVERAGE % (SIDE * SIDE);
 
-	W:bitmap(SIDE, SIDE),
-	W[SIDE/2][SIDE/2] = 1,
+	W:bitmap(SIDE, SIDE);
+	W[SIDE/2][SIDE/2] = 1;
 
-	(i::0..(NPARTICLES-1)) ?* (
-		y:, x:,
+	(i::0..(NPARTICLES-1)) ?* {
+		y:; x:;
 
-		(do_over:1; do_over) ?* (
-			do_over = 0,
+		(do_over:1; do_over) ?* {
+			do_over = 0;
 
-			(while:1; while) ?* (
-				x = select(SIDE - 2) + 1,
-				y = select(SIDE - 2) + 1,
+			(while:1; while) ?* {
+				x = select(SIDE - 2) + 1;
+				y = select(SIDE - 2) + 1;
 				while = W[y][x]
-			),
+			};
 
 			(do_over
 				|| W[y-1][x-1] || W[y-1][x] || W[y-1][x+1]
 				|| W[y][x-1]   || W[y][x+1] || W[y+1][x-1]
 				|| W[y+1][x]   || W[y+1][x+1]
-			) !* (
-				x += select(3) - 1,
-				y += select(3) - 1,
+			) !* {
+				x += select(3) - 1;
+				y += select(3) - 1;
 				do_over = (x < 1 || x >= SIDE - 1 || y < 1 || y >= SIDE - 1)
-			)
-		),
+			}
+		};
 
 		W[y][x] = 1
-	),
+	};
 
-	("P1\n", SIDE, ' ', SIDE, '\n')@print,
-	(Wy::W[]) ?* (
+	("P1\n", SIDE, ' ', SIDE, '\n')@print;
+	(Wy::W[]) ?* {
 		(Wyx::Wy[]) ?* (
 			(Wyx, ' ')@print
-		),
+		);
 		'\n'@print
-	)
+	}
 );
 
 main(@argc, @argv);

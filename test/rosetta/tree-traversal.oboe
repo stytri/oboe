@@ -9,20 +9,20 @@ node(v, l, r): [
 ];
 
 preorder(t, fn): t(
-	fn(value),
-	left@is_Zen  ! preorder(left, fn),
+	fn(value);
+	left@is_Zen  ! preorder(left, fn);
 	right@is_Zen ! preorder(right, fn)
 );
 
 inorder(t, fn): t(
-	left@is_Zen  ! inorder(left, fn),
-	fn(value),
+	left@is_Zen  ! inorder(left, fn);
+	fn(value);
 	right@is_Zen ! inorder(right, fn)
 );
 
 postorder(t, fn): t(
-	left@is_Zen  ! inorder(left, fn),
-	right@is_Zen ! inorder(right, fn),
+	left@is_Zen  ! inorder(left, fn);
+	right@is_Zen ! inorder(right, fn);
 	fn(value)
 );
 
@@ -33,20 +33,20 @@ levelorder(t, fn): (
 		node :[]
 	],
 	enqueue(q, n): q(
-		node[back] =^ n,
+		node[back] =^ n;
 		back++
 	),
 	dequeue(q): q(
 		[index:front](
-			front++,
+			front++;
 			=^node[index]
 		)
 	),
 
 	enqueue(q, t),
 	q(front < back) ?* dequeue(q)(
-		left@is_Zen  ! enqueue(q, left),
-		right@is_Zen ! enqueue(q, right),
+		left@is_Zen  ! enqueue(q, left);
+		right@is_Zen ! enqueue(q, right);
 		fn(value)
 	)
 );

@@ -9,9 +9,9 @@ iso_weeks(y): (
 );
 
 iso_week_number(tm): (
-	doy:tm year_day,
-	dow:tm week_day,
-	iwn:(doy + 10 - dow) / 7,
+	doy:tm year_day;
+	dow:tm week_day;
+	iwn:(doy + 10 - dow) / 7;
 	?: (
 	iwn == 0                : iso_weeks(tm year - 1);
 	iwn > iso_weeks(tm year): 1;
@@ -20,16 +20,16 @@ iso_week_number(tm): (
 );
 
 trimlz(s): (
-	i:0,
+	i:0;
 	(s[i] == '0') ?* (
 		i = i+1
-	),
+	);
 	(i > 0) ? (s << i ; s)
 );
 
 main(argc, argv): (
 	(argc > 1) ? (
-		(i:3; i < argc; i = i+3) ?* (
+		(i:3; i < argc; i = i+3) ?* {
 			tm:[
 				year   :trimlz(argv[i-2])@to_Integer,
 				month  :trimlz(argv[i-1])@to_Integer,
@@ -37,9 +37,9 @@ main(argc, argv): (
 				hour   :12,
 				minutes:0,
 				seconds:0
-			],
+			];
 			iso_week_number((@time(tm))@utctime)@println
-		)
+		}
 	;
 		iso_week_number((@time())@utctime)@println
 	)

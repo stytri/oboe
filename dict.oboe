@@ -1,5 +1,5 @@
 VERSION::"
-dict 20.07.130
+dict 20.07.140
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -41,7 +41,7 @@ with one file per line.
 #==============================================================================
 
 "=" "[=]"(L,R): L[L@length] = R;
-"="  "=:"(L,R): (T:L, L = R, T);
+"="  "=:"(L,R): (T:L; L = R; T);
 "+"  "++"(L)  : L += 1;
 "-"  "--"(L)  : L -= 1;
 
@@ -49,7 +49,7 @@ __:[
 	enum:0;
 ];
 
-enum(e): (e@is_Integer ? (r:__(enum) = e ; r:__(enum)), __(enum++), r);
+enum(e): (e@is_Integer ? (r:__(enum) = e ; r:__(enum)); __(enum++); r);
 
 lengthof(X): (X@is_Zen ! (X@length ; 0));
 
@@ -75,86 +75,86 @@ debug   :FALSE;
 
 dump(name,object,indent:): (
 	object@is_Environment ? ((
-		('\t' indent, name, ":[]")@println,
+		('\t' indent, name, ":[]")@println;
 		(N:object@length, i:0; i < N; i++) ?* (
 			dump(object[i]@identifier, object[i], indent+1)
 		)
 	);(
 		object@is_String ? ((
-			('\t' indent, name, ":\"", object, "\"")@println,
+			('\t' indent, name, ":\"", object, "\"")@println
 		);(
-			('\t' indent, name, ':', object)@println,
+			('\t' indent, name, ':', object)@println
 		))
 	))
 );
 
 getln(f): (
-	line:f@fgetln,
+	line:f@fgetln;
 	line@is_String ? (
-		line,
+		line
 	;
 		""
 	)
 );
 
 gettok(s): (
-	n:s@span_NotSpace,
-	t:s <<< n,
-	n += (s(n..))@span_Space,
-	s <<= n,
+	n:s@span_NotSpace;
+	t:s <<< n;
+	n += (s(n..))@span_Space;
+	s <<= n;
 	t
 );
 
 split1(arg): (
-	s:gettok(arg),
+	s:gettok(arg);
 	s
 );
 
 split2(arg): (
-	s:gettok(arg),
-	t:gettok(arg),
+	s:gettok(arg);
+	t:gettok(arg);
 	[s, t]
 );
 
 split3(arg): (
-	s:gettok(arg),
-	t:gettok(arg),
-	z:gettok(arg),
+	s:gettok(arg);
+	t:gettok(arg);
+	z:gettok(arg);
 	[s, t, z]
 );
 
 splitw(arg): (
-	return:[],
+	return:[];
 
-	arg ?* (
-		n:arg@span_Space,
+	arg ?* {
+		n:arg@span_Space;
 		n ? (
 			arg <<= n
-		),
-		n:arg@span_NotSpace,
-		n ? (
-			return [=] arg <<< n,
+		);
+		n:arg@span_NotSpace;
+		n ? {
+			return [=] arg <<< n;
 			arg <<= n
-		)
-	),
+		}
+	};
 
 	return
 );
 
 splitc(arg,set): (
-	return:[],
+	return:[];
 
-	arg ?* (
-		n:(arg, set)@span_InSet,
+	arg ?* {
+		n:(arg, set)@span_InSet;
 		n ? (
 			arg <<= n
-		),
-		n:(arg, set)@span_NotInSet,
-		n ? (
-			return [=] arg <<< n,
+		);
+		n:(arg, set)@span_NotInSet;
+		n ? {
+			return [=] arg <<< n;
 			arg <<= n
-		)
-	),
+		}
+	};
 
 	return
 );
@@ -162,36 +162,36 @@ splitc(arg,set): (
 #==============================================================================
 
 (
-	NUM_FLAG ::enum(0),
-	CHAR_FLAG::enum(),
-	LONG_FLAG::enum()
+	NUM_FLAG ::enum(0);
+	CHAR_FLAG::enum();
+	LONG_FLAG::enum();
 );
 (
-	enum(0),
-	WARN              ::enum(),
-	NOSUGGEST         ::enum(),
-	COMPOUNDFLAG      ::enum(),
-	COMPOUNDBEGIN     ::enum(),
-	COMPOUNDLAST      ::enum(),
-	COMPOUNDMIDDLE    ::enum(),
-	ONLYINCOMPOUND    ::enum(),
-	COMPOUNDPERMITFLAG::enum(),
-	COMPOUNDFORBIDFLAG::enum(),
-	COMPOUNDROOT      ::enum(),
-	FORCEUCASE        ::enum(),
-	SYLLABLENUM       ::enum(),
-	CIRCUMFIX         ::enum(),
-	FORBIDDENWORD     ::enum(),
-	KEEPCASE          ::enum(),
-	LEMMA_PRESENT     ::enum(),
-	NEEDAFFIX         ::enum(),
-	PSEUDOROOT        ::enum(),
-	SUBSTANDARD       ::enum(),
+	enum(0);
+	WARN              ::enum();
+	NOSUGGEST         ::enum();
+	COMPOUNDFLAG      ::enum();
+	COMPOUNDBEGIN     ::enum();
+	COMPOUNDLAST      ::enum();
+	COMPOUNDMIDDLE    ::enum();
+	ONLYINCOMPOUND    ::enum();
+	COMPOUNDPERMITFLAG::enum();
+	COMPOUNDFORBIDFLAG::enum();
+	COMPOUNDROOT      ::enum();
+	FORCEUCASE        ::enum();
+	SYLLABLENUM       ::enum();
+	CIRCUMFIX         ::enum();
+	FORBIDDENWORD     ::enum();
+	KEEPCASE          ::enum();
+	LEMMA_PRESENT     ::enum();
+	NEEDAFFIX         ::enum();
+	PSEUDOROOT        ::enum();
+	SUBSTANDARD       ::enum();
 );
 (
-	ARC_SEQ::enum(0),
-	ARC_SET::enum(),
-	ARC_NOT::enum()
+	ARC_SEQ::enum(0);
+	ARC_SET::enum();
+	ARC_NOT::enum();
 );
 
 AFFIX::[
@@ -247,21 +247,21 @@ flag_type(arg): (
 );
 
 get_affix_flags(s,n:): (
-	flag:[],
+	flag:[];
 
-	N::s@length,
+	N::s@length;
 	n ? ((
 		(start:0, end:(n - 1); start < N; start += n, end += n) ?* (
 			flag [=] s[start..end]
 		)
 	);(
-		(start:0; start < N; start += n + 1) ?* (
-			n = (s(start..))@span_Digit,
+		(start:0; start < N; start += n + 1) ?* {
+			n = (s(start..))@span_Digit;
 			n ? (
 				flag [=] s[start..(start + n - 1)]
 			)
-		)
-	)),
+		}
+	));
 
 	flag
 );
@@ -290,39 +290,42 @@ set_affix_class(afx,field,count) : (
 	afx[field[0]] = [
 		cross:(field[1] == "Y"),
 		rule :[]
-	],
+	];
 	count = field[2]@to_Integer
 );
 
 set_affix_rule_condition(field): (
-	cond:[len:0],
+	cond:[len:0];
 
-	field <> "." ? ((N::lengthof(field), start:0, end:; start < N; start = end) ?* (
-		end = start + (field(start..), "[")@span_NotInSet,
-		end > start ? ((
-			cond [=] [
-				char:field[start..(end - 1)],
-				type:0
-			],
-			cond len += (end - start)
-
-		);(field[start] == '[' ? (
-			start += 1,
-			invert:(start < N) && (field[start] == '^'),
-			start += invert,
-
-			end = start + (field(start..), "]")@span_NotInSet,
-			end > start ? (
+	field <> "." ? (
+		(N::lengthof(field), start:0, end:; start < N; start = end) ?* {
+			end = start + (field(start..), "[")@span_NotInSet;
+			end > start ? ((
 				cond [=] [
 					char:field[start..(end - 1)],
-					type:invert ? (2 ; 1)
-				],
-				cond len += 1,
+					type:0
+				];
+				cond len += (end - start)
+			);(
+				field[start] == '[' ? {
+					start += 1;
+					invert:(start < N) && (field[start] == '^');
+					start += invert;
 
-				end += (end < N) && (field[end] == ']')
-			)
-		)))
-	)),
+					end = start + (field(start..), "]")@span_NotInSet;
+					end > start ? {
+						cond [=] [
+							char:field[start..(end - 1)],
+							type:invert ? (2 ; 1)
+						];
+						cond len += 1;
+
+						end += (end < N) && (field[end] == ']')
+					}
+				}
+			))
+		}
+	);
 
 	cond
 );
@@ -332,7 +335,7 @@ set_affix_rule_strip(field): (
 );
 
 set_affix_rule_affix(field): (
-	n:(field, "/")@span_NotInSet,
+	n:(field, "/")@span_NotInSet;
 	n < field@length ? (
 		[field <<< n, get_affix_flags(field << (n + 1), __(affix)FLAG type)]
 	;
@@ -346,7 +349,7 @@ set_affix_rule(afx,field,count): (
 		affix:           set_affix_rule_affix(field[2]),
 		cond :           set_affix_rule_condition(field[3]),
 		morph: minimal ! field@length > 4 ? (field[4..] ; ())
-	],
+	];
 	count--
 );
 
@@ -362,7 +365,7 @@ set_counted(afx,field,count): (
 	count ! (
 		count = arg@to_Integer
 	;
-		afx [=] field,
+		afx [=] field;
 		count--
 	)
 );
@@ -383,7 +386,7 @@ affix_cmd:[
 	REP                 (arg): minimal ! set_counted(__(affix)REP                 , split2 arg, __(affix)COUNT);
 	PFX                 (arg):           set_affix  (__(affix)PFX                 , splitw arg, __(affix)COUNT);
 	SFX                 (arg):           set_affix  (__(affix)SFX                 , splitw arg, __(affix)COUNT);
-	BREAK               (arg): minimal !(set_counted(__(affix)BREAK               , split1 arg, __(affix)COUNT), __(affix)COUNT ! (__(affix)BREAK = []));
+	BREAK               (arg): minimal !{set_counted(__(affix)BREAK               , split1 arg, __(affix)COUNT); __(affix)COUNT ! (__(affix)BREAK = [])};
 	PHONE               (arg): minimal ! set_counted(__(affix)PHONE               , split2 arg, __(affix)COUNT);
 	WARN                (arg): minimal ! set_flag   (__(affix)FLAG                , split1 arg, WARN);
 	FORBIDWARN          (arg): minimal ! set_boolean(__(affix)FORBIDWARN          );
@@ -430,12 +433,12 @@ affix_cmd:[
 ];
 
 get_affix_args(s,o:): (
-	n:o + (s(o..))@span_Space,
-	m:n + (s(n..), "#")@span_NotInSet,
-	n < m ? (
-		o  = (s(n..m))@span_RevSpace,
+	n:o + (s(o..))@span_Space;
+	m:n + (s(n..), "#")@span_NotInSet;
+	n < m ? {
+		o  = (s(n..m))@span_RevSpace;
 		m -= o
-	),
+	};
 	n < m ? (
 		s[n..(m - 1)]
 	;
@@ -444,49 +447,49 @@ get_affix_args(s,o:): (
 );
 
 read_affix(file_aff,affix): (
-	f:file_aff@open,
+	f:file_aff@open;
 
-	f@is_File ? (
-		verbose ? file_aff@printerr,
+	f@is_File ? ((
+		verbose ? file_aff@printerr;
 
 		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
-			s@is_String ? (
-				n:s@span_Alphabetic,
-				n ? (
-					cs:s <<< n,
-					s = get_affix_args(s, n),
+			s@is_String ? {
+				n:s@span_Alphabetic;
+				n ? {
+					cs:s <<< n;
+					s = get_affix_args(s, n);
 					affix_cmd[cs](htmlchar decode s)
-				)
-			)
-		),
+				}
+			}
+		);
 
-		f@ferror ? unable_to_read file_aff,
+		f@ferror ? unable_to_read file_aff;
 
 		f@close
-	;
+	);(
 		unable_to_open file_aff
-	),
+	));
 
 	()
 );
 
 cmp_affix_rule_condition:[
 	arc_seq(cs,cc,j): (
-		match:TRUE,
+		match:TRUE;
 		(n:cs@length, k:0;
 			match && k < n;
 			k++, j++
 		) ?* (
 			cs[k] ?: (cc: '.': ; match = FALSE)
-		),
+		);
 		match
 	);
 	arc_set(cs,cc,j): (
-		j++,
+		j++;
 		(cc, cs)@is_CharInSet
 	);
 	arc_not(cs,cc,j): (
-		j++,
+		j++;
 		(cc, cs)@is_NotCharInSet
 	);
 ];
@@ -494,138 +497,138 @@ cmp_affix_rule_condition:[
 #==============================================================================
 
 catprefix(afx,wlist,w): (
-	afx@is_Environment ? (
-		len:w@length,
+	afx@is_Environment ? {
+		len:w@length;
 
-		(R:lengthof(afx rule), r:0; r < R; r++) ?* (
-			rule:afx  rule[r],
-			slen:lengthof(rule strip),
-			cond:rule cond,
-			pref:rule affix[0],
+		(R:lengthof(afx rule), r:0; r < R; r++) ?* {
+			rule:afx  rule[r];
+			slen:lengthof(rule strip);
+			cond:rule cond;
+			pref:rule affix[0];
 
-			debug ? dump("rule", rule, 1),
+			debug ? dump("rule", rule, 1);
 			(len >= cond len
 				&& (len + __(affix)FULLSTRIP) > slen
 				&& (
 					(!slen)
 					|| rule strip == w[..(slen - 1)]
 				)
-			) ? (
-				match:TRUE,
+			) ? {
+				match:TRUE;
 				(N:cond@length, i:1, j:0; match && i < N; i++) ?* (
 					match = cmp_affix_rule_condition[cond[i]type](cond[i]char, w[j], j)
-				),
-				match ? (
-					wroot:wlist@length,
+				);
+				match ? {
+					wroot:wlist@length;
 
-					ws:w[slen..],
-					wl:pref ws,
-					wlist [wl] = FALSE,
+					ws:w[slen..];
+					wl:pref ws;
+					wlist [wl] = FALSE;
 
 					nocontin ! cataffix(rule affix[1], wlist, wroot, wl)
-				)
-			)
-		)
-	),
+				}
+			}
+		}
+	};
 
 	()
 );
 
 catsuffix(afx,wlist,w): (
-	afx@is_Environment ? (
-		len:w@length,
+	afx@is_Environment ? {
+		len:w@length;
 
-		(R:lengthof(afx rule), r:0; r < R; r++) ?* (
-			rule:afx  rule[r],
-			slen:lengthof(rule strip),
-			cond:rule cond,
-			suff:rule affix[0],
+		(R:lengthof(afx rule), r:0; r < R; r++) ?* {
+			rule:afx  rule[r];
+			slen:lengthof(rule strip);
+			cond:rule cond;
+			suff:rule affix[0];
 
-			debug ? dump("rule", rule, 1),
+			debug ? dump("rule", rule, 1);
 			(len >= cond len
 				&& (len + __(affix)FULLSTRIP) > slen
 				&& (
 					(!slen)
 					|| rule strip == w[(len - slen)..]
 				)
-			) ? (
-				match:TRUE,
+			) ? {
+				match:TRUE;
 				(N:cond@length, i:1, j:0; match && i < N; i++) ?* (
 					match = cmp_affix_rule_condition[cond[i]type](cond[i]char, w[j], j)
-				),
-				match ? (
-					wroot:wlist@length,
+				);
+				match ? {
+					wroot:wlist@length;
 
-					ws:w[..(len - slen - 1)],
-					wl:ws suff,
-					wlist [wl] = afx cross,
+					ws:w[..(len - slen - 1)];
+					wl:ws suff;
+					wlist [wl] = afx cross;
 
 					nocontin ! cataffix(rule affix[1], wlist, wroot, wl)
-				)
-			)
-		)
-	),
+				}
+			}
+		}
+	};
 
 	()
 );
 
 cataffix(flag,wlist,wroot,w): (
 	nosuffix ! (
-		(f:flag[..()]) ?* (
-			debug ? (w, " *.. ", f)@println,
+		(f:flag[..()]) ?* {
+			debug ? (w, " *.. ", f)@println;
 			catsuffix(__(affix)SFX[f], wlist, w)
-		)
-	),
+		}
+	);
 
 	nosuffix || noprefix ! (
 		(f:flag[..()]) ?* (
 			__(affix)PFX[f]cross ? (
 				(N:wlist@length, i:wroot; i < N; i++) ?* (
-					wlist[i] ? (
-						wl:wlist[i]@identifier,
-						debug ? (wl, " ..*.. ", f)@println,
+					wlist[i] ? {
+						wl:wlist[i]@identifier;
+						debug ? (wl, " ..*.. ", f)@println;
 						catprefix(__(affix)PFX[f], wlist, wl)
-					)
+					}
 				)
 			)
 		)
-	),
+	);
 
 	noprefix ! (
-		(f:flag[..()]) ?* (
-			debug ? (w, " ..* ", f)@println,
+		(f:flag[..()]) ?* {
+			debug ? (w, " ..* ", f)@println;
 			catprefix(__(affix)PFX[f], wlist, w)
-		)
-	),
+		}
+	);
 
 	()
 );
 
 catword(wlist,s): (
-	n:(s, "\t #/", '\\')@span_NotInSet,
-	w:s <<< n,
+	n:(s, "\t #/", '\\')@span_NotInSet;
+	w:s <<< n;
 
-	wroot:wlist@length,
-	wlist[w] = FALSE,
+	wroot:wlist@length;
+	wlist[w] = FALSE;
 
-	noaffix ! (
-		s[n] == '/' ? (
-			s <<= (n + 1),
-			n = (s, "\t #")@span_NotInSet,
-			s <<<= n,
+	noaffix ! {
+		s[n] == '/' ? ((
+			s <<= (n + 1);
+			n = (s, "\t #")@span_NotInSet;
+			s <<<= n;
 			__(affix)AF@length > 1 && s@is_Digit ? (
 				s = __(affix)AF[s@to_Integer]
 			)
-		;
+		);(
 			s = ""
-		),
+		));
 
-		s ? (
-			flag:get_affix_flags(s, __(affix)FLAG type),
+		s ? {
+			flag:get_affix_flags(s, __(affix)FLAG type);
 
 			cataffix(flag, wlist, wroot, w)
-		)
-	),
+		}
+	};
 
 	()
 );
@@ -633,9 +636,9 @@ catword(wlist,s): (
 catfile(file,idir,odir,makeout): (
 	file >>> 4 ?: (
 	".DIC": ".AFF": (
-			file >>= 4,
-			file_aff:idir file".AFF",
-			file_dic:idir file".DIC",
+			file >>= 4;
+			file_aff:idir file".AFF";
+			file_dic:idir file".DIC";
 			makeout@is_String ? (
 				file_out:odir makeout".OUT"
 			;
@@ -643,9 +646,9 @@ catfile(file,idir,odir,makeout): (
 			)
 		);
 	".dic": ".aff": (
-			file >>= 4,
-			file_aff:idir file".aff",
-			file_dic:idir file".dic",
+			file >>= 4;
+			file_aff:idir file".aff";
+			file_dic:idir file".dic";
 			makeout@is_String ? (
 				file_out:odir makeout".out"
 			;
@@ -653,120 +656,120 @@ catfile(file,idir,odir,makeout): (
 			)
 		);
 		(
-			file_aff:idir file".aff",
-			file_dic:idir file".dic",
+			file_aff:idir file".aff";
+			file_dic:idir file".dic";
 			makeout@is_String ? (
 				file_out:odir makeout".out"
 			;
 				file_out:odir file".out"
 			)
 		);
-	),
+	);
 
-	makeout ? (
-		verbose ? (">" file_out)@printerr,
-		outfile@close,
-		outfile = (file_out, "w")@open,
+	makeout ? {
+		verbose ? (">" file_out)@printerr;
+		outfile@close;
+		outfile = (file_out, "w")@open;
 		outfile@is_File ! (
 			unable_to_open file_out
 		)
-	),
+	};
 
-	outfile@is_File ? (
-		__["affix"]=AFFIX,
+	outfile@is_File ? {
+		__["affix"] = AFFIX;
 
-		noaffix ! (
-			read_affix(file_aff, __(affix)),
+		noaffix ! {
+			read_affix(file_aff, __(affix));
 
 			debug ? dump("affix", __(affix), 0)
-		),
+		};
 
-		nowords ! (
-			f:file_dic@open,
+		nowords ! {
+			f:file_dic@open;
 
-			f@is_File ? (
-				wlist:[],
+			f@is_File ? ((
+				wlist:[];
 
-				s:f@fgetln,
-				verbose ? (file_dic, " [", s@to_Integer, "]")@printerr,
+				s:f@fgetln;
+				verbose ? (file_dic, " [", s@to_Integer, "]")@printerr;
 
 				(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
 					s@is_String ? (
 						s[0]@is_Space ! (
 							catword(wlist, htmlchar decode s)
-						),
+						)
 					)
-				),
+				);
 
-				f@ferror ? unable_to_read file_dic,
+				f@ferror ? unable_to_read file_dic;
 
-				f@close,
+				f@close;
 
 				(N:wlist@length, i:0; i < N; i++) ?* (
 					(outfile, wlist[i]@identifier)@fprintln
 				)
-			;
+			);(
 				unable_to_open file_dic
-			)
-		)
-	),
+			))
+		}
+	};
 
 	()
 );
 
 catfiles(file,idir,odir,makeout): (
-	f:file@open,
+	f:file@open;
 
-	f@is_File ? (
-		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* (
-			n:s@span_Space,
+	f@is_File ? ((
+		(s:f@fgetln; f@eof || f@ferror; s=f@fgetln) !* {
+			n:s@span_Space;
 			s[n] == '-' ? ((
-				_makeout :makeout,
-				_noaffix :noaffix,
-				_noprefix:noprefix,
-				_nosuffix:nosuffix,
+				_makeout :makeout;
+				_noaffix :noaffix;
+				_noprefix:noprefix;
+				_nosuffix:nosuffix;
 
-				o:0,
+				o:0;
 
-				(N:s@length; n < N && s[n] == '-') ?* (
-					m:n + s((n + 1)..)@span_NotSpace,
-					o:m + s((m + 1)..)@span_Space + 1,
+				(N:s@length; n < N && s[n] == '-') ?* {
+					m:n + s((n + 1)..)@span_NotSpace;
+					o:m + s((m + 1)..)@span_Space + 1;
 
 					s[n..m] ?: (
 					"-r": "--rename"  : (
-							n:o,
-							m:n + s((n + 1)..)@span_NotSpace,
-							o:m + s((m + 1)..)@span_Space + 1,
-							makeout = s[n..m],
+							n:o;
+							m:n + s((n + 1)..)@span_NotSpace;
+							o:m + s((m + 1)..)@span_Space + 1;
+							makeout = s[n..m]
 						);
 					"-n": "--noaffix" : noaffix  = TRUE;
 					"-p": "--noprefix": noprefix = TRUE;
 					"-s": "--nosuffix": nosuffix = TRUE;
 					"-c": "--nocontin": nocontin = TRUE;
-					),
+					);
 
 					n:o + s(o..)@span_Space
-				),
+				};
 
-				catfile(s << o, idir, odir, makeout)
+				catfile(s << o, idir, odir, makeout);
 
-				nosuffix = _nosuffix,
-				noprefix = _noprefix,
-				noaffix  = _noaffix,
+				nosuffix = _nosuffix;
+				noprefix = _noprefix;
+				noaffix  = _noaffix;
 				makeout  = _makeout
 			);(
 				s[n] <> '#' ? (
 					catfile(s << n, idir, odir, makeout)
 				)
 			))
-		),
+		};
 
-		f@ferror ? unable_to_read file,
+		f@ferror ? unable_to_read file;
 
 		f@close
-	;
+	);(
 		unable_to_open file
-	),
+	));
 
 	()
 );
@@ -778,63 +781,64 @@ main(argc, argv) : (
 	output_directory:"";
 	makeout         :FALSE;
 
-	(continue:TRUE, i:1; continue && i < argc; i++) ?* (
-		args:argv[i],
+	(continue:TRUE, i:1; continue && i < argc; i++) ?* ((
+		args:argv[i];
 
 		args ?: (
 		"-h": "--help"     : USAGE@println;
 		"-v": "--verbose"  : verbose = TRUE;
 		"-d": "--directory": (
-				i + 1 < argc ? (
-					i++,
+				i + 1 < argc ? {
+					i++;
 					output_directory = (input_directory = argv[i])
-				)
+				}
 			);
 		"-o": "--output"   : (
-				i + 1 < argc ? (
-					args = argv[i + 1],
+				i + 1 < argc ? {
+					args = argv[i + 1];
 					args ?: (
-					"-d": "--directory": (
-						i++,
-						i + 1 < argc ? (
-								i++,
+					"-d": "--directory": {
+							i++;
+							i + 1 < argc ? {
+								i++;
 								output_directory = argv[i]
-							)
-						)
+							}
+						}
 					)
-				),
-				i + 1 < argc ? (
-					args = argv[i + 1],
-					args[0] <> '-' ? (
-						makeout = (args[0] == '@'),
-						makeout ! (
-							i++,
-							outfile@close,
-							outfile = (args, "w")@open,
-							continue = outfile@is_File,
+				};
+				i + 1 < argc ? {
+					args = argv[i + 1];
+					args[0] <> '-' ? {
+						makeout = (args[0] == '@');
+						makeout ! {
+							i++;
+							outfile@close;
+							outfile = (args, "w")@open;
+							continue = outfile@is_File;
 							continue ! (
 								unable_to_open args
 							)
-						)
-					)
-				)
+						}
+					}
+				}
 			);
-		"-m": "--minimal"  : minimal = TRUE;
-		"-n": "--noaffix"  : noaffix = TRUE;
+		"-m": "--minimal"  : minimal  = TRUE;
+		"-n": "--noaffix"  : noaffix  = TRUE;
 		"-p": "--noprefix" : noprefix = TRUE;
 		"-s": "--nosuffix" : nosuffix = TRUE;
 		"-c": "--nocontin" : nocontin = TRUE;
-		"-w": "--nowords"  : nowords = TRUE;
+		"-w": "--nowords"  : nowords  = TRUE;
 		      "--version"  : VERSION@println;
-		      "--debug"    : debug = TRUE;
+		      "--debug"    : debug    = TRUE;
 		(args[0] == '@') ? (
-			catfiles(args << 1, input_directory, output_directory, makeout)
-		;
-			catfile(args, input_directory, output_directory, FALSE)
-		))
-	;
+				catfiles(args << 1, input_directory, output_directory, makeout)
+			;
+				catfile(args, input_directory, output_directory, FALSE)
+			)
+		)
+	);(
 		USAGE@printerr
-	),
+	)),
 
 	outfile@close
 );

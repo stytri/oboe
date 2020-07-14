@@ -1,19 +1,19 @@
 
 stov(s): (
-	v:[],
-	s ?* (
-		n:s@span_NotEOL,
+	v:[];
+	s ?* {
+		n:s@span_NotEOL;
 		n > 0 ? (
-			v[v@length] = s <<< n,
-		),
-		s <<= n + 1,
-	),
+			v[v@length] = s <<< n
+		);
+		s <<= n + 1
+	};
 	v
 );
 
 dir(p): (
-	syscmd:"ls -1 "p,
-	dirlist:syscmd@system,
+	syscmd:"ls -1 "p;
+	dirlist:syscmd@system;
 	stov dirlist
 );
 

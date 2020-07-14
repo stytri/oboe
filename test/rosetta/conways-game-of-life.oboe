@@ -7,28 +7,28 @@ ctrl(c):((c & 0x1F)@to_Character);
 ESC:ctrl('[');
 
 show(universe): (
-	(ESC"[H")@print,
-	Y:universe@length,
-	X:universe[0]@length,
-	(y::0..(Y-1)) ?* (
+	(ESC"[H")@print;
+	Y:universe@length;
+	X:universe[0]@length;
+	(y::0..(Y-1)) ?* {
 		(x::0..(X-1)) ?* (
 			(universe[y][x] ? (ESC"[07m  "ESC"[m" ; "  "))@print
-		),
+		);
 		(ESC"[E")@print
-	)
+	}
 );
 
 evolve(universe): (
-	new:[], n:,
+	new:[]; n:;
 
-	Y:universe@length, maxY:Y - 1,
-	X:universe[0]@length, maxX:X - 1,
+	Y:universe@length; maxY:Y - 1;
+	X:universe[0]@length; maxX:X - 1;
 
-	new[0] = universe[0],
-	(y::1..(maxY-1)) ?* (
-		new[y] = [0],
+	new[0] = universe[0];
+	(y::1..(maxY-1)) ?* {
+		new[y] = [0];
 
-		(x::1..(maxX-1)) ?* (
+		(x::1..(maxX-1)) ?* {
 			n = universe[y-1][x-1]
 			  + universe[y-1][x]
 			  + universe[y-1][x+1]
@@ -37,29 +37,29 @@ evolve(universe): (
 			  + universe[y+1][x-1]
 			  + universe[y+1][x]
 			  + universe[y+1][x+1]
-			,
+			;
 
 			new[y][x] = (n == 3 || (n == 2 && universe[y][x]))
-		),
+		};
 		new[y][maxX] = 0
-	),
-	new[maxY] = universe[maxY],
+	};
+	new[maxY] = universe[maxY];
 
 	new
 );
 
 μsleep(u): (
-	t:(u * @CLOCKS_PER_SEC) / 1e6,
+	t:(u * @CLOCKS_PER_SEC) / 1e6;
 	(s:(@clock()); (@clock() - s) < t) ?*
 );
 
 run(universe): (
-	(ESC"[2J")@print,
-	1 ?* (
-		show(universe),
-		universe = evolve(universe),
+	(ESC"[2J")@print;
+	1 ?* {
+		show(universe);
+		universe = evolve(universe);
 		μsleep(200000)
-	)
+	}
 );
 
 empty_universe(Y,X): (
@@ -67,35 +67,35 @@ empty_universe(Y,X): (
 );
 
 random(Y,X): (
-	universe:[],
+	universe:[];
 
-	maxY:Y - 1,
-	maxX:X - 1,
+	maxY:Y - 1;
+	maxX:X - 1;
 
-	universe[0] = calloc(X),
-	(y::1..(maxY-1)) ?* (
-		universe[y] = [0],
+	universe[0] = calloc(X);
+	(y::1..(maxY-1)) ?* {
+		universe[y] = [0];
 
 		(x::1..(maxX-1)) ?* (
 			universe[y][x] = select(10)!
-		),
+		);
 		universe[y][maxX] = 0
-	),
-	universe[maxY] = calloc(X),
+	};
+	universe[maxY] = calloc(X);
 
 	run(universe)
 );
 
 glider(Y,X): (
-	Y = max(Y,5),
-	X = max(X,5),
+	Y = max(Y,5);
+	X = max(X,5);
 
-	universe:empty_universe(Y,X),
-	universe[1][1] = 1,
-	universe[2][2] = 1,
-	universe[2][3] = 1,
-	universe[3][1] = 1,
-	universe[3][2] = 1,
+	universe:empty_universe(Y,X);
+	universe[1][1] = 1;
+	universe[2][2] = 1;
+	universe[2][3] = 1;
+	universe[3][1] = 1;
+	universe[3][2] = 1;
 
 	run(universe)
 );
@@ -107,12 +107,12 @@ blinker(): (
 		[0,1,1,1,0],
 		[0,0,0,0,0],
 		[0,0,0,0,0]
-	],
+	];
 	run(universe)
 );
 
 main(argc, argv): (
-	N:32,
+	N:32;
 
 	(i:1; i < argc; i++) ?* ((
 		(s:argv[i]) ?: ((

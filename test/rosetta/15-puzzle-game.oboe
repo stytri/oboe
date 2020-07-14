@@ -20,14 +20,14 @@ dc:[ nop, nop, dec, inc ];
 dr:[ dec, inc, nop, nop ];
 
 setup(): (
-	count: -1,
+	count: -1;
 
-	cells[0..(N-1)] =[],
+	cells[0..(N-1)] =[];
 	(row:cells[]) ?* (
 		row[0..(N-1)] = (count++)
-	),
+	);
 
-	hole(row = 0, column = 0),
+	hole(row = 0, column = 0);
 
 	(i:0..127) ?* (
 		update(select(4))
@@ -35,54 +35,54 @@ setup(): (
 );
 
 update(move): (
-	r:, c:,
+	r:; c:;
 
 	hole(
-		r = dr[move](row),
-		c = dc[move](column),
+		r = dr[move](row);
+		c = dc[move](column);
 
-		(r <> row || c <> column) ? (
-			cells[row][column] >< cells[r][c],
+		(r <> row || c <> column) ? {
+			cells[row][column] >< cells[r][c];
 
-			row    = r,
+			row    = r;
 			column = c
-		)
+		}
 	)
 );
 
 is_not_finished(): (
-	return:0, count:0,
+	return:0; count:0;
 
 	(row:0; return == 0 && row < N; row++) ?* (
-		(column:0; return == 0 && column < N; column++) ?* (
-			count++,
+		(column:0; return == 0 && column < N; column++) ?* {
+			count++;
 
 			(cells[row][column] <> count) ? (
 				return = 1
 			)
-		)
-	),
+		}
+	);
 
 	return
 );
 
 show_cells(): (
-	''@println,
-	(row::cells[]) ?* (
+	''@println;
+	(row::cells[]) ?* {
 		(column::row[]) ?* (
 			column ? (
 				(" : ", itos(2, column))@print
 			;
 				" :   "@print
 			)
-		),
+		);
 		" :"@println
-	),
+	};
 	''@println
 );
 
 get_move(): (
-	s:getcmd(),
+	s:getcmd();
 	(i::0..(s@length-1)) ?* (
 		s[i] ?: (
 		('u': update(0));

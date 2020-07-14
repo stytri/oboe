@@ -1,26 +1,26 @@
 ﻿#[
-Version 20.07.121
+Version 20.07.140
 Copyright (C) 2020 Tristan Styles
 MIT License
 ]
 
 [:] TEST:[
-	SUCCESS:()?,
+	SUCCESS:()?;
 	EXPECT(expected,result): (
-		expected == result ? (
-			('\t', expected@to_Literal, " == ", result@to_Literal)@println,
-		;
-			('\t', expected@to_Literal, " <> ", result@to_Literal)@println,
+		expected == result ? ((
+			('\t', expected@to_Literal, " == ", result@to_Literal)@println
+		);(
+			('\t', expected@to_Literal, " <> ", result@to_Literal)@println;
 			SUCCESS = ()?
-		)
-	),
-	RUN(): (
-		SUCCESS = ()!,
-		(i:0; TEST[i]@identifier <> "RUN"; i += 1) ?*,
-		(N:TEST@length; i += 1) < N ?* (
-			("#[\n", TEST[i]@identifier)@println,
+		))
+	);
+	RUN(): {
+		SUCCESS = ()!;
+		(i:0; TEST[i]@identifier <> "RUN"; i += 1) ?* {};
+		(N:TEST@length; i += 1) < N ?* {
+			("#[\n", TEST[i]@identifier)@println;
 			TEST[i]()
-		),
+		};
 		(SUCCESS ? ("PASSED\n]" ; "FAILED\n]"))@println
 	)
 ];

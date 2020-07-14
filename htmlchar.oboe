@@ -1,6 +1,6 @@
 # https://www.w3.org/TR/REC-html40/sgml/entities.html
 #[
-Version 20.07.130
+Version 20.07.140
 Copyright (C) 2020 Tristan Styles
 MIT License
 ]
@@ -2134,55 +2134,57 @@ AtoZ::"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	zwj                            :"\u200D",
 	zwnj                           :"\u200C",
 
-	decode(s): (
+	decode(s): {
 		t:"",
-		(continue:1, N:s@length, o:0, n:0; continue) ?* (
-			n = o + (s(o..), "&")@span_NotInSet,
-			n > o ? (
-				r:s[o..(n-1)],
+		(continue:1, N:s@length, o:0, n:0; continue) ?* {
+			n = o + (s(o..), "&")@span_NotInSet;
+			n > o ? {
+				r:s[o..(n-1)];
 				t = t r
-			),
-			(continue = n < N) ? ((
-				m:n + 1,
-				o = m + (s(m..), AtoZ)@span_InSet,
+			};
+			(continue = n < N) ? {
+				m:n + 1;
+				o = m + (s(m..), AtoZ)@span_InSet;
 				(continue = o < N && s[o] == ';') ? ((
-					r:s[m..(o-1)],
-					c:htmlchar[r],
+					r:s[m..(o-1)];
+					c:htmlchar[r];
 					c@is_String ! ((
-						r:s[n..o],
-						t = t r,
+						r:s[n..o];
+						t = t r
 					);(
-						t = t c,
-					)),
+						t = t c
+					));
 					o += 1
 				);(
-					r:s[n..],
+					r:s[n..];
 					t = t r
 				))
-			))
-		),
+			}
+		};
 		t
-	),
+	}
 ];
 
-TEST@is_Environment ? (TEST[TEST@length] = (
-	htmlchar_test(): (
-		strings:[
-			["consequential"           , "consequential"],
-			["&ltconsequential"        , "&ltconsequential"],
-			["<consequential"          , "&lt;consequential"],
-			["consequential&gt"        , "consequential&gt"],
-			["consequential>"          , "consequential&gt;"],
-			["consequ&ampential"       , "consequ&ampential"],
-			["consequ&ential"          , "consequ&amp;ential"],
-			["<consequ&ential>"        , "&lt;consequ&amp;ential&gt;"],
-			["<<consequ&&ential>>"     , "&lt;&lt;consequ&amp;&amp;ential&gt;&gt;"],
-			["consequ&undefined;ential", "consequ&undefined;ential"],
-			["consequ&;ential"         , "consequ&;ential"]
-		],
-		(s:strings[]) ?* (
-			TEST EXPECT(s[0], htmlchar decode(s[1]))
-		),
-		()
+TEST@is_Environment ? {
+	TEST[TEST@length] = (
+		htmlchar_test(): {
+			strings:[
+				["consequential"           , "consequential"],
+				["&ltconsequential"        , "&ltconsequential"],
+				["<consequential"          , "&lt;consequential"],
+				["consequential&gt"        , "consequential&gt"],
+				["consequential>"          , "consequential&gt;"],
+				["consequ&ampential"       , "consequ&ampential"],
+				["consequ&ential"          , "consequ&amp;ential"],
+				["<consequ&ential>"        , "&lt;consequ&amp;ential&gt;"],
+				["<<consequ&&ential>>"     , "&lt;&lt;consequ&amp;&amp;ential&gt;&gt;"],
+				["consequ&undefined;ential", "consequ&undefined;ential"],
+				["consequ&;ential"         , "consequ&;ential"]
+			];
+			(s:strings[]) ?* (
+				TEST EXPECT(s[0], htmlchar decode(s[1]))
+			);
+			()
+		}
 	)
-));
+};

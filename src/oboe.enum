@@ -152,8 +152,15 @@ ENUM(Sequence)
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
 	)
 	EVAL(
-		eval(env, ast->m.lexpr);
-		ast = eval(env, ast->m.rexpr);
+		Ast lexpr = eval(env, ast->m.lexpr);
+		Ast rexpr = eval(env, ast->m.rexpr);
+		if(ast_isnotZen(lexpr) && ast_isnotZen(rexpr)) {
+			RETURN(ast = new_ast(ast->sloc, AST_Sequence, lexpr, rexpr));
+		}
+		if(ast_isnotZen(lexpr)) {
+			RETURN(ast = lexpr);
+		}
+		RETURN(ast = rexpr);
 	)
 	SWEEP(
 		ast->m.lexpr = gc_unlink(ast->m.lexpr);
@@ -171,8 +178,20 @@ ENUM(Assemblage)
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
 	)
 	EVAL(
-		eval(env, ast->m.lexpr);
-		ast = eval(env, ast->m.rexpr);
+		Ast result = ZEN;
+
+		for(; ast_isAssemblage(ast); ast = ast->m.rexpr) {
+			result = eval(env, ast->m.lexpr);
+
+			gc_return(ts, result);
+		}
+		if(ast_isnotZen(ast)) {
+			result = eval(env, ast);
+
+			gc_return(ts, result);
+		}
+
+		ast = result;
 	)
 	SWEEP(
 		ast->m.lexpr = gc_unlink(ast->m.lexpr);

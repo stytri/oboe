@@ -15,43 +15,43 @@ heap(): [
 ];
 
 push(h, d, cmp): (
-	i: h length + 1,
+	i: h length + 1;
 	h(
-		(j: i / 2; i > 1 && cmp(nodes[j], d); j /= 2) ?* (
-			nodes[i] =^ nodes[j],
+		(j: i / 2; i > 1 && cmp(nodes[j], d); j /= 2) ?* {
+			nodes[i] =^ nodes[j];
 			i = j
-		),
-		nodes[i] =^ d,
+		};
+		nodes[i] =^ d;
 		length++
 	),
 );
 
 pop(h, cmp): (
-	return:(),
+	return:();
 
-	n: h length,
+	n: h length;
 	(n > 0) ? h(
-		return =^ nodes[1],
+		return =^ nodes[1];
 
-		nodes[1] =^ nodes[n],
-		length--,
+		nodes[1] =^ nodes[n];
+		length--;
 
-		(i:1,; i <> n) ?* (
-			k:n,
-			j:2 * i,
+		(i:1; i <> n) ?* {
+			k:n;
+			j:2 * i;
 			h(
 				(j <= length && cmp(nodes[k], nodes[j])) ? (
 					k = j
-				),
-				j++,
+				);
+				j++;
 				(j <= length && cmp(nodes[k], nodes[j])) ? (
 					k = j
-				),
+				);
 				nodes[i] =^ nodes[k]
-			),
+			);
 			i = k
-		)
-	),
+		}
+	);
 
 	return
 );

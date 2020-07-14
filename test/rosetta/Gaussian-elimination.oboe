@@ -6,38 +6,38 @@ abs(x): (
 	(x < 0) ? -x : x
 );
 gauss_eliminate(a, b, x, n): (
-	N::n-1,
+	N::n-1;
 	(dia:0..N) ?* (
-		D:dia+1,
+		D:dia+1;
 
-		max_row:dia, max:a[dia][dia],
+		max_row:dia; max:a[dia][dia];
 
 		(D < n) ? ((row:D..N) ?* (
 			((tmp:abs(a[row][dia])) > max) ? (
 				max_row = row, max = tmp
 			)
-		)),
+		));
 
-		a[dia] >< a[max_row],
-		b[dia] >< b[max_row],
+		a[dia] >< a[max_row];
+		b[dia] >< b[max_row];
 
-		(D < n) ? ((row:D..N) ?* (
-			tmp:a[row][dia] / a[dia][dia],
+		(D < n) ? ((row:D..N) ?* {
+			tmp:a[row][dia] / a[dia][dia];
 			(col:D..N) ?* (
 				a[row][col] -= tmp * a[dia][col]
-			),
-			a[row][dia] = 0,
+			);
+			a[row][dia] = 0;
 			b[row] -= tmp * b[dia];
-		))
+		})
 	),
 
-	(row:n - 1; -row >= row; row--) ?* (
-		tmp:b[row],
+	(row:n - 1; -row >= row; row--) ?* {
+		tmp:b[row];
 		(j:n - 1; j > row; j--) ?* (
 			tmp -= x[j] * a[row][j]
-		),
+		);
 		x[row] = tmp / a[row][row]
-	)
+	}
 );
 
 a:[

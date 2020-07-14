@@ -48,19 +48,23 @@ Ast system_environment = NULL;
 
 //------------------------------------------------------------------------------
 
+#define BUILTINS(...) \
+ENUM(Tag) \
+ENUM(TagRef) \
+ENUM(Const) \
+ENUM(Declaration) \
+ENUM(Bracketed) \
+ENUM(Applicate) \
+ENUM(Assign) \
+ENUM(Block) \
+ENUM(Array) \
+ENUM(Range)
+
 static unsigned builtin_sigil_enum         = -1u;
 static unsigned builtin_system_enum        = -1u;
 #define ENUM(Name,...) \
 static unsigned builtin_is_##Name##_enum   = -1u;
-ENUM(Tag)
-ENUM(TagRef)
-ENUM(Const)
-ENUM(Declaration)
-ENUM(Bracketed)
-ENUM(Applicate)
-ENUM(Assign)
-ENUM(Array)
-ENUM(Range)
+BUILTINS()
 #include "oboe.enum"
 static unsigned builtin_type_enum          = -1u;
 static unsigned builtin_typename_enum      = -1u;
@@ -277,15 +281,7 @@ builtin_is_##Name( \
 	uint64_t is = ast_is##Name(arg); \
 	return new_ast(sloc, AST_Boolean, is); \
 }
-ENUM(Tag)
-ENUM(TagRef)
-ENUM(Const)
-ENUM(Declaration)
-ENUM(Bracketed)
-ENUM(Applicate)
-ENUM(Assign)
-ENUM(Array)
-ENUM(Range)
+BUILTINS()
 #define builtin_is_Identifier builtin_is_Identifier__hidden
 #include "oboe.enum"
 #undef  builtin_is_Identifier
@@ -1078,15 +1074,7 @@ initialise_system_environment(
 		BUILTIN("system"      , system)
 #		define ENUM(Name,...)  \
 		BUILTIN("is_"#Name    , is_##Name)
-		ENUM(Tag)
-		ENUM(TagRef)
-		ENUM(Const)
-		ENUM(Declaration)
-		ENUM(Bracketed)
-		ENUM(Applicate)
-		ENUM(Assign)
-		ENUM(Array)
-		ENUM(Range)
+		BUILTINS()
 #		include "oboe.enum"
 		BUILTIN("type"        , type)
 		BUILTIN("typename"    , typename)

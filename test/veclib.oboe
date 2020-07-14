@@ -5,7 +5,7 @@
 _vec:[
 	op(L,Op,R): (
 		L@is_Environment ? ((
-			return:[],
+			return:[];
 
 			R@is_Environment ? ((
 				Ln:L@length,
@@ -16,7 +16,7 @@ _vec:[
 						(i:0..(Ln-1)) ?* (
 							return[i] = op(L[i], Op, R[i])
 						)
-					),
+					);
 					(Ln < Rn) ? (
 						(i:Ln..(Rn-1)) ?* (
 							return[i] = op((), Op, R[i])
@@ -27,7 +27,7 @@ _vec:[
 						(i:0..(Rn-1)) ?* (
 							return[i] = op(L[i], Op, R[i])
 						)
-					),
+					);
 					(i:Rn..(Ln-1)) ?* (
 						return[i] = op(L[i], Op, ())
 					)
@@ -39,7 +39,7 @@ _vec:[
 			))
 		);(
 			R@is_Environment ? ((
-				return:L,
+				return:L;
 
 				(x:R[..()]) ?* (
 					return = op(return, Op, x)
@@ -47,7 +47,7 @@ _vec:[
 			);(
 				return:Op(L, R)
 			))
-		)),
+		));
 
 		return
 	);
