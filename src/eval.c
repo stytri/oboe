@@ -96,13 +96,15 @@ evalop(
 		break;
 	case AST_OperatorFunction: {
 			Array statics_env = statics->m.env;
-			Ast   locals      = source_env(sloc_source(ast->sloc));
-			statics->m.env    = locals->m.env;
+			Ast   locals_save = source_env(sloc_source(ast->sloc));
+			statics->m.env    = locals_save->m.env;
 
+			locals_save = locals;
 			ast = ast->m.rexpr;
 			locals = new_env(sloc, env);
 			addenv_operands(locals, env, sloc, ast->m.lexpr, lexpr, rexpr);
 			ast = refeval(locals, ast->m.rexpr);
+			locals = locals_save;
 
 			statics->m.env = statics_env;
 			return ast;

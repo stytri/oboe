@@ -116,13 +116,13 @@ Indexes are zero based. Assigning to to the last + 1 index, appends a new entry.
 
 The following environments are predefined:
 
-**static** which is the default scope within a source file. It can be specifically invoked using the `(:)` operator.
+**local** which is the default scope within a function. It can be specifically invoked using the `(:)` operator. There are no predefined identifiers in the **local** environment.
 
-**global**, which is available to all; unless **oboe** is invoked with the `--math` option, there are no predefined identifiers in the **global** environment. It can be specifically invoked using the `[:]` operator.
+**static** which is the default scope within a source file. It can be specifically invoked using the `{:}` operator. There are no predefined identifiers in the **static** environment.
+
+**global**, which is available to all. It can be specifically invoked using the `[:]` operator. Unless **oboe** is invoked with the `--math` option, there are no predefined identifiers in the **global** environment.
 
 **system**, which can be accessed via the **sigil** operator.
-
-in addition each function call has its own environment.
 
 When an **environment** is applied to an expression or, expression-list, it is automatically linked to the current **environment**.
 

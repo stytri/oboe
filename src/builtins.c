@@ -101,6 +101,7 @@ typedef enum {
 static unsigned builtin_applicate_enum      = -1u;
 static unsigned builtin_global_enum         = -1u;
 static unsigned builtin_static_enum         = -1u;
+static unsigned builtin_local_enum          = -1u;
 static unsigned builtin_tag_enum            = -1u;
 static unsigned builtin_tag_ref_enum        = -1u;
 static unsigned builtin_const_enum          = -1u;
@@ -2617,12 +2618,14 @@ builtin_applicate(
 			}
 		case AST_Function: {
 				Array statics_env = statics->m.env;
-				Ast   locals      = source_env(sloc_source(rexpr->sloc));
-				statics->m.env    = locals->m.env;
+				Ast   locals_save = source_env(sloc_source(rexpr->sloc));
+				statics->m.env    = locals_save->m.env;
 
+				locals_save = locals;
 				locals = new_env(sloc, env);
 				addenv_args(locals, env, sloc, rexpr->m.lexpr, lexpr);
 				rexpr = refeval(locals, rexpr->m.rexpr);
+				locals = locals_save;
 
 				statics->m.env = statics_env;
 				return rexpr;
@@ -2649,12 +2652,14 @@ builtin_applicate(
 			}
 		case AST_Function: {
 				Array statics_env = statics->m.env;
-				Ast   locals      = source_env(sloc_source(rexpr->sloc));
-				statics->m.env    = locals->m.env;
+				Ast   locals_save = source_env(sloc_source(rexpr->sloc));
+				statics->m.env    = locals_save->m.env;
 
+				locals_save = locals;
 				locals = new_env(sloc, env);
 				addenv_args(locals, env, sloc, rexpr->m.lexpr, lexpr);
 				rexpr = eval(locals, rexpr->m.rexpr);
+				locals = locals_save;
 
 				statics->m.env = statics_env;
 				return rexpr;
@@ -2737,12 +2742,14 @@ builtin_applicate(
 		return lexpr->m.bfn(env, sloc, rexpr);
 	case AST_Function: {
 			Array statics_env = statics->m.env;
-			Ast   locals      = source_env(sloc_source(lexpr->sloc));
-			statics->m.env    = locals->m.env;
+			Ast   locals_save = source_env(sloc_source(lexpr->sloc));
+			statics->m.env    = locals_save->m.env;
 
+			locals_save = locals;
 			locals = new_env(sloc, env);
 			addenv_args(locals, env, sloc, lexpr->m.lexpr, rexpr);
 			rexpr = eval(locals, lexpr->m.rexpr);
+			locals = locals_save;
 
 			statics->m.env = statics_env;
 			return rexpr;
@@ -2839,6 +2846,16 @@ builtin_static(
 	return builtin_scope_delegate(env, sloc, lexpr, rexpr, statics);
 }
 
+static Ast
+builtin_local(
+	Ast    env,
+	sloc_t sloc,
+	Ast    lexpr,
+	Ast    rexpr
+) {
+	return builtin_scope_delegate(env, sloc, lexpr, rexpr, (locals ? locals : statics));
+}
+
 //------------------------------------------------------------------------------
 
 int
@@ -2924,6 +2941,7 @@ initialise_builtin_operators(
 		BUILTIN("`applicate`"      , applicate      , P_Applicate)
 		BUILTIN("`global`"         , global         , P_Interstitial)
 		BUILTIN("`static`"         , static         , P_Interstitial)
+		BUILTIN("`local`"          , local          , P_Interstitial)
 		BUILTIN("`tag`"            , tag            , P_Declarative)
 		BUILTIN("`tag_ref`"        , tag_ref        , P_Declarative)
 		BUILTIN("`const`"          , const          , P_Declarative)
@@ -2982,7 +3000,8 @@ initialise_builtin_operators(
 	static struct builtinalias const builtinalias[] = {
 		{    "", "`applicate`"      },
 		{ "[:]", "`global`"         },
-		{ "(:)", "`static`"         },
+		{ "{:}", "`static`"         },
+		{ "(:)", "`local`"          },
 		{   ":", "`tag`"            },
 		{  ":^", "`tag_ref`"        },
 		{  "::", "`const`"          },

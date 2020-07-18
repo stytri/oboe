@@ -400,6 +400,7 @@ addenv_named(
 Ast operators = NULL;
 Ast globals   = NULL;
 Ast statics   = NULL;
+Ast locals    = NULL;
 
 int
 initialise_env(
