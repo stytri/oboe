@@ -2554,6 +2554,7 @@ builtin_array(
 		builtin_array_push_back(env, sloc, lexpr, rexpr, BY_Value);
 	}
 
+	lexpr->attr |= ATTR_NoEvaluate;
 	return lexpr;
 }
 
