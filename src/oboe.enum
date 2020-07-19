@@ -59,6 +59,7 @@ ENUM(Boolean)
 	STR(INTEGER("", ast->m.ival, ""))
 	NEW(
 		ast->m.ival = (uint64_t)(INTEGER() != 0);
+		ast->attr  |= ATTR_NoEvaluate;
 	)
 	EVAL(
 		RETURN();
@@ -68,6 +69,7 @@ ENUM(Integer)
 	STR(INTEGER("", ast->m.ival, ""))
 	NEW(
 		ast->m.ival = INTEGER();
+		ast->attr  |= ATTR_NoEvaluate;
 	)
 	EVAL(
 		RETURN();
@@ -77,6 +79,7 @@ ENUM(Float)
 	STR(FLOAT("", ast->m.fval, ""))
 	NEW(
 		ast->m.fval = FLOAT();
+		ast->attr  |= ATTR_NoEvaluate;
 	)
 	EVAL(
 		RETURN();
@@ -86,6 +89,7 @@ ENUM(Character)
 	STR(CHARACTER("", ast->m.ival, ""))
 	NEW(
 		ast->m.ival = (uint64_t)CHARACTER();
+		ast->attr  |= ATTR_NoEvaluate;
 	)
 	EVAL(
 		RETURN();
@@ -96,6 +100,7 @@ ENUM(String)
 	NEW(
 		ast->m.sval = gc_link(STRING());
 		ast->m.hash = HashString(ast->m.sval);
+		ast->attr  |= ATTR_NoEvaluate;
 	)
 	EVAL(
 		RETURN();
@@ -205,6 +210,9 @@ ENUM(Assemblage)
 // Internal Types
 
 ENUM(Void)
+	NEW(
+		ast->attr |= ATTR_NoEvaluate;
+	)
 	EVAL(
 		RETURN();
 	)
@@ -232,6 +240,7 @@ ENUM(Reference)
 	NEW(
 		ast->m.sval  = gc_link(va_arg(va, String));
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
+		ast->attr   |= ATTR_NoEvaluate;
 	)
 	DUP(
 		ast->m.rexpr = dup_ast(sloc, ast->m.rexpr);
@@ -282,6 +291,7 @@ ENUM(Function)
 	NEW(
 		ast->m.lexpr = gc_link(va_arg(va, Ast));
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
+		ast->attr   |= ATTR_NoEvaluate;
 	)
 	EVAL(
 		RETURN();
@@ -299,6 +309,7 @@ ENUM(BuiltinFunction)
 	NEW(
 		ast->m.sval = gc_link(va_arg(va, String));
 		ast->m.bfn  = va_arg(va, BuiltinFn);
+		ast->attr  |= ATTR_NoEvaluate;
 	)
 	EVAL(
 		RETURN();
@@ -315,6 +326,7 @@ ENUM(BuiltinOperator)
 		ast->m.sval = gc_link(va_arg(va, String));
 		ast->m.bop  = va_arg(va, BuiltinOp);
 		ast->qual   = va_arg(va, Precedence);
+		ast->attr  |= ATTR_NoEvaluate;
 	)
 	EVAL(
 		RETURN();
@@ -331,6 +343,7 @@ ENUM(OperatorFunction)
 		ast->m.sval  = gc_link(va_arg(va, String));
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
 		ast->qual    = va_arg(va, Precedence);
+		ast->attr   |= ATTR_NoEvaluate;
 	)
 	EVAL(
 		RETURN();
@@ -367,7 +380,7 @@ ENUM(Environment)
 	NEW(
 		ast->m.env   = gc_link(va_arg(va, Array));
 		ast->m.rexpr = gc_link(va_arg(va, Ast));
-		ast->attr   |= (ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign);
+		ast->attr   |= (ATTR_NoEvaluate | ATTR_CopyOnAssign | ATTR_RetainCopyOnAssign);
 	)
 	DUP(
 		ast->m.env = dup_env(sloc, ast->m.env);
@@ -387,7 +400,8 @@ ENUM(Environment)
 ENUM(Error)
 	STR(ERRORMESSAGE("#(ERROR: ", ast, ")"))
 	NEW(
-		ast->qual = va_arg(va, Error);
+		ast->qual  = va_arg(va, Error);
+		ast->attr |= ATTR_NoEvaluate;
 	)
 	EVAL(
 		RETURN();

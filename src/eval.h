@@ -50,28 +50,73 @@ evalop(
 );
 
 extern Ast
+subeval__actual(
+	Ast env,
+	Ast ast
+);
+static inline Ast
 subeval(
 	Ast env,
 	Ast ast
-);
+) {
+	return (ast->attr & ATTR_NoEvaluate) ? (
+		ast
+	) : (
+		subeval__actual(env, ast)
+	);
+}
 
 extern Ast
+refeval__actual(
+	Ast env,
+	Ast ast
+);
+static inline Ast
 refeval(
 	Ast env,
 	Ast ast
-);
+) {
+	return (ast->attr & ATTR_NoEvaluate) ? (
+		ast
+	) : (
+		refeval__actual(env, ast)
+	);
+}
 
 extern Ast
-eval(
+eval__actual(
 	Ast env,
 	Ast ast
 );
+static inline Ast
+eval(
+	Ast env,
+	Ast ast
+) {
+	return (ast->attr & ATTR_NoEvaluate) ? (
+		ast
+	) : (
+		eval__actual(env, ast)
+	);
+}
 
 extern Ast
-evalseq(
+evalseq__actual(
 	Ast    env,
 	Ast    ast
 );
+static inline Ast
+evalseq(
+	Ast env,
+	Ast ast
+) {
+	return (ast->attr & ATTR_NoEvaluate) ? (
+		ast
+	) : (
+		evalseq__actual(env, ast)
+	);
+}
+
 
 extern Ast
 eval_named(

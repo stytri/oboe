@@ -45,10 +45,11 @@ typedef enum {
 } Type;
 
 typedef enum {
-	ATTR_NoAssign           = 0x01,
-	ATTR_CopyOnAssign       = 0x02,
-	ATTR_RetainCopyOnAssign = 0x04,
-	ATTR_BIT                = 3
+	ATTR_NoEvaluate         = 0x01,
+	ATTR_NoAssign           = 0x02,
+	ATTR_CopyOnAssign       = 0x04,
+	ATTR_RetainCopyOnAssign = 0x08,
+	ATTR_BIT                = 4
 } Attr;
 
 enum { TYPE_MASK = BIT_MASK(N_AST_Types) };

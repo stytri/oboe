@@ -121,7 +121,7 @@ evalop(
 //------------------------------------------------------------------------------
 
 Ast
-subeval(
+subeval__actual(
 	Ast env,
 	Ast ast
 ) {
@@ -151,31 +151,34 @@ return_ast:
 }
 
 Ast
-refeval(
+refeval__actual(
 	Ast env,
 	Ast ast
 ) {
-	for(ast = subeval(env, ast);
+	for(ast = subeval__actual(env, ast);
 		ast_isReference(ast);
 		ast = subeval(env, ast->m.rexpr)
 	);
+
 	return ast;
 }
 
 Ast
-eval(
+eval__actual(
 	Ast env,
 	Ast ast
 ) {
-	for(ast = refeval(env, ast);
+	for(ast = refeval__actual(env, ast);
 		ast_isQuoted(ast);
 		ast = refeval(env, ast->m.rexpr)
 	);
+
+	ast->attr |= ATTR_NoEvaluate;
 	return ast;
 }
 
 Ast
-evalseq(
+evalseq__actual(
 	Ast    env,
 	Ast    ast
 ) {
@@ -206,6 +209,6 @@ eval_named(
 	assert(s != NULL);
 	Ast    a = new_ast(sloc, AST_Identifier, s);
 
-	return eval(env, a);
+	return eval__actual(env, a);
 }
 

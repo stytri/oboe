@@ -292,7 +292,7 @@ initialise_ast(
 		ZEN = alloc_ast();
 		assert(ZEN != NULL);
 		ZEN->type = AST_Zen;
-		ZEN->attr = ATTR_NoAssign;
+		ZEN->attr = ATTR_NoEvaluate | ATTR_NoAssign;
 		gc_push(ZEN);
 	}
 }
