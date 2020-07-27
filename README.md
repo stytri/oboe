@@ -21,7 +21,7 @@ Windows 7
 
 [jEdit](http://jedit.org/) Editor
 
-[MingGW](https://nuwen.net/mingw.html) ([GCC](https://gcc.gnu.org/)) Compiler
+[MingGW](http://www.winlibs.com/) ([GCC](https://gcc.gnu.org/)) Compiler
 
 [CodeBlocks](http://www.codeblocks.org/) (to build and debug)
 
