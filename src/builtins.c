@@ -863,28 +863,25 @@ builtin_loop_array(
 		size_t       index  = 0;
 		size_t       end    = last;
 		size_t       step   = 1;
-		if(ast_isRange(iexpr)) {
-			index = ast_toInteger(eval(env, iexpr->m.lexpr));
-			ast   = eval(env, iexpr->m.rexpr);
-			end   = ast_isZen(ast) ? last : ast_toInteger(ast);
-			if(index > end) {
-				if(index > last) {
-					if(end > last) {
-						return oboerr(sloc, ERR_InvalidOperand);
-					}
 
-					index = last;
+		if(ast_isRange(iexpr)) {
+			bool const default_end = ast_isZen(iexpr->m.rexpr);
+			index                  = ast_toInteger(eval(env, iexpr->m.lexpr));
+			ast                    = eval(env, iexpr->m.rexpr);
+			end                    = default_end ? last : ast_toInteger(ast);
+
+			if(index > last) {
+				if(default_end || (end > last)) {
+					return ZEN;
 				}
-				if(index > end) {
-					step = SIZE_C(-1);
-				}
-			} else {
-				if(index > last) {
-					return oboerr(sloc, ERR_InvalidOperand);
-				}
-				if(end > last) {
-					end = last;
-				}
+
+				index = last;
+			}
+			if(end > last) {
+				end = last;
+			}
+			if(index > end) {
+				step = SIZE_C(-1);
 			}
 		}
 
