@@ -1,5 +1,5 @@
 VERSION::"
-dict 20.07.140
+dict 20.08.110
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -500,8 +500,7 @@ catprefix(afx,wlist,w): (
 	afx@is_Environment ? {
 		len:w@length;
 
-		(R:lengthof(afx rule), r:0; r < R; r++) ?* {
-			rule:afx  rule[r];
+		(rule: afx rule[..()]) ?* {
 			slen:lengthof(rule strip);
 			cond:rule cond;
 			pref:rule affix[0];
@@ -538,8 +537,7 @@ catsuffix(afx,wlist,w): (
 	afx@is_Environment ? {
 		len:w@length;
 
-		(R:lengthof(afx rule), r:0; r < R; r++) ?* {
-			rule:afx  rule[r];
+		(rule: afx rule[..()]) ?* {
 			slen:lengthof(rule strip);
 			cond:rule cond;
 			suff:rule affix[0];
