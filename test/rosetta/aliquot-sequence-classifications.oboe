@@ -21,9 +21,8 @@ print(type, term): (
 aliquot_classifier(K:): (
 	term:[K];
 	continue:1;
-	i:1;
 
-	(; continue && i < 16; i++) ?* {
+	((i:1..15) && continue) ?* {
 		t1:term[i-1];
 		ti:proper_divisor_sum(t1);
 		term[i] = ti;

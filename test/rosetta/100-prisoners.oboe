@@ -36,13 +36,13 @@ play(is_random): (
 	chosen:0;
 	found:1;
 
-	(i:0; found && i < N; i++) ?* {
+	((i:0..(N-1)) && found) ?* {
 		close_drawers();
 
 		found = 0;
 		chosen = is_random ? (select(N) ; i);
 
-		(j:0; found == 0 && j < chances; j++) ?* {
+		((j:0..(chances-1)) && found == 0) ?* {
 			drawer[chosen]opened = 1;
 
 			(drawer[chosen]card_number == prisoner[i]id) ? ({

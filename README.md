@@ -318,35 +318,35 @@ or:
 
 or:
 
-`(` _identifier_ `:` _range_ `)`   
+`(` _identifier_ `:` _range_ [ `&&` _condition_] `)`   
 
 or:
 
-`(` _identifier_ `=` _range_ `)`
+`(` _identifier_ `=` _range_ [ `&&` _condition_] `)`
 
 or:
 
-`(` _identifier_ `:` _sequence_ `)`   
+`(` _identifier_ `:` _sequence_ [ `&&` _condition_] `)`   
 
 or:
 
-`(` _identifier_ `=` _sequence_ `)`
+`(` _identifier_ `=` _sequence_ [ `&&` _condition_] `)`
 
 or:
 
-`(` _identifier_ `:` _array_`[`_range_`]` `)`
+`(` _identifier_ `:` _array_`[`_range_`]` [ `&&` _condition_] `)`
 
 or:
 
-`(` _identifier_ `=` _array_`[`_range_`]` `)`
+`(` _identifier_ `=` _array_`[`_range_`]` [ `&&` _condition_] `)`
 
 or:
 
-`(` _identifier_ `:` `[`_initializer_`]` `)`
+`(` _identifier_ `:` `[`_initializer_`]` [ `&&` _condition_] `)`
 
 or:
 
-`(` _identifier_ `=` `[`_initializer_`]` `)`
+`(` _identifier_ `=` `[`_initializer_`]` [ `&&` _condition_] `)`
 
 The `!*` operator is as above, except the condition is inverted; does **not** apply to **range**s.
 

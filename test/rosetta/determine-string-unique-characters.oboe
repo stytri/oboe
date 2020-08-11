@@ -16,8 +16,11 @@ print(s, len, uniq, diff, hex): (
 		spad(-6, uniq, ' '), " | ",
 		spad(-8, diff, ' '), " | "
 	);
-	(n:pos[diff]@length, i:0; 0 < n && i < n; i++) ?* (
-		itos(-3, pos[diff][i])@print
+	n:pos[diff]@length;
+	n > 0 ? (
+		(i:0..(n-1)) ?* (
+			itos(-3, pos[diff][i])@print
+		)
 	);
 	''@println
 );

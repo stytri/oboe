@@ -285,6 +285,13 @@ ast_isRelational(
 	;
 }
 
+static inline bool
+ast_isLogicalAnd(
+	Ast ast
+) {
+	return ast_isOp(ast, builtin_land_enum);
+}
+
 //------------------------------------------------------------------------------
 
 #define TYPE(L,R)  (((L) << TYPE_BIT) | (R))
@@ -826,7 +833,8 @@ builtin_loop_array(
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
-	Ast    iexpr
+	Ast    iexpr,
+	Ast    bexpr
 ) {
 	Ast texpr = ast_isTag(lexpr) ? (
 		addenv(env, sloc, lexpr->m.lexpr, ZEN, 0)
@@ -880,17 +888,35 @@ builtin_loop_array(
 			}
 		}
 
-		if(length > 0) for(size_t ts = gc_topof_stack();;) {
-			texpr->m.rexpr = marray_at(arr, Ast, index);
+		if(length > 0) {
+			if(ast_isZen(bexpr)) for(size_t ts = gc_topof_stack();;) {
+				texpr->m.rexpr = marray_at(arr, Ast, index);
 
-			result = refeval(env, rexpr);
+				result = refeval(env, rexpr);
 
-			texpr->m.rexpr = ZEN;
+				texpr->m.rexpr = ZEN;
 
-			gc_return(ts, result);
+				gc_return(ts, result);
 
-			if(index == end) break;
-			index += step;
+				if(index == end) break;
+
+				index += step;
+			}
+			else for(size_t ts = gc_topof_stack();;) {
+				texpr->m.rexpr = marray_at(arr, Ast, index);
+
+				if(!ast_toBool(eval(env, bexpr))) break;
+
+				result = refeval(env, rexpr);
+
+				texpr->m.rexpr = ZEN;
+
+				gc_return(ts, result);
+
+				if(index == end) break;
+
+				index += step;
+			}
 		}
 
 		return result;
@@ -905,7 +931,8 @@ builtin_loop_range(
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
-	Ast    iexpr
+	Ast    iexpr,
+	Ast    bexpr
 ) {
 	Ast texpr = ast_isTag(lexpr) ? (
 		addenv(env, sloc, lexpr->m.lexpr, ZEN, 0)
@@ -925,8 +952,22 @@ builtin_loop_range(
 
 		iexpr = new_ast(sloc, AST_Integer, next);
 
-		for(size_t ts = gc_topof_stack();;) {
+		if(ast_isZen(bexpr)) for(size_t ts = gc_topof_stack();;) {
 			texpr->m.rexpr = iexpr;
+
+			result = refeval(env, rexpr);
+
+			gc_return(ts, result);
+
+			if(next == end) break;
+
+			next += step;
+			iexpr->m.ival = next;
+		}
+		else for(size_t ts = gc_topof_stack();;) {
+			texpr->m.rexpr = iexpr;
+
+			if(!ast_toBool(eval(env, bexpr))) break;
 
 			result = refeval(env, rexpr);
 
@@ -950,7 +991,8 @@ builtin_loop_sequence(
 	sloc_t sloc,
 	Ast    lexpr,
 	Ast    rexpr,
-	Ast    iexpr
+	Ast    iexpr,
+	Ast    bexpr
 ) {
 	Ast texpr = ast_isTag(lexpr) ? (
 		addenv(env, sloc, lexpr->m.lexpr, ZEN, 0)
@@ -964,23 +1006,49 @@ builtin_loop_sequence(
 		Ast result = ZEN;
 
 		size_t ts = gc_topof_stack();
-		do {
-			texpr->m.rexpr = iexpr->m.lexpr;
+		if(ast_isZen(bexpr)) {
+			do {
+				texpr->m.rexpr = iexpr->m.lexpr;
 
-			result = refeval(env, rexpr);
+				result = refeval(env, rexpr);
 
-			gc_return(ts, result);
+				gc_return(ts, result);
 
-			iexpr = iexpr->m.rexpr;
-		} while(ast_isSequence(iexpr))
-			;
-		if(ast_isnotZen(iexpr)) {
-			texpr->m.rexpr = iexpr;
+				iexpr = iexpr->m.rexpr;
+			} while(ast_isSequence(iexpr))
+				;
+			if(ast_isnotZen(iexpr)) {
+				texpr->m.rexpr = iexpr;
 
-			result = refeval(env, rexpr);
+				result = refeval(env, rexpr);
 
-			gc_return(ts, result);
+				gc_return(ts, result);
+			}
+		} else {
+			bool b = true;
+			do {
+				texpr->m.rexpr = iexpr->m.lexpr;
 
+				b = ast_toBool(eval(env, bexpr));
+				if(!b) break;
+
+				result = refeval(env, rexpr);
+
+				gc_return(ts, result);
+
+				iexpr = iexpr->m.rexpr;
+
+			} while(ast_isSequence(iexpr))
+				;
+			if(b && ast_isnotZen(iexpr)) {
+				texpr->m.rexpr = iexpr;
+
+				if(ast_toBool(eval(env, bexpr))) {
+					result = refeval(env, rexpr);
+
+					gc_return(ts, result);
+				}
+			}
 		}
 
 		return result;
@@ -997,29 +1065,40 @@ builtin_loop_1(
 	Ast    rexpr,
 	bool   inverted
 ) {
+	Ast texpr = lexpr = unquote(lexpr);
 	Ast iexpr = ZEN;
+	Ast bexpr = ZEN;
 
-	lexpr = unquote(lexpr);
-	if((ast_isTag(lexpr)
-			|| ast_isConst(lexpr)
-			|| ast_isAssign(lexpr))
-		&& ast_isIdentifier(lexpr->m.lexpr)
+	if(ast_isLogicalAnd(texpr)
+		&& ((ast_isTag(texpr->m.lexpr)
+				|| ast_isConst(texpr->m.lexpr)
+				|| ast_isAssign(texpr->m.lexpr))
+			&& ast_isIdentifier(texpr->m.lexpr->m.lexpr)
+		)
 	) {
-		if(ast_isArray(lexpr->m.rexpr)) {
-			if(ast_isZen(lexpr->m.rexpr->m.lexpr)
-				|| ast_isZen(lexpr->m.rexpr->m.rexpr)
-				|| ast_isRange(lexpr->m.rexpr->m.rexpr)
+		bexpr = texpr->m.rexpr;
+		texpr = texpr->m.lexpr;
+	}
+	if((ast_isTag(texpr)
+			|| ast_isConst(texpr)
+			|| ast_isAssign(texpr))
+		&& ast_isIdentifier(texpr->m.lexpr)
+	) {
+		if(ast_isArray(texpr->m.rexpr)) {
+			if(ast_isZen(texpr->m.rexpr->m.lexpr)
+				|| ast_isZen(texpr->m.rexpr->m.rexpr)
+				|| ast_isRange(texpr->m.rexpr->m.rexpr)
 			) {
-				return builtin_loop_array(env, sloc, lexpr, rexpr, lexpr->m.rexpr);
+				return builtin_loop_array(env, sloc, texpr, rexpr, texpr->m.rexpr, bexpr);
 			}
 		} else {
-			iexpr = undefer(env, lexpr->m.rexpr);
+			iexpr = undefer(env, texpr->m.rexpr);
 
 			if(ast_isRange(iexpr)) {
-				return builtin_loop_range(env, sloc, lexpr, rexpr, iexpr);
+				return builtin_loop_range(env, sloc, texpr, rexpr, iexpr, bexpr);
 			}
 			if(ast_isSequence(iexpr)) {
-				return builtin_loop_sequence(env, sloc, lexpr, rexpr, iexpr);
+				return builtin_loop_sequence(env, sloc, texpr, rexpr, iexpr, bexpr);
 			}
 
 			iexpr = ZEN;
