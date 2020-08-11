@@ -1,5 +1,5 @@
 VERSION::"
-dict 20.08.110
+dict 20.08.111
 Copyright (C) 2020 Tristan Styles
 MIT License
 ";
@@ -514,8 +514,8 @@ catprefix(afx,wlist,w): (
 				)
 			) ? {
 				match:TRUE;
-				(N:cond@length, i:1, j:0; match && i < N; i++) ?* (
-					match = cmp_affix_rule_condition[cond[i]type](cond[i]char, w[j], j)
+				(j:0; (c:cond[1..()]) && match) ?* (
+					match = cmp_affix_rule_condition[c type](c char, w[j], j)
 				);
 				match ? {
 					wroot:wlist@length;
@@ -551,8 +551,8 @@ catsuffix(afx,wlist,w): (
 				)
 			) ? {
 				match:TRUE;
-				(N:cond@length, i:1, j:0; match && i < N; i++) ?* (
-					match = cmp_affix_rule_condition[cond[i]type](cond[i]char, w[j], j)
+				(j:0; (c:cond[1..()]) && match) ?* (
+					match = cmp_affix_rule_condition[c type](c char, w[j], j)
 				);
 				match ? {
 					wroot:wlist@length;
