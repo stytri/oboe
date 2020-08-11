@@ -1,0 +1,3 @@
+(s:("> "@print; @getln())) ?* (
+	s@parse@eval@println
+);
