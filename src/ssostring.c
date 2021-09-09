@@ -36,7 +36,7 @@ struct string {
 };
 
 #define SSO_SIZE (sizeof(struct string) - 1)
-#define SSO_MASK ((1 << (CHAR_BIT - 1)) - 1)
+#define SSO_MASK (((size_t)1 << (CHAR_BIT - 1)) - 1)
 
 //------------------------------------------------------------------------------
 
@@ -152,18 +152,12 @@ pack_string(
 		s->cap = t->cap;
 		s->ptr = t->ptr;
 
-	} else if(sso_string_ptr(s) == t->ptr) {
-		struct string st;
-		memset(&st, 0, sizeof(st));
-		st.len = (t->len << sso_shift()) | sso_bit();
-		memcpy(sso_string_ptr(&st), t->ptr, t->len);
-		memcpy(s, &st, sizeof(st));
-
 	} else {
-		char *st = sso_string_ptr(s);
-		s->len = (t->len << sso_shift()) | sso_bit();
-		memcpy(st, t->ptr, t->len);
-		memset(st + t->len, 0, (SSO_SIZE - t->len));
+		size_t len = (t->len << sso_shift()) | sso_bit();
+		char  *ptr = sso_string_ptr(s);
+		memcpy(ptr, t->ptr, t->len);
+		memset(ptr + t->len, 0, (SSO_SIZE - t->len));
+		s->len = (s->len & ~(SSO_MASK << sso_shift())) | len;
 	}
 
 	return s;
