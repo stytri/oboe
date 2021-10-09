@@ -159,7 +159,7 @@ array_map_index(
 		struct node *node    =  untag_pointer(arr->map);
 		uintptr_t   *here    = &arr->map;
 
-		for(int o = 0; o += BITS_PER_NODE; ) {
+		for(int o = 0; ; o += BITS_PER_NODE ) {
 			struct node *leaf;
 			size_t       z;
 
@@ -310,7 +310,7 @@ array_get_index(
 		bool               is_leaf = node_is_leaf(arr->map);
 		struct node const *node    = untag_pointer(arr->map);
 
-		for(int o = 0; o += BITS_PER_NODE; ) {
+		for(int o = 0; ; o += BITS_PER_NODE ) {
 			if(is_leaf) {
 				if(node->map == hash) {
 					for(int i = 0; i < LEAF_MAX_SIZE; ++i) {
